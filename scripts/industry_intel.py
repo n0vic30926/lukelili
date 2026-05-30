@@ -8,8 +8,12 @@ import json, os, sys, requests, traceback
 from datetime import datetime, timedelta
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-PORTFOLIO_PATH = os.path.expanduser("~/.openclaw/workspace/memory/portfolio.json")
-TAVILY_API_KEY = "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"
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+PORTFOLIO_PATH = os.environ.get(
+    "FINANCE_AGENT_PORTFOLIO",
+    os.path.join(REPO_ROOT, "memory", "portfolio.json"),
+)
+TAVILY_API_KEY = os.environ.get("TAVILY_API_KEY", "")
 
 # 搜索关键词矩阵：按持仓关联度分组
 SEARCH_QUERIES = [
@@ -46,6 +50,8 @@ SEARCH_QUERIES = [
 
 def search_tavily(query, days=3, max_results=5):
     """Tavily搜索，返回最近N天的相关资讯"""
+    if not TAVILY_API_KEY:
+        return []
     url = "https://api.tavily.com/search"
     payload = {
         "api_key": TAVILY_API_KEY,

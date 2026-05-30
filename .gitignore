@@ -1,0 +1,10 @@
+.env
+config/settings.local.json
+config/settings.local.yaml
+data/private/*
+!data/private/.gitkeep
+reports/
+cache/
+logs/
+__pycache__/
+*.pyc

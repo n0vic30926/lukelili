@@ -224,7 +224,7 @@ def get_optical_sector():
 # 块2: 定性赛道（Tavily新闻驱动）
 # ============================================================
 
-TAVILY_API_KEY = "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"
+TAVILY_API_KEY = os.environ.get("TAVILY_API_KEY", "")
 
 # 9个定性赛道的搜索配置
 QUALITATIVE_SECTORS = [
@@ -317,6 +317,8 @@ QUALITATIVE_SECTORS = [
 
 def _tavily_search(query, days=7, max_results=3):
     """复用Tavily搜索"""
+    if not TAVILY_API_KEY:
+        return []
     import requests as req
     url = "https://api.tavily.com/search"
     payload = {

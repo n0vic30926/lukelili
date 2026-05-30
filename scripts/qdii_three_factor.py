@@ -71,7 +71,11 @@ def qdii_attribution(fund_code="016452", days=30):
 def portfolio_risk_scan():
     """组合风险扫描：波动率+相关性+因子暴露"""
     import json, os
-    portfolio_path = os.path.expanduser("~/.openclaw/workspace/memory/portfolio.json")
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    portfolio_path = os.environ.get(
+        "FINANCE_AGENT_PORTFOLIO",
+        os.path.join(repo_root, "memory", "portfolio.json"),
+    )
     with open(portfolio_path) as f:
         portfolio = json.load(f)
 

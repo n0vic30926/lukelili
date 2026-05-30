@@ -8,7 +8,12 @@
 import json, os
 from datetime import datetime, timedelta
 
-TRACK_DIR = os.path.expanduser("~/.openclaw/workspace/memory/decision_track")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+TRACK_DIR = os.environ.get(
+    "FINANCE_AGENT_TRACK_DIR",
+    os.path.join(REPO_ROOT, "data", "private", "decision_track"),
+)
 
 
 def save_daily_decisions(portfolio_path):
@@ -76,7 +81,10 @@ def list_tracking_records():
 
 
 if __name__ == "__main__":
-    portfolio_path = os.path.expanduser("~/.openclaw/workspace/memory/portfolio.json")
+    portfolio_path = os.environ.get(
+        "FINANCE_AGENT_PORTFOLIO",
+        os.path.join(REPO_ROOT, "memory", "portfolio.json"),
+    )
     fp = save_daily_decisions(portfolio_path)
     print(f"Saved: {fp}")
     print()
