@@ -37,6 +37,24 @@ def run_format_review_test():
                 {"code": "EX3", "strategy_type": "short_term", "cost_basis": 20, "shares": 2},
                 {"code": "EX4", "strategy_type": "watch"},
             ],
+            "user_actions": [
+                {
+                    "action_type": "upgrade_strategy",
+                    "status": "pending",
+                    "strategy_type": "trial",
+                    "requires_user_confirmation": True,
+                    "code": "EX2",
+                    "amount": 12345,
+                    "rationale": "Synthetic private rationale that must not be printed.",
+                },
+                {
+                    "action_type": "continue_dca",
+                    "status": "confirmed",
+                    "strategy_type": "dca",
+                    "requires_user_confirmation": False,
+                    "code": "EX1",
+                },
+            ],
         }
     ]
     review = format_review(Path("reports/index.jsonl"), report_records, Path("data/private/decision_track"), decision_records)
@@ -50,10 +68,16 @@ def run_format_review_test():
     _assert_contains(review, "short_term: score=")
     _assert_contains(review, "status=missing_rules")
     _assert_contains(review, "watch: score=")
-    if "cost_basis" in review or "shares" in review:
+    _assert_contains(review, "用户确认动作")
+    _assert_contains(review, "状态分布: {'pending': 1, 'confirmed': 1}")
+    _assert_contains(review, "动作类型分布: {'upgrade_strategy': 1, 'continue_dca': 1}")
+    _assert_contains(review, "需要用户确认且未完成: 1")
+    if "cost_basis" in review or "shares" in review or "amount" in review:
         raise AssertionError("Review leaked raw asset field names")
     if "EX1" in review or "EX2" in review or "EX3" in review or "EX4" in review:
         raise AssertionError("Review leaked asset codes")
+    if "Synthetic private rationale" in review:
+        raise AssertionError("Review leaked private rationale")
 
 
 def run_load_private_records_test():

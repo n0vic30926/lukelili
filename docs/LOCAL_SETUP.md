@@ -87,6 +87,7 @@ python3 scripts/smoke_test.py
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 python3 scripts/mock_runtime_test.py
 python3 scripts/mock_report_test.py
+python3 scripts/mock_decision_tracker_test.py
 python3 scripts/mock_review_test.py
 ```
 
@@ -118,6 +119,8 @@ Review decision and report history:
 ```bash
 python3 scripts/review_history.py
 ```
+
+Decision records can include `user_actions` for user-confirmed, pending, or rejected actions. Keep real records under ignored private paths such as `data/private/decision_track/`; the review command only prints aggregate confirmation status.
 
 ## 6. Never Commit
 

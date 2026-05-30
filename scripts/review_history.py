@@ -77,6 +77,36 @@ def summarize_decisions(records):
     return strategy_counts, dates, sample_count
 
 
+def summarize_user_actions(records):
+    status_counts = Counter()
+    action_type_counts = Counter()
+    strategy_counts = Counter()
+    requires_confirmation = 0
+    unresolved_confirmation = 0
+    total = 0
+    for record in records:
+        for action in record.get("user_actions", []):
+            total += 1
+            status = action.get("status", "unknown")
+            action_type = action.get("action_type", "unknown")
+            strategy_type = action.get("strategy_type", "unknown")
+            status_counts[status] += 1
+            action_type_counts[action_type] += 1
+            strategy_counts[strategy_type] += 1
+            if action.get("requires_user_confirmation"):
+                requires_confirmation += 1
+                if status != "confirmed":
+                    unresolved_confirmation += 1
+    return {
+        "total": total,
+        "status_counts": status_counts,
+        "action_type_counts": action_type_counts,
+        "strategy_counts": strategy_counts,
+        "requires_confirmation": requires_confirmation,
+        "unresolved_confirmation": unresolved_confirmation,
+    }
+
+
 def _has_short_term_rules(holding):
     rule_keys = (
         "take_profit",
@@ -163,6 +193,7 @@ def format_review(report_index_path, report_records, decision_dir, decision_reco
     report_counts, status_counts = summarize_reports(report_records)
     strategy_counts, decision_dates, sample_count = summarize_decisions(decision_records)
     strategy_cards = build_strategy_scorecards(decision_records)
+    action_summary = summarize_user_actions(decision_records)
     lines = ["# 历史复盘摘要", ""]
     lines.append("## 报告归档")
     lines.append(f"- 索引路径: {report_index_path}")
@@ -214,6 +245,18 @@ def format_review(report_index_path, report_records, decision_dir, decision_reco
         )
         lines.append(f"  - 复盘重点: {card['focus']}")
         lines.append(f"  - 下一步: {card['next_step']}")
+    lines.append("")
+
+    lines.append("## 用户确认动作")
+    if not action_summary["total"]:
+        lines.append("- 暂无用户确认动作记录。")
+    else:
+        lines.append(f"- 动作数量: {action_summary['total']}")
+        lines.append(f"- 状态分布: {dict(action_summary['status_counts'])}")
+        lines.append(f"- 动作类型分布: {dict(action_summary['action_type_counts'])}")
+        lines.append(f"- 策略分布: {dict(action_summary['strategy_counts'])}")
+        lines.append(f"- 需要用户确认且未完成: {action_summary['unresolved_confirmation']}")
+        lines.append("- 复盘边界: 只统计用户确认状态，不输出代码、金额或理由全文。")
     lines.append("")
 
     lines.append("## 下一步")

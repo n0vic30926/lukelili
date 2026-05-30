@@ -11,7 +11,7 @@ The project has completed the L1-L2 foundation:
 - smoke test for local foundation;
 - core scripts no longer default to old OpenClaw workspace paths.
 
-L3 foundation is now stabilized: daily and weekly reports have dependency checks, best-effort cache support, structured logs, archive index, visible module status, local portfolio validation, source tiering, freshness summaries, configurable macro observations with freshness and rule-based interpretation, ETF proxy observations with fee comparison/tracking risk/dividend status/premium risk/liquidity gaps, mocked report branch tests, and a command-line historical review summary with strategy scorecards. The next step is verifying real data adapters against the installed AkShare version and adding richer source-specific interpretation.
+L3 foundation is now stabilized: daily and weekly reports have dependency checks, best-effort cache support, structured logs, archive index, visible module status, local portfolio validation, source tiering, freshness summaries, configurable macro observations with freshness and rule-based interpretation, ETF proxy observations with fee comparison/tracking risk/dividend status/premium risk/liquidity gaps, mocked report branch tests, and a command-line historical review summary with strategy scorecards and user-confirmation action tracking. The next step is verifying real data adapters against the installed AkShare version and adding richer source-specific interpretation.
 
 ## L1: Document Investment Assistant
 
@@ -66,7 +66,7 @@ Outputs:
 - visible module success/failure status;
 - archived report files.
 
-Status: data-quality foundation stabilized; mocked report tests cover success, partial data failure, skipped news, example portfolio mode, macro freshness, rule-based macro interpretation, and ETF risk metadata.
+Status: data-quality foundation stabilized; mocked report tests cover success, partial data failure, skipped news, example portfolio mode, macro freshness, rule-based macro interpretation, ETF risk metadata, and user-confirmation action tracking.
 
 Next steps:
 
@@ -74,7 +74,7 @@ Next steps:
 - verify configured macro adapters for CPI/PPI/PMI/M2/社融/GDP/rates against local AkShare;
 - add official release-calendar checks for each macro indicator;
 - expand ETF beyond configured metadata into official premium/discount, historical tracking error, and dividend adapters;
-- expand historical review from strategy scorecards into explicit user-confirmed action tracking;
+- expand historical review beyond confirmation tracking into outcome review after confirmed actions;
 - add more realistic AkShare-shaped fixtures for each report branch.
 
 ## L4: Multi-Agent Investment Research System
@@ -107,3 +107,8 @@ Required before L5:
 - source-backed evidence;
 - rule-based risk gates;
 - clear user confirmation workflow.
+
+Current foundation:
+
+- user actions can be recorded in local ignored decision records;
+- historical review aggregates confirmed, pending, and rejected actions without printing private details.

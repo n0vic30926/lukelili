@@ -44,8 +44,47 @@ def save_daily_decisions(portfolio_path):
         decisions['holdings'].append(entry)
 
     filepath = os.path.join(TRACK_DIR, f"{today}.json")
+    if os.path.exists(filepath):
+        try:
+            with open(filepath, encoding="utf-8") as f:
+                existing = json.load(f)
+            decisions["user_actions"] = existing.get("user_actions", [])
+        except (OSError, json.JSONDecodeError):
+            decisions["user_actions"] = []
     with open(filepath, 'w') as f:
         json.dump(decisions, f, ensure_ascii=False, indent=2)
+    return filepath
+
+
+def append_user_action(action, record_date=None):
+    """Append a user-confirmation action to the local private decision record."""
+    os.makedirs(TRACK_DIR, exist_ok=True)
+    date_text = record_date or datetime.now().strftime("%Y-%m-%d")
+    filepath = os.path.join(TRACK_DIR, f"{date_text}.json")
+    if os.path.exists(filepath):
+        with open(filepath, encoding="utf-8") as f:
+            record = json.load(f)
+    else:
+        record = {"date": date_text, "holdings": [], "user_actions": []}
+    record.setdefault("date", date_text)
+    record.setdefault("holdings", [])
+    record.setdefault("user_actions", [])
+
+    entry = {
+        "action_type": action.get("action_type", "unknown"),
+        "status": action.get("status", "pending"),
+        "strategy_type": action.get("strategy_type", "unknown"),
+        "requires_user_confirmation": bool(action.get("requires_user_confirmation", True)),
+        "created_at": action.get("created_at", datetime.now().isoformat(timespec="seconds")),
+    }
+    optional_fields = ("code", "rationale", "amount", "confirmed_at", "notes")
+    for field in optional_fields:
+        if field in action:
+            entry[field] = action[field]
+    record["user_actions"].append(entry)
+
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(record, f, ensure_ascii=False, indent=2)
     return filepath
 
 

@@ -55,6 +55,7 @@ def main():
         "data/examples/portfolio.example.json",
         "scripts/common/config_loader.py",
         "scripts/mock_report_test.py",
+        "scripts/mock_decision_tracker_test.py",
         "scripts/review_history.py",
     ]
     for rel in required_files:

@@ -34,8 +34,9 @@ Finance Agent 不用于：
 - `scripts/smoke_test.py`：本地基础设施检查。
 - `scripts/mock_runtime_test.py`：离线测试缓存、运行状态和数据质量 helper。
 - `scripts/mock_report_test.py`：离线生成日报/周报 mock 报告，验证成功、部分失败、新闻跳过和示例持仓分支。
+- `scripts/mock_decision_tracker_test.py`：离线测试用户确认动作追踪，不触碰真实持仓。
 - `scripts/report_index.py`：查看本地报告归档索引。
-- `scripts/review_history.py`：聚合报告索引和决策记录，做纪律复盘摘要与策略评分卡。
+- `scripts/review_history.py`：聚合报告索引、决策记录和用户确认动作，做纪律复盘摘要与策略评分卡。
 
 ## 快速开始
 
@@ -59,6 +60,7 @@ data/private/portfolio.local.json
 python3 scripts/smoke_test.py
 python3 scripts/mock_runtime_test.py
 python3 scripts/mock_report_test.py
+python3 scripts/mock_decision_tracker_test.py
 python3 scripts/mock_review_test.py
 ```
 
@@ -95,7 +97,7 @@ python3 scripts/report_index.py
 python3 scripts/review_history.py
 ```
 
-复盘只输出聚合信息和策略级检查，不打印成本、份额、资产代码或交易明细。
+复盘只输出聚合信息、策略级检查和用户确认状态，不打印成本、份额、资产代码、金额或理由全文。
 
 ## 新闻模块
 
