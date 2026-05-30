@@ -1,0 +1,33 @@
+{
+  "id": "execution-discipline-no-talk",
+  "version": "2.0",
+  "hash": "",
+  "signals": {
+    "keywords": ["马上开始", "现在写", "继续写", "下一步", "先做", "要不要"],
+    "patterns": ["about to start", "will now proceed", "let me write", "going to code"]
+  },
+  "strategy": "收到执行指令后第一个输出必须是工具调用，禁止先输出任何状态声明",
+  "steps": [
+    "收到执行指令→立即调用write/exec/edit工具",
+    "代码写完→运行验证→输出结果",
+    "禁止在工具调用之前输出任何'我现在开始'类文字",
+    "禁止复读上一个已完成的成果",
+    "禁止问'先做哪个'——用户已经说了做什么"
+  ],
+  "avoid": [
+    "输出'现在写代码'、'马上开始'、'继续执行'等状态声明",
+    "复读上一次的执行结果作为新回复的开头",
+    "在执行前问确认性问题",
+    "做多余的接口验证来拖延核心任务",
+    "用检讨替代行为改变"
+  ],
+  "constraints": {
+    "scope": "所有用户要求执行代码/脚本/文件操作的指令",
+    "forbidden": ["状态声明", "进度确认", "复读旧结果", "多余验证"]
+  },
+  "confidence": 95,
+  "last_triggered": "2026-05-28",
+  "stats": { "hits": 5, "successes": 0, "failures": 5 },
+  "created": "2026-05-28",
+  "modified": "2026-05-28"
+}
