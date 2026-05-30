@@ -68,8 +68,8 @@ class DataStatusTracker:
         lines.append("")
         return lines
 
-    def quality_markdown_lines(self, max_age_hours=24):
-        return markdown_quality_lines(self.records, max_age_hours=max_age_hours)
+    def quality_markdown_lines(self, max_age_hours=24, thresholds=None):
+        return markdown_quality_lines(self.records, max_age_hours=max_age_hours, thresholds=thresholds)
 
 
 def dependency_available(module_name):

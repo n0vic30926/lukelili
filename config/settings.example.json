@@ -9,6 +9,14 @@
   "use_cache": true,
   "cache_ttl_hours": 6,
   "freshness_max_age_hours": 24,
+  "freshness_thresholds": {
+    "official": 168,
+    "market_data": 24,
+    "vendor": 24,
+    "media": 12,
+    "social": 6,
+    "unknown": 24
+  },
   "enable_news": false,
   "tavily_api_key_env": "TAVILY_API_KEY",
   "timezone": "Asia/Shanghai"

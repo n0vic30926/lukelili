@@ -32,6 +32,7 @@ Finance Agent 不用于：
 - `scripts/industry_cycle.py`：AI 产业周期信号。
 - `scripts/smoke_test.py`：本地基础设施检查。
 - `scripts/mock_runtime_test.py`：离线测试缓存、运行状态和数据质量 helper。
+- `scripts/mock_report_test.py`：离线生成日报/周报 mock 报告，验证报告结构。
 - `scripts/report_index.py`：查看本地报告归档索引。
 
 ## 快速开始
@@ -55,6 +56,7 @@ data/private/portfolio.local.json
 ```bash
 python3 scripts/smoke_test.py
 python3 scripts/mock_runtime_test.py
+python3 scripts/mock_report_test.py
 ```
 
 该命令检查项目规则、配置示例、schema、示例持仓、配置加载器、敏感信息隔离、OpenClaw 路径隔离和运行依赖。缺少 `akshare` 等依赖时会给出 WARN，但不会自动安装。

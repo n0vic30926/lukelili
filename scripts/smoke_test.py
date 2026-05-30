@@ -54,16 +54,19 @@ def main():
         "schemas/portfolio.schema.json",
         "data/examples/portfolio.example.json",
         "scripts/common/config_loader.py",
+        "scripts/mock_report_test.py",
     ]
     for rel in required_files:
         failures += not check((REPO_ROOT / rel).exists(), f"{rel} exists")
 
     settings = load_settings()
     failures += not check(isinstance(settings, dict), "settings load as JSON object")
-    quality_summary, _ = summarize_quality([
-        {"module": "smoke", "status": "ok", "source": "local portfolio", "timestamp": "2026-01-01T00:00:00"}
-    ])
+    quality_summary, assessments = summarize_quality(
+        [{"module": "smoke", "status": "ok", "source": "local portfolio", "timestamp": "2026-01-01T00:00:00"}],
+        thresholds=settings.get("freshness_thresholds", {}),
+    )
     failures += not check(quality_summary["total"] == 1, "data quality helper works")
+    failures += not check("max_age_hours" in assessments[0], "per-source freshness thresholds work")
 
     missing = missing_dependencies(["akshare", "pandas", "numpy", "requests"])
     if missing:

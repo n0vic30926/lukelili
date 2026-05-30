@@ -516,7 +516,8 @@ def main():
             lines.append("")
             lines[status_line_at] = f"> 模块状态: {', '.join(module_status_lines())}"
             lines[summary_insert_at:summary_insert_at + 1] = TRACKER.markdown_lines() + TRACKER.quality_markdown_lines(
-                max_age_hours=SETTINGS.get("freshness_max_age_hours", 24)
+                max_age_hours=SETTINGS.get("freshness_max_age_hours", 24),
+                thresholds=SETTINGS.get("freshness_thresholds", {}),
             )
             return '\n'.join(lines)
         intel = fetch_industry_intel()
@@ -538,7 +539,8 @@ def main():
 
     lines[status_line_at] = f"> 模块状态: {', '.join(module_status_lines())}"
     lines[summary_insert_at:summary_insert_at + 1] = TRACKER.markdown_lines() + TRACKER.quality_markdown_lines(
-        max_age_hours=SETTINGS.get("freshness_max_age_hours", 24)
+        max_age_hours=SETTINGS.get("freshness_max_age_hours", 24),
+        thresholds=SETTINGS.get("freshness_thresholds", {}),
     )
     return '\n'.join(lines)
 

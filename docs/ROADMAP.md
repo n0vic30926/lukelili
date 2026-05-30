@@ -66,10 +66,11 @@ Outputs:
 - visible module success/failure status;
 - archived report files.
 
-Status: data-quality foundation stabilized.
+Status: data-quality foundation stabilized; mocked report smoke tests are available.
 
 Next steps:
 
+- expand mocked report tests to cover partial data failures and skipped news;
 - add per-source freshness thresholds;
 - add richer macro and ETF data coverage;
 - add tests with mocked AkShare responses.

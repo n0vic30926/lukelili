@@ -84,6 +84,7 @@ Run local checks:
 python3 scripts/smoke_test.py
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 python3 scripts/mock_runtime_test.py
+python3 scripts/mock_report_test.py
 ```
 
 Run reports:

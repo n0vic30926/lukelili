@@ -46,6 +46,16 @@ SOURCE_CLASSIFICATION = {
 }
 
 
+DEFAULT_FRESHNESS_THRESHOLDS = {
+    "official": 168,
+    "market_data": 24,
+    "vendor": 24,
+    "media": 12,
+    "social": 6,
+    "unknown": 24,
+}
+
+
 def classify_source(source):
     """Return a source tier key for a source string."""
     source_text = str(source or "")
@@ -76,10 +86,21 @@ def assess_freshness(timestamp_text, max_age_hours=24):
     return {"status": "stale", "age_hours": round(age_hours, 2), "message": "stale"}
 
 
-def quality_for_record(record, max_age_hours=24):
+def freshness_threshold_for_tier(tier, thresholds=None, default_hours=24):
+    """Return freshness threshold hours for a source tier."""
+    thresholds = thresholds or {}
+    if tier in thresholds:
+        return thresholds[tier]
+    if tier in DEFAULT_FRESHNESS_THRESHOLDS:
+        return DEFAULT_FRESHNESS_THRESHOLDS[tier]
+    return default_hours
+
+
+def quality_for_record(record, max_age_hours=24, thresholds=None):
     """Build a compact quality assessment for a status tracker record."""
     tier = classify_source(record.get("source", ""))
-    freshness = assess_freshness(record.get("timestamp"), max_age_hours=max_age_hours)
+    tier_max_age = freshness_threshold_for_tier(tier, thresholds=thresholds, default_hours=max_age_hours)
+    freshness = assess_freshness(record.get("timestamp"), max_age_hours=tier_max_age)
     return {
         "module": record.get("module", ""),
         "status": record.get("status", ""),
@@ -88,13 +109,17 @@ def quality_for_record(record, max_age_hours=24):
         "tier_label": SOURCE_TIERS[tier]["label"],
         "freshness": freshness["status"],
         "age_hours": freshness["age_hours"],
+        "max_age_hours": tier_max_age,
         "cache_hit": bool(record.get("cache_hit")),
     }
 
 
-def summarize_quality(records, max_age_hours=24):
+def summarize_quality(records, max_age_hours=24, thresholds=None):
     """Summarize source tiers and freshness for report display."""
-    assessments = [quality_for_record(record, max_age_hours=max_age_hours) for record in records]
+    assessments = [
+        quality_for_record(record, max_age_hours=max_age_hours, thresholds=thresholds)
+        for record in records
+    ]
     summary = {
         "total": len(assessments),
         "by_tier": {},
@@ -115,9 +140,9 @@ def summarize_quality(records, max_age_hours=24):
     return summary, assessments
 
 
-def markdown_quality_lines(records, max_age_hours=24):
+def markdown_quality_lines(records, max_age_hours=24, thresholds=None):
     """Return markdown lines for report data quality."""
-    summary, assessments = summarize_quality(records, max_age_hours=max_age_hours)
+    summary, assessments = summarize_quality(records, max_age_hours=max_age_hours, thresholds=thresholds)
     lines = ["## 数据质量", ""]
     lines.append(
         f"- 数据事件: {summary['total']} | 失败: {summary['failed']} | 跳过: {summary['skipped']} | 缓存命中: {summary['cache_hits']}"
@@ -134,7 +159,7 @@ def markdown_quality_lines(records, max_age_hours=24):
         if abnormal:
             for item in abnormal[:8]:
                 lines.append(
-                    f"  - {item['module']} | status={item['status']} | tier={item['tier_label']} | freshness={item['freshness']}"
+                    f"  - {item['module']} | status={item['status']} | tier={item['tier_label']} | freshness={item['freshness']} | max_age_h={item['max_age_hours']}"
                 )
         else:
             lines.append("  - 无")
