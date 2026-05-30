@@ -72,6 +72,12 @@ def main():
     dirs = get_report_dirs(settings)
     for name, path in dirs.items():
         failures += not check(path is not None and not str(path).startswith("/Users/luke/.openclaw"), f"{name} resolves outside OpenClaw")
+        try:
+            path.mkdir(parents=True, exist_ok=True)
+            creatable = path.exists()
+        except OSError:
+            creatable = False
+        failures += not check(creatable, f"{name} can be created")
 
     key_env = settings.get("tavily_api_key_env", "TAVILY_API_KEY")
     news_requires_missing_key = bool(settings.get("enable_news")) and not os.environ.get(key_env)

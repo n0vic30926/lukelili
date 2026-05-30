@@ -20,6 +20,31 @@ def load_portfolio():
     with open(PORTFOLIO_PATH, encoding="utf-8") as f:
         return json.load(f)
 
+
+def module_status_lines():
+    key_env = SETTINGS.get("tavily_api_key_env", "TAVILY_API_KEY")
+    news_ready = bool(SETTINGS.get("enable_news", False)) and bool(os.environ.get(key_env))
+    return [
+        "portfolio=ok",
+        f"portfolio_mode={'example' if USING_EXAMPLE_PORTFOLIO else 'private'}",
+        "market_data=best_effort",
+        f"news={'enabled' if news_ready else 'skipped'}",
+        "industry_cycle=best_effort",
+    ]
+
+
+def write_report_file(report):
+    out_dir = REPORT_DIRS["weekly_report_dir"]
+    log_dir = REPORT_DIRS["log_dir"]
+    out_dir.mkdir(parents=True, exist_ok=True)
+    log_dir.mkdir(parents=True, exist_ok=True)
+    now = datetime.now()
+    report_path = out_dir / f"weekly-{now.strftime('%Y-%m-%d')}.md"
+    report_path.write_text(report, encoding="utf-8")
+    with (log_dir / "weekly_finance_review.log").open("a", encoding="utf-8") as f:
+        f.write(f"{now.isoformat(timespec='seconds')} wrote {report_path}\n")
+    return report_path
+
 def weekly_returns():
     """模块1: 每只持仓的本周收益"""
     portfolio = load_portfolio()
@@ -247,6 +272,7 @@ def format_report():
     lines.append(f"# 📋 周度复盘 | {now.strftime('%Y-%m-%d')}")
     lines.append("")
     lines.append(f"> 数据来源: AkShare + local portfolio | 配置: {SETTINGS.get('_settings_path')} | 生成时间: {now.strftime('%Y-%m-%d %H:%M')}")
+    lines.append(f"> 模块状态: {', '.join(module_status_lines())}")
     if USING_EXAMPLE_PORTFOLIO:
         lines.append("> ⚠️ 当前使用示例持仓数据，仅用于 smoke test，不代表真实资产。")
     lines.append("")
@@ -348,4 +374,7 @@ def format_report():
 
 
 if __name__ == "__main__":
-    print(format_report())
+    report = format_report()
+    print(report)
+    report_path = write_report_file(report)
+    print(f"\n[report saved] {report_path}")
