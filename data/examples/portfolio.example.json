@@ -27,6 +27,14 @@
       "type": "example-fund",
       "market": "example-market",
       "proxy_etf": "sh510000",
+      "etf_profile": {
+        "benchmark": "Example Broad Market Index",
+        "expense_ratio": 0.0015,
+        "tracking_error": 0.002,
+        "dividend_policy": "example annual distribution",
+        "premium_discount_note": "Example data only; real premium/discount requires live ETF NAV or IOPV.",
+        "fee_note": "Synthetic fee for smoke tests."
+      },
       "strategy_type": "dca",
       "strategy_label": "example monthly DCA",
       "bucket": "conviction",
@@ -54,6 +62,12 @@
       "type": "example-fund",
       "market": "example-theme",
       "proxy_etf": "sz159000",
+      "etf_profile": {
+        "benchmark": "Example Theme Index",
+        "expense_ratio": 0.005,
+        "dividend_policy": "example no regular distribution",
+        "premium_discount_note": "Synthetic metadata only."
+      },
       "strategy_type": "trial",
       "strategy_label": "example trial position",
       "bucket": "exploration",

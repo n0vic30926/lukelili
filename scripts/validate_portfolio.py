@@ -53,6 +53,14 @@ def validate_portfolio_data(data):
             errors.append(f"holdings[{idx}].shares must be a number")
         if "target_allocation" in holding and not _is_number(holding["target_allocation"]):
             errors.append(f"holdings[{idx}].target_allocation must be a number")
+        etf_profile = holding.get("etf_profile")
+        if etf_profile is not None:
+            if not isinstance(etf_profile, dict):
+                errors.append(f"holdings[{idx}].etf_profile must be an object")
+            else:
+                for field in ["expense_ratio", "tracking_error"]:
+                    if field in etf_profile and not _is_number(etf_profile[field]):
+                        errors.append(f"holdings[{idx}].etf_profile.{field} must be a number")
         buy_records = holding.get("buy_records", [])
         if not isinstance(buy_records, list):
             errors.append(f"holdings[{idx}].buy_records must be an array")

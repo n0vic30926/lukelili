@@ -17,6 +17,25 @@ def _format_pct(value):
     return f"{value:+.2f}%"
 
 
+def _format_ratio(value):
+    if value is None:
+        return "未配置"
+    pct = value * 100 if abs(value) <= 1 else value
+    return f"{pct:.2f}%"
+
+
+def _first_value(row, names):
+    for name in names:
+        try:
+            value = row.get(name)
+        except AttributeError:
+            value = None
+        parsed = _safe_float(value)
+        if parsed is not None and parsed > 0:
+            return parsed, name
+    return None, ""
+
+
 def liquidity_tier(amount):
     """Classify ETF turnover/liquidity using RMB amount when available."""
     if amount is None:
@@ -26,6 +45,12 @@ def liquidity_tier(amount):
     if amount >= 100_000_000:
         return "medium"
     return "low"
+
+
+def premium_discount(price, reference_nav):
+    if price is None or reference_nav is None or reference_nav == 0:
+        return None
+    return (price / reference_nav - 1) * 100
 
 
 def macro_observation(ak, pd, settings, tracker):
@@ -104,7 +129,7 @@ def macro_observation(ak, pd, settings, tracker):
 
 
 def etf_observation(ak, settings, tracker, holdings):
-    """Return markdown lines for proxy ETF liquidity and price observations."""
+    """Return markdown lines for ETF liquidity, premium/discount, and metadata observations."""
     lines = ["## 🧾 ETF专项观察", ""]
     proxy_codes = [h.get("proxy_etf") for h in holdings if h.get("proxy_etf")]
     if not proxy_codes:
@@ -126,10 +151,12 @@ def etf_observation(ak, settings, tracker, holdings):
         lines.append("")
         return lines
 
+    gaps = []
     for holding in holdings:
         code = holding.get("proxy_etf")
         if not code:
             continue
+        profile = holding.get("etf_profile", {}) or {}
         code_clean = code.replace("sh", "").replace("sz", "")
         try:
             row = quote[quote["代码"] == code_clean]
@@ -142,11 +169,43 @@ def etf_observation(ak, settings, tracker, holdings):
         price = _safe_float(item.get("最新价"))
         change_pct = _safe_float(item.get("涨跌幅"))
         amount = _safe_float(item.get("成交额"))
+        reference_nav, nav_col = _first_value(
+            item,
+            ["IOPV", "基金份额参考净值", "参考净值", "单位净值", "估算净值", "净值"],
+        )
+        pd_pct = premium_discount(price, reference_nav)
         tier = liquidity_tier(amount)
         amount_text = f"{amount / 100000000:.2f}亿" if amount is not None else "N/A"
+        price_text = f"{price:.3f}" if price is not None else "N/A"
+        benchmark = profile.get("benchmark", "未配置")
+        expense_ratio = _safe_float(profile.get("expense_ratio"))
+        tracking_error = _safe_float(profile.get("tracking_error"))
+        dividend_policy = profile.get("dividend_policy", "未配置")
+        premium_text = _format_pct(pd_pct) if pd_pct is not None else "数据不可用"
+        nav_text = f"{reference_nav:.4f}({nav_col})" if reference_nav is not None else "N/A"
         lines.append(
-            f"- {holding.get('name', code)} / {code}: 价格 {price:.3f} | 涨跌 {_format_pct(change_pct)} | 成交额 {amount_text} | 流动性 {tier}"
+            f"- {holding.get('name', code)} / {code}: 价格 {price_text} | 涨跌 {_format_pct(change_pct)} | 成交额 {amount_text} | 流动性 {tier}"
         )
-    lines.append("- ETF结论: 溢价/折价、跟踪误差和费率仍需后续专项数据源补齐。")
+        lines.append(
+            f"  - 基准: {benchmark} | 费率: {_format_ratio(expense_ratio)} | 跟踪误差: {_format_ratio(tracking_error)} | 分红: {dividend_policy}"
+        )
+        lines.append(f"  - 溢价/折价: {premium_text} | 参考净值: {nav_text}")
+
+        if benchmark == "未配置":
+            gaps.append(f"{code}: benchmark")
+        if expense_ratio is None:
+            gaps.append(f"{code}: expense_ratio")
+        if tracking_error is None:
+            gaps.append(f"{code}: tracking_error")
+        if dividend_policy == "未配置":
+            gaps.append(f"{code}: dividend_policy")
+        if pd_pct is None:
+            gaps.append(f"{code}: premium_discount_source")
+
+    if gaps:
+        lines.append(f"- 待补ETF数据: {', '.join(gaps[:10])}")
+    else:
+        lines.append("- ETF数据完整度: 当前基础字段齐全。")
+    lines.append("- ETF结论: 以上为结构化观察，不构成买卖信号。")
     lines.append("")
     return lines

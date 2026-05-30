@@ -97,9 +97,65 @@ def run_weekly_mock():
     return report
 
 
+def run_etf_research_mock():
+    from common.data_runtime import DataStatusTracker
+    from common.market_research import etf_observation
+
+    class FakeAk:
+        @staticmethod
+        def fund_etf_spot_em():
+            return pd.DataFrame(
+                [
+                    {
+                        "代码": "510000",
+                        "最新价": 1.02,
+                        "涨跌幅": 0.5,
+                        "成交额": 250000000,
+                        "IOPV": 1.0,
+                    },
+                    {
+                        "代码": "159999",
+                        "最新价": 1.5,
+                        "涨跌幅": -0.2,
+                        "成交额": 50000000,
+                    }
+                ]
+            )
+
+    settings = {"use_cache": False, "cache_ttl_hours": 0}
+    tracker = DataStatusTracker()
+    holdings = [
+        {
+            "name": "Mock ETF Holding",
+            "proxy_etf": "sh510000",
+            "etf_profile": {
+                "benchmark": "Mock Benchmark",
+                "expense_ratio": 0.0015,
+                "tracking_error": 0.002,
+                "dividend_policy": "mock annual",
+            },
+        },
+        {
+            "name": "Missing Metadata Holding",
+            "proxy_etf": "sz159999",
+            "etf_profile": {},
+        },
+    ]
+
+    report = "\n".join(etf_observation(FakeAk, settings, tracker, holdings))
+    _assert_contains(report, "Mock Benchmark")
+    _assert_contains(report, "费率: 0.15%")
+    _assert_contains(report, "跟踪误差: 0.20%")
+    _assert_contains(report, "分红: mock annual")
+    _assert_contains(report, "溢价/折价: +2.00%")
+    _assert_contains(report, "待补ETF数据")
+    return report
+
+
 def main():
     run_daily_mock()
     run_weekly_mock()
+    run_etf_research_mock()
     print("Mock report test passed")
     return 0
 

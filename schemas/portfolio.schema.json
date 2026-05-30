@@ -67,6 +67,19 @@
         "type": { "type": "string" },
         "market": { "type": "string" },
         "proxy_etf": { "type": "string" },
+        "etf_profile": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "benchmark": { "type": "string" },
+            "expense_ratio": { "type": "number" },
+            "tracking_error": { "type": "number" },
+            "dividend_policy": { "type": "string" },
+            "premium_discount_note": { "type": "string" },
+            "fee_note": { "type": "string" },
+            "data_source_note": { "type": "string" }
+          }
+        },
         "strategy_type": {
           "type": "string",
           "enum": ["dca", "trial", "short_term", "watch", "long_term"]

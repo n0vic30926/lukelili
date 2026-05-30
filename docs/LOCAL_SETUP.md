@@ -58,6 +58,7 @@ The private portfolio should contain:
 - watchlist;
 - risk rules;
 - strategy type and notes.
+- optional `etf_profile` for ETF-like holdings, including benchmark, expense ratio, tracking error, and dividend policy.
 
 ## 4. Tavily News
 
