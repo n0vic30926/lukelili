@@ -5,6 +5,12 @@ import akshare as ak
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
+import os
+import sys
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, SCRIPT_DIR)
+from common.config_loader import get_portfolio_path, load_settings
 
 def qdii_attribution(fund_code="016452", days=30):
     """计算QDII基金的三因子归因"""
@@ -70,13 +76,10 @@ def qdii_attribution(fund_code="016452", days=30):
 
 def portfolio_risk_scan():
     """组合风险扫描：波动率+相关性+因子暴露"""
-    import json, os
-    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    portfolio_path = os.environ.get(
-        "FINANCE_AGENT_PORTFOLIO",
-        os.path.join(repo_root, "memory", "portfolio.json"),
-    )
-    with open(portfolio_path) as f:
+    import json
+    settings = load_settings()
+    portfolio_path, _ = get_portfolio_path(settings)
+    with open(portfolio_path, encoding="utf-8") as f:
         portfolio = json.load(f)
 
     holdings = portfolio['holdings']

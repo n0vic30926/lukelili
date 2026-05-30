@@ -13,17 +13,17 @@ import pandas as pd
 import numpy as np
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-REPO_ROOT = os.path.dirname(SCRIPT_DIR)
-PORTFOLIO_PATH = os.environ.get(
-    "FINANCE_AGENT_PORTFOLIO",
-    os.path.join(REPO_ROOT, "memory", "portfolio.json"),
-)
 sys.path.insert(0, SCRIPT_DIR)
+from common.config_loader import get_portfolio_path, get_report_dirs, load_settings
 from qdii_three_factor import qdii_attribution, portfolio_risk_scan, ai_fund_attribution
+
+SETTINGS = load_settings()
+PORTFOLIO_PATH, USING_EXAMPLE_PORTFOLIO = get_portfolio_path(SETTINGS)
+REPORT_DIRS = get_report_dirs(SETTINGS)
 
 
 def load_portfolio():
-    with open(PORTFOLIO_PATH) as f:
+    with open(PORTFOLIO_PATH, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -126,6 +126,10 @@ def main():
 
     lines = []
     lines.append(f"# 📊 每日持仓简报 | {today} {weekday}")
+    lines.append("")
+    lines.append(f"> 数据来源: AkShare + local portfolio | 配置: {SETTINGS.get('_settings_path')} | 生成时间: {now.strftime('%Y-%m-%d %H:%M')}")
+    if USING_EXAMPLE_PORTFOLIO:
+        lines.append("> ⚠️ 当前使用示例持仓数据，仅用于 smoke test，不代表真实资产。")
     lines.append("")
 
     if not is_trading:
@@ -422,7 +426,8 @@ def main():
 
     # 纪律守护（不择时，只锚定纪律）
     try:
-        from industry_intel import fetch_industry_intel
+        from industry_intel import fetch_industry_intel, get_news_status
+        news_status = get_news_status()
         intel = fetch_industry_intel()
         has_red = any(a["signal"] == "\U0001f534" for a in intel)
         has_yellow = any(a["signal"] == "\U0001f7e1" for a in intel)
@@ -437,6 +442,8 @@ def main():
             lines.append("   历史上，恐慌期继续定投往往是长期收益最好的阶段")
         elif has_yellow:
             lines.append("\U0001f4e1 市场有趋势变化信号，持续观察中，不影响定投节奏")
+        if news_status.get("skipped"):
+            lines.append(f"\U0001f4f0 新闻模块跳过: {news_status['reason']}")
 
         # 极端时刻纪律提醒
         for h in portfolio['holdings']:
@@ -461,7 +468,12 @@ def main():
     lines.append("## \U0001f4e1 行业情报速递")
     lines.append("")
     try:
-        from industry_intel import fetch_industry_intel
+        from industry_intel import fetch_industry_intel, get_news_status
+        news_status = get_news_status()
+        if news_status.get("skipped"):
+            lines.append(f"- 新闻模块跳过: {news_status['reason']}")
+            lines.append("")
+            return '\n'.join(lines)
         intel = fetch_industry_intel()
         signals = [a for a in intel if a["signal"] in ("\U0001f534", "\U0001f7e1")]
         greens = [a for a in intel if a["signal"] == "\U0001f7e2"][:2]
@@ -490,6 +502,6 @@ if __name__ == "__main__":
     # 反事实追踪：记录今日决策状态
     try:
         from decision_tracker import save_daily_decisions
-        save_daily_decisions(PORTFOLIO_PATH)
+        save_daily_decisions(str(PORTFOLIO_PATH))
     except Exception:
         pass  # 追踪失败不影响简报输出

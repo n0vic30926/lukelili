@@ -12,6 +12,10 @@ import sys
 import os
 from datetime import datetime, timedelta
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, SCRIPT_DIR)
+from common.config_loader import get_tavily_api_key, load_settings
+
 # ============================================================
 # 块1A: 宏观层 — 利率/流动性 + 北向资金
 # ============================================================
@@ -224,7 +228,8 @@ def get_optical_sector():
 # 块2: 定性赛道（Tavily新闻驱动）
 # ============================================================
 
-TAVILY_API_KEY = os.environ.get("TAVILY_API_KEY", "")
+SETTINGS = load_settings()
+TAVILY_API_KEY = get_tavily_api_key(SETTINGS)
 
 # 9个定性赛道的搜索配置
 QUALITATIVE_SECTORS = [
@@ -317,7 +322,7 @@ QUALITATIVE_SECTORS = [
 
 def _tavily_search(query, days=7, max_results=3):
     """复用Tavily搜索"""
-    if not TAVILY_API_KEY:
+    if not SETTINGS.get("enable_news", False) or not TAVILY_API_KEY:
         return []
     import requests as req
     url = "https://api.tavily.com/search"

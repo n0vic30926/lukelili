@@ -9,10 +9,14 @@ import json, os
 from datetime import datetime, timedelta
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-REPO_ROOT = os.path.dirname(SCRIPT_DIR)
-TRACK_DIR = os.environ.get(
-    "FINANCE_AGENT_TRACK_DIR",
-    os.path.join(REPO_ROOT, "data", "private", "decision_track"),
+import sys
+sys.path.insert(0, SCRIPT_DIR)
+from common.config_loader import get_portfolio_path, get_repo_root, load_settings, resolve_path
+
+SETTINGS = load_settings()
+TRACK_DIR = resolve_path(
+    SETTINGS.get("decision_track_dir", "data/private/decision_track"),
+    get_repo_root(),
 )
 
 
@@ -81,11 +85,8 @@ def list_tracking_records():
 
 
 if __name__ == "__main__":
-    portfolio_path = os.environ.get(
-        "FINANCE_AGENT_PORTFOLIO",
-        os.path.join(REPO_ROOT, "memory", "portfolio.json"),
-    )
-    fp = save_daily_decisions(portfolio_path)
+    portfolio_path, _ = get_portfolio_path(SETTINGS)
+    fp = save_daily_decisions(str(portfolio_path))
     print(f"Saved: {fp}")
     print()
     records = list_tracking_records()

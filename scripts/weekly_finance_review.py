@@ -9,14 +9,15 @@ import pandas as pd
 import numpy as np
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-REPO_ROOT = os.path.dirname(SCRIPT_DIR)
-PORTFOLIO_PATH = os.environ.get(
-    "FINANCE_AGENT_PORTFOLIO",
-    os.path.join(REPO_ROOT, "memory", "portfolio.json"),
-)
+sys.path.insert(0, SCRIPT_DIR)
+from common.config_loader import get_portfolio_path, get_report_dirs, load_settings
+
+SETTINGS = load_settings()
+PORTFOLIO_PATH, USING_EXAMPLE_PORTFOLIO = get_portfolio_path(SETTINGS)
+REPORT_DIRS = get_report_dirs(SETTINGS)
 
 def load_portfolio():
-    with open(PORTFOLIO_PATH) as f:
+    with open(PORTFOLIO_PATH, encoding="utf-8") as f:
         return json.load(f)
 
 def weekly_returns():
@@ -244,6 +245,10 @@ def format_report():
     now = datetime.now()
     lines = []
     lines.append(f"# 📋 周度复盘 | {now.strftime('%Y-%m-%d')}")
+    lines.append("")
+    lines.append(f"> 数据来源: AkShare + local portfolio | 配置: {SETTINGS.get('_settings_path')} | 生成时间: {now.strftime('%Y-%m-%d %H:%M')}")
+    if USING_EXAMPLE_PORTFOLIO:
+        lines.append("> ⚠️ 当前使用示例持仓数据，仅用于 smoke test，不代表真实资产。")
     lines.append("")
 
     # 模块1: 收益
