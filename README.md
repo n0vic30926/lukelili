@@ -33,7 +33,7 @@ Finance Agent 不用于：
 - `scripts/common/market_research.py`：日报中的宏观观察与 ETF 代理观察，包括可配置宏观指标、ETF流动性、元数据和溢价/折价估算。
 - `scripts/smoke_test.py`：本地基础设施检查。
 - `scripts/mock_runtime_test.py`：离线测试缓存、运行状态和数据质量 helper。
-- `scripts/mock_report_test.py`：离线生成日报/周报 mock 报告，验证报告结构。
+- `scripts/mock_report_test.py`：离线生成日报/周报 mock 报告，验证成功、部分失败、新闻跳过和示例持仓分支。
 - `scripts/report_index.py`：查看本地报告归档索引。
 - `scripts/review_history.py`：聚合报告索引和决策记录，做纪律复盘摘要与策略评分卡。
 

@@ -65,6 +65,48 @@ def run_daily_mock():
     return report
 
 
+def run_daily_partial_failure_mock():
+    import daily_finance_brief as daily
+
+    daily.TRACKER.records.clear()
+    daily.MISSING_RUNTIME_DEPS.clear()
+    daily.USING_EXAMPLE_PORTFOLIO = True
+
+    def fund_nav(code, days=10):
+        if code == "000001":
+            daily.TRACKER.fail(f"fund_nav:{code}", "fixture", "simulated fund nav failure")
+            return None
+        daily.TRACKER.ok(f"fund_nav:{code}", "fixture")
+        return _fund_nav_frame().tail(days)
+
+    daily.get_fund_nav = fund_nav
+    daily.get_etf_quote = lambda codes: {}
+    daily.get_us_index = lambda: None
+    daily.get_fx_usdcny = lambda: None
+    daily.get_north_flow = lambda: None
+    daily.get_fund_top_holdings = lambda code: []
+    daily.macro_observation = lambda ak, pd, settings, tracker: [
+        "## 🌏 宏观观察",
+        "",
+        "- 宏观数据缺口: fixture simulated macro skip",
+        "",
+    ]
+    daily.etf_observation = lambda ak, settings, tracker, holdings: [
+        "## 🧾 ETF专项观察",
+        "",
+        "- 待补ETF数据: fixture simulated ETF gap",
+        "",
+    ]
+
+    report = daily.main()
+    _assert_contains(report, "当前使用示例持仓数据")
+    _assert_contains(report, "数据获取失败")
+    _assert_contains(report, "fund_nav:000001 | failed")
+    _assert_contains(report, "新闻模块跳过")
+    _assert_contains(report, "待补ETF数据")
+    return report
+
+
 def run_weekly_mock():
     import weekly_finance_review as weekly
 
@@ -94,6 +136,34 @@ def run_weekly_mock():
     _assert_contains(report, "## 数据质量")
     _assert_contains(report, "当前使用示例持仓数据")
     _assert_contains(report, "## 📈 本周收益")
+    return report
+
+
+def run_weekly_partial_failure_mock():
+    import weekly_finance_review as weekly
+
+    weekly.TRACKER.records.clear()
+    weekly.MISSING_RUNTIME_DEPS.clear()
+    weekly.USING_EXAMPLE_PORTFOLIO = True
+    weekly.weekly_returns = lambda: []
+    weekly.industry_rotation = lambda: None
+    weekly.qdii_factor_weekly = lambda: {"error": "fixture qdii failure"}
+    weekly.ai_fund_factor_weekly = lambda: {"error": "fixture ai failure"}
+    weekly.decision_template = lambda rets, industry, qdii, ai: [
+        "Fixture: 数据不足，仅保留用户确认前的观察。"
+    ]
+
+    def dca_curve_failure():
+        weekly.TRACKER.fail("dca_curve", "fixture", "simulated dca curve failure")
+        return []
+
+    weekly.dca_curve = dca_curve_failure
+
+    report = weekly.format_report()
+    _assert_contains(report, "当前使用示例持仓数据")
+    _assert_contains(report, "dca_curve | failed")
+    _assert_contains(report, "Fixture: 数据不足")
+    _assert_contains(report, "## 数据质量")
     return report
 
 
@@ -251,7 +321,9 @@ def run_macro_radar_mock():
 
 def main():
     run_daily_mock()
+    run_daily_partial_failure_mock()
     run_weekly_mock()
+    run_weekly_partial_failure_mock()
     run_etf_research_mock()
     run_macro_radar_mock()
     print("Mock report test passed")
