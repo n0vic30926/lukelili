@@ -1,0 +1,86 @@
+{
+  "updated": "2026-01-01",
+  "notes": "Fictional example only. Put real holdings in data/private/portfolio.local.json.",
+  "user_profile": {
+    "investor_type": "example_personal_investor",
+    "experience": "learning",
+    "strategy_range": "example DCA plus watchlist research",
+    "risk_tolerance": "example moderate",
+    "notes": "This profile is synthetic and must not be used as real user data."
+  },
+  "cash": {
+    "currency": "CNY",
+    "amount": 20000,
+    "target_allocation": 0.2,
+    "notes": "Synthetic cash balance for smoke tests."
+  },
+  "risk_rules": {
+    "single_loss_pct": 2,
+    "daily_loss_pct": 5,
+    "max_position_pct": 0.4,
+    "notes": "Example thresholds only."
+  },
+  "holdings": [
+    {
+      "code": "000001",
+      "name": "Example Broad Index Fund",
+      "type": "example-fund",
+      "market": "example-market",
+      "proxy_etf": "sh510000",
+      "strategy_type": "dca",
+      "strategy_label": "example monthly DCA",
+      "bucket": "conviction",
+      "cost_basis": 10000,
+      "shares": 5000,
+      "target_allocation": 0.5,
+      "strategy_rules": {
+        "discipline": "example: continue scheduled contributions unless user changes policy"
+      },
+      "buy_records": [
+        {
+          "date": "2026-01-01",
+          "confirm_date": "2026-01-02",
+          "amount": 10000,
+          "nav": 2,
+          "shares": 5000,
+          "notes": "Synthetic transaction."
+        }
+      ],
+      "notes": "Fictional holding for local smoke tests."
+    },
+    {
+      "code": "000002",
+      "name": "Example Theme Fund",
+      "type": "example-fund",
+      "market": "example-theme",
+      "proxy_etf": "sz159000",
+      "strategy_type": "trial",
+      "strategy_label": "example trial position",
+      "bucket": "exploration",
+      "cost_basis": 3000,
+      "shares": 1500,
+      "target_allocation": 0.15,
+      "strategy_rules": {
+        "exit_condition": "example: requires user confirmation"
+      },
+      "buy_records": [
+        {
+          "date": "2026-01-05",
+          "confirm_date": "2026-01-06",
+          "amount": 3000,
+          "nav": 2,
+          "shares": 1500,
+          "notes": "Synthetic transaction."
+        }
+      ],
+      "notes": "Fictional holding for local smoke tests."
+    }
+  ],
+  "watchlist": [
+    {
+      "code": "EXAMPLE_INDEX",
+      "name": "Example Market Index",
+      "reason": "Synthetic benchmark for documentation."
+    }
+  ]
+}

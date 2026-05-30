@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Finance Agent Portfolio",
+  "type": "object",
+  "required": ["user_profile", "cash", "risk_rules", "holdings", "watchlist"],
+  "additionalProperties": true,
+  "properties": {
+    "updated": {
+      "type": "string",
+      "description": "Last manual update date."
+    },
+    "user_profile": {
+      "type": "object",
+      "required": ["investor_type", "risk_tolerance"],
+      "additionalProperties": true,
+      "properties": {
+        "investor_type": { "type": "string" },
+        "experience": { "type": "string" },
+        "risk_tolerance": { "type": "string" },
+        "strategy_range": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "cash": {
+      "type": "object",
+      "required": ["currency", "amount"],
+      "additionalProperties": true,
+      "properties": {
+        "currency": { "type": "string" },
+        "amount": { "type": "number" },
+        "target_allocation": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "risk_rules": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "single_loss_pct": { "type": "number" },
+        "daily_loss_pct": { "type": "number" },
+        "max_position_pct": { "type": "number" },
+        "notes": { "type": "string" }
+      }
+    },
+    "holdings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/holding" }
+    },
+    "watchlist": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/watch_item" }
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "holding": {
+      "type": "object",
+      "required": ["code", "name", "type", "strategy_type", "cost_basis", "shares"],
+      "additionalProperties": true,
+      "properties": {
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "market": { "type": "string" },
+        "proxy_etf": { "type": "string" },
+        "strategy_type": {
+          "type": "string",
+          "enum": ["dca", "trial", "short_term", "watch", "long_term"]
+        },
+        "strategy_label": { "type": "string" },
+        "bucket": { "type": "string" },
+        "cost_basis": { "type": "number" },
+        "shares": { "type": "number" },
+        "target_allocation": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "strategy_rules": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "buy_records": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/buy_record" }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "buy_record": {
+      "type": "object",
+      "required": ["date", "amount"],
+      "additionalProperties": true,
+      "properties": {
+        "date": { "type": "string" },
+        "confirm_date": { "type": "string" },
+        "amount": { "type": "number" },
+        "nav": { "type": ["number", "null"] },
+        "shares": { "type": ["number", "null"] },
+        "status": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "watch_item": {
+      "type": "object",
+      "required": ["code", "name"],
+      "additionalProperties": true,
+      "properties": {
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "reason": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}
