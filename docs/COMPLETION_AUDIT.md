@@ -23,7 +23,7 @@
 - Best-effort cache exists for external data calls.
 - Data status tracking, source tiering, freshness summaries, and report index inspection exist.
 - Offline smoke, runtime, portfolio, and mocked report tests exist; report tests cover success, partial data failure, skipped news, and example portfolio mode.
-- Historical review command aggregates report index, decision records, strategy scorecards, user-confirmation action status, and confirmed-action outcome status without printing raw asset details.
+- Historical review command aggregates report index, decision records, strategy scorecards, user-confirmation action status, confirmed-action outcome status, outcome quality, and checklist pass/fail/missing evidence without printing raw asset details.
 - Daily report includes a macro observation section with Nasdaq/FX baseline plus configurable CPI/PPI/PMI/M2/GDP/social-financing/US-10Y candidate adapters, data freshness labels, and rule-based interpretation text.
 - Daily report includes an ETF proxy observation section with liquidity tiers, configured benchmark/fee/tracking-error/dividend metadata, fee comparison, tracking-risk labels, dividend status, premium/discount risk labels, and explicit missing-data gaps.
 
@@ -33,7 +33,7 @@
 - Macro coverage still needs real-source verification and enrichment for Fed policy calendar, official release calendars, and stronger per-indicator rules beyond the current configurable AkShare adapters.
 - Richer ETF analysis still needs historical tracking error calculation, official dividend history adapters, and reliable premium/discount sources beyond the current quote/profile baseline.
 - Full migration of real holdings into ignored `data/private/portfolio.local.json`.
-- Historical report review workflow exists as a command-line summary with strategy scorecards, user-confirmed action tracking, and confirmed-action outcome status; dashboard, report streak metrics, and checklist pass/fail evidence remain incomplete.
+- Historical report review workflow exists as a command-line summary with strategy scorecards, user-confirmed action tracking, confirmed-action outcome status, outcome quality, and checklist pass/fail evidence; dashboard, report streak metrics, and cross-report outcome attribution remain incomplete.
 - L4 multi-agent research system.
 - L5 semi-automated decision support with explicit user confirmation workflow.
 
@@ -45,6 +45,6 @@ Stay in L3 until report generation can be tested offline with realistic mocked d
 
 1. Verify macro source adapters against the installed AkShare version and add official release-calendar checks per indicator.
 2. Add official ETF premium/discount, historical tracking error, and dividend-history adapters.
-3. Expand decision review into richer metrics: report streaks, repeated failures, explicit checklist pass/fail evidence, and outcome quality scoring.
+3. Expand decision review into richer metrics: report streaks, repeated failures, and cross-report outcome attribution.
 4. Add more realistic AkShare-shaped fixtures for each report branch.
 5. Migrate real portfolio data to `data/private/portfolio.local.json` manually and stop relying on tracked `memory/portfolio.json`.

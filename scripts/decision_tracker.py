@@ -86,6 +86,8 @@ def append_user_action(action, record_date=None):
         "outcome_status",
         "outcome_review",
         "outcome_reviewed_at",
+        "outcome_quality",
+        "checklist",
     )
     for field in optional_fields:
         if field in action:

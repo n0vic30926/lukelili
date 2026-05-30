@@ -109,10 +109,13 @@ def summarize_user_actions(records):
 
 def summarize_action_outcomes(records):
     outcome_counts = Counter()
+    quality_counts = Counter()
+    checklist_counts = Counter()
     strategy_counts = Counter()
     action_type_counts = Counter()
     confirmed_total = 0
     pending_review = 0
+    checklist_issues = 0
     for record in records:
         for action in record.get("user_actions", []):
             if action.get("status") != "confirmed":
@@ -120,16 +123,25 @@ def summarize_action_outcomes(records):
             confirmed_total += 1
             outcome_status = action.get("outcome_status") or "pending_review"
             outcome_counts[outcome_status] += 1
+            quality_counts[action.get("outcome_quality", "unrated")] += 1
             strategy_counts[action.get("strategy_type", "unknown")] += 1
             action_type_counts[action.get("action_type", "unknown")] += 1
+            checklist = action.get("checklist", {}) or {}
+            for status in checklist.values():
+                checklist_counts[status] += 1
+                if status != "pass":
+                    checklist_issues += 1
             if outcome_status != "reviewed":
                 pending_review += 1
     return {
         "confirmed_total": confirmed_total,
         "outcome_counts": outcome_counts,
+        "quality_counts": quality_counts,
+        "checklist_counts": checklist_counts,
         "strategy_counts": strategy_counts,
         "action_type_counts": action_type_counts,
         "pending_review": pending_review,
+        "checklist_issues": checklist_issues,
     }
 
 
@@ -292,9 +304,12 @@ def format_review(report_index_path, report_records, decision_dir, decision_reco
     else:
         lines.append(f"- 已确认动作: {outcome_summary['confirmed_total']}")
         lines.append(f"- 结果状态分布: {dict(outcome_summary['outcome_counts'])}")
+        lines.append(f"- 结果质量分布: {dict(outcome_summary['quality_counts'])}")
+        lines.append(f"- 检查项状态分布: {dict(outcome_summary['checklist_counts'])}")
         lines.append(f"- 动作类型分布: {dict(outcome_summary['action_type_counts'])}")
         lines.append(f"- 策略分布: {dict(outcome_summary['strategy_counts'])}")
         lines.append(f"- 待结果复盘: {outcome_summary['pending_review']}")
+        lines.append(f"- 失败或缺失检查项: {outcome_summary['checklist_issues']}")
         lines.append("- 复盘边界: 只统计结果状态，不输出收益、金额、代码或复盘说明全文。")
     lines.append("")
 

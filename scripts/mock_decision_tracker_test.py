@@ -22,6 +22,11 @@ def run_append_user_action_test():
                 "rationale": "Synthetic private rationale.",
                 "outcome_status": "reviewed",
                 "outcome_review": "Synthetic private outcome.",
+                "outcome_quality": "aligned",
+                "checklist": {
+                    "discipline": "pass",
+                    "risk_boundary": "pass",
+                },
             },
             record_date="2026-01-02",
         )
@@ -36,6 +41,10 @@ def run_append_user_action_test():
             raise AssertionError("Expected explicit confirmation flag")
         if action.get("outcome_status") != "reviewed":
             raise AssertionError("Expected outcome status to be preserved")
+        if action.get("outcome_quality") != "aligned":
+            raise AssertionError("Expected outcome quality to be preserved")
+        if action.get("checklist", {}).get("discipline") != "pass":
+            raise AssertionError("Expected checklist evidence to be preserved")
         if record.get("date") != "2026-01-02":
             raise AssertionError("Expected record date to be preserved")
 

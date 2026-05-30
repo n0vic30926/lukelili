@@ -52,6 +52,12 @@ def run_format_review_test():
                     "status": "confirmed",
                     "strategy_type": "dca",
                     "requires_user_confirmation": False,
+                    "outcome_quality": "aligned",
+                    "checklist": {
+                        "discipline": "pass",
+                        "risk_boundary": "pass",
+                        "source_evidence": "missing",
+                    },
                     "code": "EX1",
                 },
                 {
@@ -60,6 +66,12 @@ def run_format_review_test():
                     "strategy_type": "trial",
                     "requires_user_confirmation": True,
                     "outcome_status": "reviewed",
+                    "outcome_quality": "mixed",
+                    "checklist": {
+                        "discipline": "pass",
+                        "risk_boundary": "fail",
+                        "source_evidence": "pass",
+                    },
                     "outcome_review": "Synthetic private outcome that must not be printed.",
                     "code": "EX2",
                 },
@@ -85,6 +97,9 @@ def run_format_review_test():
     _assert_contains(review, "已确认动作: 2")
     _assert_contains(review, "结果状态分布: {'pending_review': 1, 'reviewed': 1}")
     _assert_contains(review, "待结果复盘: 1")
+    _assert_contains(review, "结果质量分布: {'aligned': 1, 'mixed': 1}")
+    _assert_contains(review, "检查项状态分布: {'pass': 4, 'missing': 1, 'fail': 1}")
+    _assert_contains(review, "失败或缺失检查项: 2")
     if "cost_basis" in review or "shares" in review or "amount" in review:
         raise AssertionError("Review leaked raw asset field names")
     if "EX1" in review or "EX2" in review or "EX3" in review or "EX4" in review:
