@@ -9,6 +9,7 @@ import time
 from datetime import datetime
 
 from common.config_loader import get_report_dirs, load_settings
+from common.data_quality import markdown_quality_lines
 
 
 class DataStatusTracker:
@@ -66,6 +67,9 @@ class DataStatusTracker:
                 lines.append(f"  - {' | '.join(parts)}")
         lines.append("")
         return lines
+
+    def quality_markdown_lines(self, max_age_hours=24):
+        return markdown_quality_lines(self.records, max_age_hours=max_age_hours)
 
 
 def dependency_available(module_name):

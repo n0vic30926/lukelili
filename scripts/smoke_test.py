@@ -14,6 +14,7 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 
 from common.config_loader import get_portfolio_path, get_report_dirs, load_settings
 from common.data_runtime import missing_dependencies
+from common.data_quality import summarize_quality
 from validate_portfolio import validate_portfolio_file
 
 
@@ -59,6 +60,10 @@ def main():
 
     settings = load_settings()
     failures += not check(isinstance(settings, dict), "settings load as JSON object")
+    quality_summary, _ = summarize_quality([
+        {"module": "smoke", "status": "ok", "source": "local portfolio", "timestamp": "2026-01-01T00:00:00"}
+    ])
+    failures += not check(quality_summary["total"] == 1, "data quality helper works")
 
     missing = missing_dependencies(["akshare", "pandas", "numpy", "requests"])
     if missing:

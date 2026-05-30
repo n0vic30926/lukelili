@@ -96,3 +96,9 @@ Generated artifacts are local and ignored by git:
 These artifacts may contain report text or market data. Avoid pasting them into remote tools if they include real holdings or private notes.
 
 Missing dependencies are not installed automatically. The user must explicitly run `python3 -m pip install -r requirements.txt`.
+
+## Source Quality
+
+Reports classify data sources into coarse trust tiers such as official/regulatory, market data, media, social/sentiment, and unknown. These tiers are decision-support metadata, not guarantees of correctness.
+
+Stale, failed, skipped, or unknown-source data must be visible in report summaries.

@@ -83,6 +83,7 @@ Run local checks:
 ```bash
 python3 scripts/smoke_test.py
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
+python3 scripts/mock_runtime_test.py
 ```
 
 Run reports:
@@ -101,6 +102,12 @@ Report artifacts:
 - `reports/index.jsonl`: report archive index.
 - `logs/finance-agent.jsonl`: structured runtime log.
 - `cache/`: best-effort external data cache.
+
+Inspect report index:
+
+```bash
+python3 scripts/report_index.py
+```
 
 ## 6. Never Commit
 

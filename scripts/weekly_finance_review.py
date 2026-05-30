@@ -429,7 +429,9 @@ def format_report():
     lines.append(f"---")
     lines.append(f"_生成时间: {now.strftime('%Y-%m-%d %H:%M')}_")
     lines[status_line_at] = f"> 模块状态: {', '.join(module_status_lines())}"
-    lines[summary_insert_at:summary_insert_at + 1] = TRACKER.markdown_lines()
+    lines[summary_insert_at:summary_insert_at + 1] = TRACKER.markdown_lines() + TRACKER.quality_markdown_lines(
+        max_age_hours=SETTINGS.get("freshness_max_age_hours", 24)
+    )
     return '\n'.join(lines)
 
 

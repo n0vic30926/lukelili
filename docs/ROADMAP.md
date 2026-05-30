@@ -11,7 +11,7 @@ The project has completed the L1-L2 foundation:
 - smoke test for local foundation;
 - core scripts no longer default to old OpenClaw workspace paths.
 
-L3 foundation is now stabilized: daily and weekly reports have dependency checks, best-effort cache support, structured logs, archive index, visible module status, and local portfolio validation. The next step is deeper data quality scoring and broader source coverage.
+L3 foundation is now stabilized: daily and weekly reports have dependency checks, best-effort cache support, structured logs, archive index, visible module status, local portfolio validation, source tiering, and freshness summaries. The next step is broader source coverage and mocked AkShare fixtures for report-level tests.
 
 ## L1: Document Investment Assistant
 
@@ -66,12 +66,11 @@ Outputs:
 - visible module success/failure status;
 - archived report files.
 
-Status: foundation stabilized.
+Status: data-quality foundation stabilized.
 
 Next steps:
 
-- add stricter freshness checks per data source;
-- add source confidence tiers in report sections;
+- add per-source freshness thresholds;
 - add richer macro and ETF data coverage;
 - add tests with mocked AkShare responses.
 

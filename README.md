@@ -31,6 +31,8 @@ Finance Agent 不用于：
 - `scripts/industry_intel.py`：可选 Tavily 新闻模块。
 - `scripts/industry_cycle.py`：AI 产业周期信号。
 - `scripts/smoke_test.py`：本地基础设施检查。
+- `scripts/mock_runtime_test.py`：离线测试缓存、运行状态和数据质量 helper。
+- `scripts/report_index.py`：查看本地报告归档索引。
 
 ## 快速开始
 
@@ -52,6 +54,7 @@ data/private/portfolio.local.json
 
 ```bash
 python3 scripts/smoke_test.py
+python3 scripts/mock_runtime_test.py
 ```
 
 该命令检查项目规则、配置示例、schema、示例持仓、配置加载器、敏感信息隔离、OpenClaw 路径隔离和运行依赖。缺少 `akshare` 等依赖时会给出 WARN，但不会自动安装。
@@ -75,6 +78,12 @@ python3 scripts/weekly_finance_review.py
 - `logs/finance-agent.jsonl`
 - `cache/`
 
+查看最近报告索引：
+
+```bash
+python3 scripts/report_index.py
+```
+
 ## 新闻模块
 
 默认关闭新闻模块。需要启用时：
@@ -91,6 +100,16 @@ python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 ```
 
 真实持仓也可以用同一脚本校验，但脚本不会打印资产明细。
+
+## 数据质量
+
+报告会展示：
+
+- 数据模块成功/失败/跳过数量；
+- 缓存命中数量；
+- 来源层级；
+- 数据新鲜度；
+- 低质量或异常模块。
 
 ## 风险边界
 
