@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Macro and ETF research helpers for daily reports."""
 
+from datetime import datetime
+import re
+
 from common.data_runtime import cached_call
 
 
@@ -61,6 +64,59 @@ def _first_text_value(row, preferred_columns):
     return "N/A", ""
 
 
+def _parse_indicator_date(value):
+    text = str(value).strip()
+    if not text or text == "N/A":
+        return None
+    normalized = text.replace("/", "-")
+    quarter = re.search(r"(\d{4})-?Q([1-4])", normalized, flags=re.IGNORECASE)
+    if not quarter:
+        quarter = re.search(r"(\d{4})年\s*第?([1-4])季度", normalized)
+    if quarter:
+        year = int(quarter.group(1))
+        month = (int(quarter.group(2)) - 1) * 3 + 1
+        return datetime(year, month, 1).date()
+    year_month = re.search(r"(\d{4})年\s*(\d{1,2})月", normalized)
+    if year_month:
+        normalized = f"{year_month.group(1)}-{int(year_month.group(2)):02d}"
+    for fmt, length in (("%Y-%m-%d", 10), ("%Y-%m", 7), ("%Y", 4)):
+        try:
+            return datetime.strptime(normalized[:length], fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
+def _freshness_text(date_text, indicator):
+    parsed = _parse_indicator_date(date_text)
+    cadence = indicator.get("cadence", "unknown")
+    max_age_days = _safe_float(indicator.get("max_age_days"))
+    if parsed is None:
+        return f"日期不可解析 | cadence={cadence}"
+    age_days = (datetime.now().date() - parsed).days
+    status = "unknown"
+    if max_age_days is not None:
+        status = "fresh" if age_days <= max_age_days else "stale"
+    return f"{age_days}天 | status={status} | cadence={cadence}"
+
+
+def _interpret_indicator(latest_value, delta, indicator):
+    rules = indicator.get("interpretation", {}) or {}
+    threshold = _safe_float(rules.get("threshold"))
+    if threshold is not None and latest_value is not None:
+        if latest_value >= threshold:
+            return rules.get("above", f"高于阈值 {threshold:g}。")
+        return rules.get("below", f"低于阈值 {threshold:g}。")
+    if delta is not None:
+        if delta > 0 and rules.get("trend_up"):
+            return rules["trend_up"]
+        if delta < 0 and rules.get("trend_down"):
+            return rules["trend_down"]
+        if delta == 0 and rules.get("flat"):
+            return rules["flat"]
+    return rules.get("default", "")
+
+
 def _call_first_available(ak, settings, tracker, indicator):
     candidates = indicator.get("candidate_functions", [])
     for fn_name in candidates:
@@ -118,6 +174,10 @@ def macro_indicator_lines(ak, settings, tracker):
             )
             if note:
                 lines.append(f"  - {note}")
+            lines.append(f"  - 数据时效: {_freshness_text(date_text, indicator)}")
+            interpretation = _interpret_indicator(latest_value, delta, indicator)
+            if interpretation:
+                lines.append(f"  - 解读: {interpretation}")
         except Exception as exc:
             tracker.fail(f"macro_indicator_parse:{indicator.get('id', label)}", f"AkShare {source_fn}", exc)
             unavailable.append(label)

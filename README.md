@@ -30,7 +30,7 @@ Finance Agent 不用于：
 - `scripts/valuation_anchor.py`：估值锚风险提示。
 - `scripts/industry_intel.py`：可选 Tavily 新闻模块。
 - `scripts/industry_cycle.py`：AI 产业周期信号。
-- `scripts/common/market_research.py`：日报中的宏观观察与 ETF 代理观察，包括可配置宏观指标、ETF流动性、元数据和溢价/折价估算。
+- `scripts/common/market_research.py`：日报中的宏观观察与 ETF 代理观察，包括可配置宏观指标、数据时效、规则化解读、ETF流动性、元数据和溢价/折价估算。
 - `scripts/smoke_test.py`：本地基础设施检查。
 - `scripts/mock_runtime_test.py`：离线测试缓存、运行状态和数据质量 helper。
 - `scripts/mock_report_test.py`：离线生成日报/周报 mock 报告，验证成功、部分失败、新闻跳过和示例持仓分支。

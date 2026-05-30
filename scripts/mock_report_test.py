@@ -23,6 +23,11 @@ def _assert_contains(text, expected):
         raise AssertionError(f"Expected report to contain: {expected}")
 
 
+def _assert_not_contains(text, unexpected):
+    if unexpected in text:
+        raise AssertionError(f"Expected report to omit: {unexpected}")
+
+
 def run_daily_mock():
     import daily_finance_brief as daily
 
@@ -224,7 +229,10 @@ def run_etf_research_mock():
 
 def run_macro_radar_mock():
     from common.data_runtime import DataStatusTracker
-    from common.market_research import macro_indicator_lines
+    from common.market_research import _parse_indicator_date, macro_indicator_lines
+
+    if _parse_indicator_date("2026Q2").isoformat() != "2026-04-01":
+        raise AssertionError("Quarter date parsing should map 2026Q2 to 2026-04-01")
 
     class FakeAk:
         @staticmethod
@@ -255,6 +263,15 @@ def run_macro_radar_mock():
             )
 
         @staticmethod
+        def macro_china_gdp_yearly():
+            return pd.DataFrame(
+                [
+                    {"季度": "2026Q1", "今值": 4.8},
+                    {"季度": "2026Q2", "今值": 5.1},
+                ]
+            )
+
+        @staticmethod
         def bond_zh_us_rate():
             return pd.DataFrame(
                 [
@@ -274,6 +291,10 @@ def run_macro_radar_mock():
                 "date_columns": ["月份"],
                 "value_columns": ["今值"],
                 "unit": "%",
+                "interpretation": {
+                    "trend_up": "通胀上行，利率和估值压力需要观察。",
+                    "trend_down": "通胀回落，估值压力可能边际缓和。",
+                },
             },
             {
                 "id": "china_pmi",
@@ -282,6 +303,11 @@ def run_macro_radar_mock():
                 "date_columns": ["月份"],
                 "value_columns": ["制造业PMI"],
                 "unit": "",
+                "interpretation": {
+                    "threshold": 50,
+                    "above": "制造业处于扩张区间。",
+                    "below": "制造业处于收缩区间。",
+                },
             },
             {
                 "id": "china_money_supply",
@@ -290,6 +316,19 @@ def run_macro_radar_mock():
                 "date_columns": ["月份"],
                 "value_columns": ["M2-同比增长"],
                 "unit": "%",
+            },
+            {
+                "id": "china_gdp",
+                "label": "中国GDP",
+                "candidate_functions": ["macro_china_gdp_yearly"],
+                "date_columns": ["季度"],
+                "value_columns": ["今值"],
+                "unit": "%",
+                "cadence": "quarterly",
+                "interpretation": {
+                    "trend_up": "增长动能边际改善。",
+                    "trend_down": "增长动能边际走弱。",
+                },
             },
             {
                 "id": "us_treasury_10y",
@@ -314,7 +353,13 @@ def run_macro_radar_mock():
     _assert_contains(report, "中国CPI")
     _assert_contains(report, "中国PMI")
     _assert_contains(report, "中国M2")
+    _assert_contains(report, "中国GDP")
     _assert_contains(report, "美国10Y国债收益率")
+    _assert_contains(report, "数据时效")
+    _assert_contains(report, "通胀上行")
+    _assert_contains(report, "制造业处于扩张区间")
+    _assert_contains(report, "增长动能边际改善")
+    _assert_not_contains(report, "日期不可解析 | cadence=quarterly")
     _assert_contains(report, "宏观数据缺口")
     return report
 

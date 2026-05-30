@@ -25,7 +25,14 @@
       "date_columns": ["月份", "日期", "时间"],
       "value_columns": ["今值", "最新值", "CPI", "居民消费价格指数", "value"],
       "unit": "%",
-      "risk_note": "通胀影响利率预期和权益估值。"
+      "cadence": "monthly",
+      "max_age_days": 75,
+      "risk_note": "通胀影响利率预期和权益估值。",
+      "interpretation": {
+        "trend_up": "通胀上行，利率和估值压力需要观察。",
+        "trend_down": "通胀回落，估值压力可能边际缓和。",
+        "flat": "通胀持平，继续观察下一期数据。"
+      }
     },
     {
       "id": "china_ppi",
@@ -34,7 +41,14 @@
       "date_columns": ["月份", "日期", "时间"],
       "value_columns": ["今值", "最新值", "PPI", "工业品出厂价格指数", "value"],
       "unit": "%",
-      "risk_note": "PPI反映上游价格压力和工业周期。"
+      "cadence": "monthly",
+      "max_age_days": 75,
+      "risk_note": "PPI反映上游价格压力和工业周期。",
+      "interpretation": {
+        "trend_up": "工业品价格压力上行，观察利润率和补库存周期。",
+        "trend_down": "工业品价格压力回落，观察需求是否同步走弱。",
+        "flat": "PPI变化不大，继续观察趋势。"
+      }
     },
     {
       "id": "china_pmi",
@@ -43,7 +57,14 @@
       "date_columns": ["月份", "日期", "时间"],
       "value_columns": ["今值", "最新值", "制造业PMI", "PMI", "value"],
       "unit": "",
-      "risk_note": "PMI高于50通常表示扩张，低于50通常表示收缩。"
+      "cadence": "monthly",
+      "max_age_days": 45,
+      "risk_note": "PMI高于50通常表示扩张，低于50通常表示收缩。",
+      "interpretation": {
+        "threshold": 50,
+        "above": "制造业处于扩张区间。",
+        "below": "制造业处于收缩区间。"
+      }
     },
     {
       "id": "china_money_supply",
@@ -52,7 +73,14 @@
       "date_columns": ["月份", "日期", "时间"],
       "value_columns": ["M2-同比增长", "M2同比", "货币和准货币(M2)同比增长", "今值", "value"],
       "unit": "%",
-      "risk_note": "M2反映流动性环境。"
+      "cadence": "monthly",
+      "max_age_days": 75,
+      "risk_note": "M2反映流动性环境。",
+      "interpretation": {
+        "trend_up": "流动性同比增速上行，风险资产流动性环境可能改善。",
+        "trend_down": "流动性同比增速回落，观察信用和估值压力。",
+        "flat": "M2同比变化不大，继续观察社融配合。"
+      }
     },
     {
       "id": "china_gdp",
@@ -61,7 +89,14 @@
       "date_columns": ["季度", "日期", "时间", "年份"],
       "value_columns": ["今值", "GDP同比", "国内生产总值同比增长", "value"],
       "unit": "%",
-      "risk_note": "GDP反映宏观增长环境。"
+      "cadence": "quarterly",
+      "max_age_days": 140,
+      "risk_note": "GDP反映宏观增长环境。",
+      "interpretation": {
+        "trend_up": "增长动能边际改善。",
+        "trend_down": "增长动能边际走弱。",
+        "flat": "增长动能变化不大。"
+      }
     },
     {
       "id": "china_social_financing",
@@ -70,7 +105,14 @@
       "date_columns": ["月份", "日期", "时间"],
       "value_columns": ["社会融资规模增量", "社融规模增量", "今值", "value"],
       "unit": "亿元",
-      "risk_note": "社融反映信用扩张和实体融资环境。"
+      "cadence": "monthly",
+      "max_age_days": 75,
+      "risk_note": "社融反映信用扩张和实体融资环境。",
+      "interpretation": {
+        "trend_up": "信用扩张边际增强，观察实体融资和行业景气传导。",
+        "trend_down": "信用扩张边际减弱，观察需求和风险偏好。",
+        "flat": "社融变化不大，继续观察结构。"
+      }
     },
     {
       "id": "us_treasury_10y",
@@ -79,7 +121,14 @@
       "date_columns": ["日期", "时间"],
       "value_columns": ["美国:国债收益率:10年", "10年", "美国10年期国债收益率", "value"],
       "unit": "%",
-      "risk_note": "美债收益率影响全球成长股估值和美元资产折现率。"
+      "cadence": "daily",
+      "max_age_days": 10,
+      "risk_note": "美债收益率影响全球成长股估值和美元资产折现率。",
+      "interpretation": {
+        "trend_up": "美债收益率上行，成长股估值折现压力上升。",
+        "trend_down": "美债收益率下行，成长股估值压力边际缓和。",
+        "flat": "美债收益率变化不大。"
+      }
     }
   ],
   "enable_news": false,
