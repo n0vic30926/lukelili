@@ -87,6 +87,7 @@ python3 scripts/smoke_test.py
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 python3 scripts/mock_runtime_test.py
 python3 scripts/mock_report_test.py
+python3 scripts/mock_review_test.py
 ```
 
 Run reports:
@@ -110,6 +111,12 @@ Inspect report index:
 
 ```bash
 python3 scripts/report_index.py
+```
+
+Review decision and report history:
+
+```bash
+python3 scripts/review_history.py
 ```
 
 ## 6. Never Commit
