@@ -4,9 +4,6 @@ industry_cycle.py - AI产业周期追踪器
 分块构建：块1=可量化赛道（AkShare数据驱动）
 """
 
-import akshare as ak
-import pandas as pd
-import numpy as np
 import json
 import sys
 import os
@@ -15,10 +12,23 @@ from datetime import datetime, timedelta
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from common.config_loader import get_tavily_api_key, load_settings
+from common.data_runtime import DataStatusTracker, cached_call, missing_dependencies
+
+try:
+    import akshare as ak
+    import pandas as pd
+    import numpy as np
+except ImportError:
+    ak = None
+    pd = None
+    np = None
 
 # ============================================================
 # 块1A: 宏观层 — 利率/流动性 + 北向资金
 # ============================================================
+
+TRACKER = DataStatusTracker()
+MISSING_RUNTIME_DEPS = missing_dependencies(["akshare", "pandas", "numpy"])
 
 def get_macro_liquidity():
     """利率/流动性：纳指走势 + USD/CNY汇率"""
@@ -334,12 +344,19 @@ def _tavily_search(query, days=7, max_results=3):
         "topic": "news",
         "days": days,
     }
-    try:
+    def producer():
         resp = req.post(url, json=payload, timeout=15)
         resp.raise_for_status()
         return resp.json().get("results", [])
-    except Exception:
-        return []
+    return cached_call(
+        SETTINGS,
+        TRACKER,
+        f"cycle_tavily:{query}",
+        "Tavily News",
+        f"cycle_tavily:{query}:{days}:{max_results}",
+        producer,
+        [],
+    )
 
 
 def _classify_news_signal(title, content):

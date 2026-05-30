@@ -4,17 +4,27 @@
 """
 import json, os, sys
 from datetime import datetime, timedelta
-import akshare as ak
-import pandas as pd
-import numpy as np
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from common.config_loader import get_portfolio_path, get_report_dirs, load_settings
+from common.data_runtime import DataStatusTracker, cached_call, missing_dependencies
+from common.reporting import write_report
+
+try:
+    import akshare as ak
+    import pandas as pd
+    import numpy as np
+except ImportError:
+    ak = None
+    pd = None
+    np = None
 
 SETTINGS = load_settings()
 PORTFOLIO_PATH, USING_EXAMPLE_PORTFOLIO = get_portfolio_path(SETTINGS)
 REPORT_DIRS = get_report_dirs(SETTINGS)
+TRACKER = DataStatusTracker()
+MISSING_RUNTIME_DEPS = missing_dependencies(["akshare", "pandas", "numpy"])
 
 def load_portfolio():
     with open(PORTFOLIO_PATH, encoding="utf-8") as f:
@@ -27,23 +37,29 @@ def module_status_lines():
     return [
         "portfolio=ok",
         f"portfolio_mode={'example' if USING_EXAMPLE_PORTFOLIO else 'private'}",
-        "market_data=best_effort",
+        f"runtime_deps={'missing:' + ','.join(MISSING_RUNTIME_DEPS) if MISSING_RUNTIME_DEPS else 'ok'}",
+        f"data_status={TRACKER.summary_text()}",
         f"news={'enabled' if news_ready else 'skipped'}",
         "industry_cycle=best_effort",
     ]
 
 
 def write_report_file(report):
-    out_dir = REPORT_DIRS["weekly_report_dir"]
-    log_dir = REPORT_DIRS["log_dir"]
-    out_dir.mkdir(parents=True, exist_ok=True)
-    log_dir.mkdir(parents=True, exist_ok=True)
+    return write_report("weekly", report, SETTINGS, TRACKER)
+
+
+def dependency_error_report():
     now = datetime.now()
-    report_path = out_dir / f"weekly-{now.strftime('%Y-%m-%d')}.md"
-    report_path.write_text(report, encoding="utf-8")
-    with (log_dir / "weekly_finance_review.log").open("a", encoding="utf-8") as f:
-        f.write(f"{now.isoformat(timespec='seconds')} wrote {report_path}\n")
-    return report_path
+    lines = [
+        f"# 📋 周度复盘 | {now.strftime('%Y-%m-%d')}",
+        "",
+        "> 运行失败: 缺少必要 Python 依赖。",
+        f"> 缺失依赖: {', '.join(MISSING_RUNTIME_DEPS)}",
+        "> 请手动执行: python3 -m pip install -r requirements.txt",
+        "",
+        "未生成市场分析，避免产生不完整或误导性报告。",
+    ]
+    return "\n".join(lines)
 
 def weekly_returns():
     """模块1: 每只持仓的本周收益"""
@@ -53,7 +69,17 @@ def weekly_returns():
     monday = today - timedelta(days=today.weekday())
     results = []
     for h in portfolio['holdings']:
-        df = ak.fund_open_fund_info_em(symbol=h['code'], indicator="单位净值走势")
+        df = cached_call(
+            SETTINGS,
+            TRACKER,
+            f"weekly_fund_nav:{h['code']}",
+            "AkShare fund_open_fund_info_em",
+            f"weekly_fund_nav:{h['code']}",
+            lambda code=h['code']: ak.fund_open_fund_info_em(symbol=code, indicator="单位净值走势"),
+            None,
+        )
+        if df is None:
+            continue
         df['净值日期'] = pd.to_datetime(df['净值日期'])
         df = df.drop_duplicates(subset='净值日期').sort_values('净值日期')
         # 找上周五和本周五(或最新)
@@ -102,7 +128,17 @@ def industry_rotation():
     """
     # 主接口
     try:
-        df = ak.stock_fund_flow_industry()
+        df = cached_call(
+            SETTINGS,
+            TRACKER,
+            "weekly_industry_flow",
+            "AkShare stock_fund_flow_industry",
+            "weekly_industry_flow",
+            lambda: ak.stock_fund_flow_industry(),
+            None,
+        )
+        if df is None:
+            raise RuntimeError("stock_fund_flow_industry unavailable")
         df = df.sort_values('净额', ascending=True)
         df = df.drop_duplicates(subset='行业', keep='first')
         top_outflow = df.head(3)[['行业', '净额', '行业-涨跌幅']].to_dict('records')
@@ -117,7 +153,15 @@ def industry_rotation():
         results = []
         for ind in KEY_INDUSTRIES:
             try:
-                df = ak.stock_sector_fund_flow_hist(symbol=ind)
+                df = cached_call(
+                    SETTINGS,
+                    TRACKER,
+                    f"weekly_sector_flow:{ind}",
+                    "AkShare stock_sector_fund_flow_hist",
+                    f"weekly_sector_flow:{ind}",
+                    lambda ind=ind: ak.stock_sector_fund_flow_hist(symbol=ind),
+                    None,
+                )
                 if df is not None and len(df) > 0:
                     latest = df.iloc[-1]
                     results.append({
@@ -218,7 +262,17 @@ def dca_curve():
         records.sort(key=lambda x: x['confirm_date'])
 
         # 获取当前净值
-        df = ak.fund_open_fund_info_em(symbol=h['code'], indicator="单位净值走势")
+        df = cached_call(
+            SETTINGS,
+            TRACKER,
+            f"dca_fund_nav:{h['code']}",
+            "AkShare fund_open_fund_info_em",
+            f"dca_fund_nav:{h['code']}",
+            lambda code=h['code']: ak.fund_open_fund_info_em(symbol=code, indicator="单位净值走势"),
+            None,
+        )
+        if df is None:
+            continue
         df['净值日期'] = pd.to_datetime(df['净值日期'])
         current_nav = float(df.iloc[-1]['单位净值'])
 
@@ -272,9 +326,13 @@ def format_report():
     lines.append(f"# 📋 周度复盘 | {now.strftime('%Y-%m-%d')}")
     lines.append("")
     lines.append(f"> 数据来源: AkShare + local portfolio | 配置: {SETTINGS.get('_settings_path')} | 生成时间: {now.strftime('%Y-%m-%d %H:%M')}")
+    status_line_at = len(lines)
     lines.append(f"> 模块状态: {', '.join(module_status_lines())}")
     if USING_EXAMPLE_PORTFOLIO:
         lines.append("> ⚠️ 当前使用示例持仓数据，仅用于 smoke test，不代表真实资产。")
+    lines.append("")
+    summary_insert_at = len(lines)
+    lines.append("__RUN_SUMMARY_PLACEHOLDER__")
     lines.append("")
 
     # 模块1: 收益
@@ -370,10 +428,15 @@ def format_report():
 
     lines.append(f"---")
     lines.append(f"_生成时间: {now.strftime('%Y-%m-%d %H:%M')}_")
+    lines[status_line_at] = f"> 模块状态: {', '.join(module_status_lines())}"
+    lines[summary_insert_at:summary_insert_at + 1] = TRACKER.markdown_lines()
     return '\n'.join(lines)
 
 
 if __name__ == "__main__":
+    if MISSING_RUNTIME_DEPS:
+        print(dependency_error_report())
+        raise SystemExit(2)
     report = format_report()
     print(report)
     report_path = write_report_file(report)

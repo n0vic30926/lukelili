@@ -5,15 +5,51 @@
 - 中证AI指数：PE滚动市盈率百分位（2024至今）
 - 定投仓位：只输出"贵不贵"，不输出"该不该买"
 """
-import akshare as ak
-import pandas as pd
-import numpy as np
+import os
+import sys
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, SCRIPT_DIR)
+from common.config_loader import load_settings
+from common.data_runtime import DataStatusTracker, cached_call, missing_dependencies
+
+try:
+    import akshare as ak
+    import pandas as pd
+    import numpy as np
+except ImportError:
+    ak = None
+    pd = None
+    np = None
+
+SETTINGS = load_settings()
+TRACKER = DataStatusTracker()
+MISSING_RUNTIME_DEPS = missing_dependencies(["akshare", "pandas", "numpy"])
+
+
+def _missing_deps_error():
+    if MISSING_RUNTIME_DEPS:
+        return {"error": f"缺少必要依赖: {', '.join(MISSING_RUNTIME_DEPS)}"}
+    return None
 
 
 def nasdaq_valuation():
     """纳指100估值锚：点位历史百分位"""
+    missing = _missing_deps_error()
+    if missing:
+        return missing
     try:
-        df = ak.index_us_stock_sina(symbol=".IXIC")
+        df = cached_call(
+            SETTINGS,
+            TRACKER,
+            "valuation_nasdaq",
+            "AkShare index_us_stock_sina",
+            "valuation_nasdaq:.IXIC",
+            lambda: ak.index_us_stock_sina(symbol=".IXIC"),
+            None,
+        )
+        if df is None:
+            return {"error": "纳指数据不可用"}
         df['close'] = pd.to_numeric(df['close'], errors='coerce')
 
         latest = float(df.iloc[-1]['close'])
@@ -57,8 +93,21 @@ def nasdaq_valuation():
 
 def ai_index_valuation():
     """中证AI指数估值锚：PE滚动市盈率百分位"""
+    missing = _missing_deps_error()
+    if missing:
+        return missing
     try:
-        df = ak.stock_zh_index_hist_csindex(symbol='930713', start_date='20240101', end_date='20991231')
+        df = cached_call(
+            SETTINGS,
+            TRACKER,
+            "valuation_ai_index",
+            "AkShare stock_zh_index_hist_csindex",
+            "valuation_ai_index:930713:20240101",
+            lambda: ak.stock_zh_index_hist_csindex(symbol='930713', start_date='20240101', end_date='20991231'),
+            None,
+        )
+        if df is None:
+            return {"error": "中证AI指数估值数据不可用"}
         pe_col = '滚动市盈率'
         df[pe_col] = pd.to_numeric(df[pe_col], errors='coerce')
         df = df.dropna(subset=[pe_col])

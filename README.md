@@ -37,6 +37,7 @@ Finance Agent 不用于：
 ```bash
 cp .env.example .env
 cp config/settings.example.json config/settings.local.json
+python3 -m pip install -r requirements.txt
 ```
 
 把真实持仓放到：
@@ -53,7 +54,7 @@ data/private/portfolio.local.json
 python3 scripts/smoke_test.py
 ```
 
-该命令检查项目规则、配置示例、schema、示例持仓、配置加载器、敏感信息隔离和 OpenClaw 路径隔离。
+该命令检查项目规则、配置示例、schema、示例持仓、配置加载器、敏感信息隔离、OpenClaw 路径隔离和运行依赖。缺少 `akshare` 等依赖时会给出 WARN，但不会自动安装。
 
 ## 运行日报/周报
 
@@ -64,6 +65,16 @@ python3 scripts/weekly_finance_review.py
 
 如果没有 `data/private/portfolio.local.json`，脚本会回退到 `data/examples/portfolio.example.json`，并在报告中标注当前使用示例数据。
 
+如果缺少必要依赖，日报/周报会输出明确安装提示并退出，不生成伪市场分析。
+
+生成成功后会写入：
+
+- `reports/daily/`
+- `reports/weekly/`
+- `reports/index.jsonl`
+- `logs/finance-agent.jsonl`
+- `cache/`
+
 ## 新闻模块
 
 默认关闭新闻模块。需要启用时：
@@ -72,6 +83,14 @@ python3 scripts/weekly_finance_review.py
 2. 在 `config/settings.local.json` 中把 `enable_news` 改为 `true`。
 
 缺少 key 时，新闻模块会跳过，不应导致日报或周报整体失败。
+
+## Portfolio 校验
+
+```bash
+python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
+```
+
+真实持仓也可以用同一脚本校验，但脚本不会打印资产明细。
 
 ## 风险边界
 

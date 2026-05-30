@@ -31,6 +31,8 @@ Important fields:
 - `weekly_report_dir`: weekly report output directory.
 - `cache_dir`: cache directory.
 - `log_dir`: log directory.
+- `use_cache`: whether to use best-effort local cache.
+- `cache_ttl_hours`: cache freshness window.
 - `enable_news`: whether to use Tavily news.
 - `tavily_api_key_env`: environment variable name for the Tavily key.
 - `timezone`: report timezone.
@@ -70,11 +72,35 @@ If no key is present, the news module skips itself and the report should continu
 
 ## 5. Run Checks and Reports
 
+Install dependencies manually:
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+Run local checks:
+
 ```bash
 python3 scripts/smoke_test.py
+python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
+```
+
+Run reports:
+
+```bash
 python3 scripts/daily_finance_brief.py
 python3 scripts/weekly_finance_review.py
 ```
+
+If `akshare` is missing, the report scripts print an install hint and exit without generating market analysis.
+
+Report artifacts:
+
+- `reports/daily/`: daily markdown reports.
+- `reports/weekly/`: weekly markdown reports.
+- `reports/index.jsonl`: report archive index.
+- `logs/finance-agent.jsonl`: structured runtime log.
+- `cache/`: best-effort external data cache.
 
 ## 6. Never Commit
 

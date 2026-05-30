@@ -84,3 +84,15 @@ The agent should:
 External data failures must be visible in reports. Do not silently hide missing market data, stale data, skipped news, or parsing failures.
 
 When uncertainty is high, the correct output is a risk-aware caveat, not a confident conclusion.
+
+## Cache, Logs, and Reports
+
+Generated artifacts are local and ignored by git:
+
+- `reports/`
+- `logs/`
+- `cache/`
+
+These artifacts may contain report text or market data. Avoid pasting them into remote tools if they include real holdings or private notes.
+
+Missing dependencies are not installed automatically. The user must explicitly run `python3 -m pip install -r requirements.txt`.

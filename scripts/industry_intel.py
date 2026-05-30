@@ -4,16 +4,24 @@
 从Tavily搜索行业资讯，结合持仓做信号标注和行动建议
 """
 
-import json, os, sys, requests, traceback
+import json, os, sys, traceback
 from datetime import datetime, timedelta
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from common.config_loader import get_portfolio_path, get_tavily_api_key, load_settings
+from common.data_runtime import DataStatusTracker, cached_call, missing_dependencies
+
+try:
+    import requests
+except ImportError:
+    requests = None
 
 SETTINGS = load_settings()
 PORTFOLIO_PATH, USING_EXAMPLE_PORTFOLIO = get_portfolio_path(SETTINGS)
 TAVILY_API_KEY = get_tavily_api_key(SETTINGS)
+TRACKER = DataStatusTracker()
+MISSING_RUNTIME_DEPS = missing_dependencies(["requests"])
 
 
 def get_news_status():
@@ -21,6 +29,8 @@ def get_news_status():
         return {"skipped": True, "reason": "enable_news=false"}
     if not TAVILY_API_KEY:
         return {"skipped": True, "reason": f"{SETTINGS.get('tavily_api_key_env', 'TAVILY_API_KEY')} 未设置"}
+    if MISSING_RUNTIME_DEPS:
+        return {"skipped": True, "reason": f"缺少依赖: {', '.join(MISSING_RUNTIME_DEPS)}"}
     return {"skipped": False, "reason": ""}
 
 # 搜索关键词矩阵：按持仓关联度分组
@@ -70,14 +80,22 @@ def search_tavily(query, days=3, max_results=5):
         "topic": "news",
         "days": days,
     }
-    try:
+    def producer():
         resp = requests.post(url, json=payload, timeout=15)
         resp.raise_for_status()
         data = resp.json()
         results = data.get("results", [])
         return results
-    except Exception as e:
-        return [{"title": f"搜索失败: {query}", "content": str(e), "url": ""}]
+
+    return cached_call(
+        SETTINGS,
+        TRACKER,
+        f"tavily:{query}",
+        "Tavily News",
+        f"tavily:{query}:{days}:{max_results}",
+        producer,
+        [{"title": f"搜索失败: {query}", "content": "Tavily request failed", "url": ""}],
+    )
 
 
 def classify_signal(title, content, tags):

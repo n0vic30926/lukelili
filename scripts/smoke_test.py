@@ -13,6 +13,8 @@ SCRIPTS_DIR = REPO_ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
 from common.config_loader import get_portfolio_path, get_report_dirs, load_settings
+from common.data_runtime import missing_dependencies
+from validate_portfolio import validate_portfolio_file
 
 
 CORE_SCRIPTS = [
@@ -23,6 +25,9 @@ CORE_SCRIPTS = [
     REPO_ROOT / "scripts" / "industry_intel.py",
     REPO_ROOT / "scripts" / "industry_cycle.py",
 ]
+
+OPENCLAW_WORKSPACE_PATTERN = "~/.open" + "claw/workspace"
+TAVILY_KEY_PREFIX_PATTERN = "tvly" + "-"
 
 
 def check(condition, message):
@@ -55,15 +60,26 @@ def main():
     settings = load_settings()
     failures += not check(isinstance(settings, dict), "settings load as JSON object")
 
+    missing = missing_dependencies(["akshare", "pandas", "numpy", "requests"])
+    if missing:
+        print(f"WARN missing optional runtime dependencies: {', '.join(missing)}")
+        print("WARN install manually with: python3 -m pip install -r requirements.txt")
+    failures += not check(True, "dependency check is non-fatal")
+
     portfolio_path, using_example = get_portfolio_path(settings)
     failures += not check(portfolio_path.exists(), "portfolio path resolves")
     with portfolio_path.open(encoding="utf-8") as f:
         portfolio = json.load(f)
     failures += not check("holdings" in portfolio, "portfolio JSON can be read")
+    example_errors = validate_portfolio_file(REPO_ROOT / "data/examples/portfolio.example.json")
+    failures += not check(not example_errors, "example portfolio validates")
+    if not using_example:
+        real_errors = validate_portfolio_file(portfolio_path)
+        failures += not check(not real_errors, "configured portfolio validates without printing asset details")
 
     joined_core = "\n".join(p.read_text(encoding="utf-8") for p in CORE_SCRIPTS)
-    failures += not check("~/.openclaw/workspace" not in joined_core, "core scripts do not hardcode OpenClaw workspace")
-    failures += not check("tvly-" not in joined_core, "core scripts do not hardcode Tavily key value")
+    failures += not check(OPENCLAW_WORKSPACE_PATTERN not in joined_core, "core scripts do not hardcode OpenClaw workspace")
+    failures += not check(TAVILY_KEY_PREFIX_PATTERN not in joined_core, "core scripts do not hardcode Tavily key value")
     failures += not check(
         not any(file_contains(p, r"TAVILY_API_KEY\s*=\s*['\"]") for p in CORE_SCRIPTS),
         "core scripts do not hardcode TAVILY_API_KEY assignment",

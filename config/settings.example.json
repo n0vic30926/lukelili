@@ -6,6 +6,8 @@
   "weekly_report_dir": "reports/weekly",
   "cache_dir": "cache",
   "log_dir": "logs",
+  "use_cache": true,
+  "cache_ttl_hours": 6,
   "enable_news": false,
   "tavily_api_key_env": "TAVILY_API_KEY",
   "timezone": "Asia/Shanghai"

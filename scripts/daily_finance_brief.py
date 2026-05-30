@@ -8,18 +8,26 @@
 import json, os, sys, traceback
 from datetime import datetime, timedelta
 
-import akshare as ak
-import pandas as pd
-import numpy as np
-
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from common.config_loader import get_portfolio_path, get_report_dirs, load_settings
-from qdii_three_factor import qdii_attribution, portfolio_risk_scan, ai_fund_attribution
+from common.data_runtime import DataStatusTracker, cached_call, missing_dependencies
+from common.reporting import write_report
+
+try:
+    import akshare as ak
+    import pandas as pd
+    import numpy as np
+except ImportError:
+    ak = None
+    pd = None
+    np = None
 
 SETTINGS = load_settings()
 PORTFOLIO_PATH, USING_EXAMPLE_PORTFOLIO = get_portfolio_path(SETTINGS)
 REPORT_DIRS = get_report_dirs(SETTINGS)
+TRACKER = DataStatusTracker()
+MISSING_RUNTIME_DEPS = missing_dependencies(["akshare", "pandas", "numpy"])
 
 
 def load_portfolio():
@@ -33,41 +41,46 @@ def module_status_lines():
     return [
         "portfolio=ok",
         f"portfolio_mode={'example' if USING_EXAMPLE_PORTFOLIO else 'private'}",
-        "market_data=best_effort",
+        f"runtime_deps={'missing:' + ','.join(MISSING_RUNTIME_DEPS) if MISSING_RUNTIME_DEPS else 'ok'}",
+        f"data_status={TRACKER.summary_text()}",
         f"news={'enabled' if news_ready else 'skipped'}",
         "risk_scan=best_effort",
     ]
 
 
 def write_report_file(report):
-    out_dir = REPORT_DIRS["daily_report_dir"]
-    log_dir = REPORT_DIRS["log_dir"]
-    out_dir.mkdir(parents=True, exist_ok=True)
-    log_dir.mkdir(parents=True, exist_ok=True)
+    return write_report("daily", report, SETTINGS, TRACKER)
+
+
+def dependency_error_report():
     now = datetime.now()
-    report_path = out_dir / f"daily-{now.strftime('%Y-%m-%d')}.md"
-    report_path.write_text(report, encoding="utf-8")
-    with (log_dir / "daily_finance_brief.log").open("a", encoding="utf-8") as f:
-        f.write(f"{now.isoformat(timespec='seconds')} wrote {report_path}\n")
-    return report_path
+    lines = [
+        f"# 📊 每日持仓简报 | {now.strftime('%Y-%m-%d')}",
+        "",
+        "> 运行失败: 缺少必要 Python 依赖。",
+        f"> 缺失依赖: {', '.join(MISSING_RUNTIME_DEPS)}",
+        "> 请手动执行: python3 -m pip install -r requirements.txt",
+        "",
+        "未生成市场分析，避免产生不完整或误导性报告。",
+    ]
+    return "\n".join(lines)
 
 
 # ── 数据获取函数 ──
 
 def get_fund_nav(code, days=10):
     """场外基金历史净值（AkShare直连）"""
-    try:
+    def producer():
         df = ak.fund_open_fund_info_em(symbol=code, indicator='单位净值走势')
         df = df.tail(days).copy()
         df['净值日期'] = pd.to_datetime(df['净值日期'])
         return df
-    except Exception as e:
-        return None
+    return cached_call(SETTINGS, TRACKER, f"fund_nav:{code}", "AkShare fund_open_fund_info_em", f"fund_nav:{code}:{days}", producer, None)
 
 
 def get_etf_quote(codes):
     """场内ETF实时行情"""
-    try:
+    def producer():
         df = ak.fund_etf_spot_em()
         result = {}
         for code in codes:
@@ -82,37 +95,34 @@ def get_etf_quote(codes):
                     'volume': float(r.get('成交额', 0)),
                 }
         return result
-    except Exception as e:
-        return {}
+    return cached_call(SETTINGS, TRACKER, "etf_quote", "AkShare fund_etf_spot_em", f"etf_quote:{','.join(codes)}", producer, {})
 
 
 def get_us_index():
     """美股纳斯达克指数"""
-    try:
+    def producer():
         df = ak.index_us_stock_sina(symbol=".IXIC")
         df = df.tail(5).copy()
         return df
-    except:
-        return None
+    return cached_call(SETTINGS, TRACKER, "us_index", "AkShare index_us_stock_sina", "us_index:.IXIC:5", producer, None)
 
 
 def get_fx_usdcny():
     """美元兑人民币实时汇率"""
-    try:
+    def producer():
         df = ak.fx_spot_quote()
         usd = df[df['货币对'] == 'USD/CNY']
         if not usd.empty:
             return {
                 'rate': float(usd.iloc[0]['买报价']),
             }
-    except:
-        pass
-    return None
+        return None
+    return cached_call(SETTINGS, TRACKER, "fx_usdcny", "AkShare fx_spot_quote", "fx_usdcny", producer, None)
 
 
 def get_north_flow():
     """北向资金+大盘指数"""
-    try:
+    def producer():
         df = ak.stock_hsgt_fund_flow_summary_em()
         north = df[df['资金方向'] == '北向']
         result = []
@@ -126,18 +136,16 @@ def get_north_flow():
                 'index_chg': float(row['指数涨跌幅']),
             })
         return result
-    except:
-        return None
+    return cached_call(SETTINGS, TRACKER, "north_flow", "AkShare stock_hsgt_fund_flow_summary_em", "north_flow", producer, None)
 
 
 def get_fund_top_holdings(code):
     """基金前十大持仓穿透"""
-    try:
+    def producer():
         df = ak.fund_portfolio_hold_em(symbol=code, date='2025')
         top10 = df.head(10)[['股票代码', '股票名称', '占净值比例']].copy()
         return top10.to_dict('records')
-    except:
-        return []
+    return cached_call(SETTINGS, TRACKER, f"fund_top_holdings:{code}", "AkShare fund_portfolio_hold_em", f"fund_top_holdings:{code}:2025", producer, [])
 
 
 # ── 生成简报 ──
@@ -153,9 +161,13 @@ def main():
     lines.append(f"# 📊 每日持仓简报 | {today} {weekday}")
     lines.append("")
     lines.append(f"> 数据来源: AkShare + local portfolio | 配置: {SETTINGS.get('_settings_path')} | 生成时间: {now.strftime('%Y-%m-%d %H:%M')}")
+    status_line_at = len(lines)
     lines.append(f"> 模块状态: {', '.join(module_status_lines())}")
     if USING_EXAMPLE_PORTFOLIO:
         lines.append("> ⚠️ 当前使用示例持仓数据，仅用于 smoke test，不代表真实资产。")
+    lines.append("")
+    summary_insert_at = len(lines)
+    lines.append("__RUN_SUMMARY_PLACEHOLDER__")
     lines.append("")
 
     if not is_trading:
@@ -347,6 +359,7 @@ def main():
     lines.append("## 🔬 QDII三因子归因（近30日）")
     lines.append("")
     try:
+        from qdii_three_factor import qdii_attribution, ai_fund_attribution
         attr = qdii_attribution(days=30)
         if 'error' not in attr:
             lines.append(f"- 基金收益: {attr['fund_ret']:+.2f}%")
@@ -367,6 +380,7 @@ def main():
     lines.append("## 🔬 AI基金三因子归因（近30日）")
     lines.append("")
     try:
+        from qdii_three_factor import ai_fund_attribution
         ai_attr = ai_fund_attribution(days=30)
         if 'error' not in ai_attr:
             lines.append(f"- 基金收益: {ai_attr['fund_ret']:+.2f}%")
@@ -387,6 +401,7 @@ def main():
     lines.append("## 🛡️ 组合风险扫描")
     lines.append("")
     try:
+        from qdii_three_factor import portfolio_risk_scan
         risk_scan = portfolio_risk_scan()
         if 'error' not in risk_scan:
             for h in portfolio['holdings']:
@@ -499,6 +514,8 @@ def main():
         if news_status.get("skipped"):
             lines.append(f"- 新闻模块跳过: {news_status['reason']}")
             lines.append("")
+            lines[status_line_at] = f"> 模块状态: {', '.join(module_status_lines())}"
+            lines[summary_insert_at:summary_insert_at + 1] = TRACKER.markdown_lines()
             return '\n'.join(lines)
         intel = fetch_industry_intel()
         signals = [a for a in intel if a["signal"] in ("\U0001f534", "\U0001f7e1")]
@@ -517,10 +534,15 @@ def main():
         lines.append(f"- 行业情报采集异常: {e}")
     lines.append("")
 
+    lines[status_line_at] = f"> 模块状态: {', '.join(module_status_lines())}"
+    lines[summary_insert_at:summary_insert_at + 1] = TRACKER.markdown_lines()
     return '\n'.join(lines)
 
 
 if __name__ == "__main__":
+    if MISSING_RUNTIME_DEPS:
+        print(dependency_error_report())
+        raise SystemExit(2)
     # 生成简报
     report = main()
     print(report)
