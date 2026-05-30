@@ -54,6 +54,15 @@ def run_format_review_test():
                     "requires_user_confirmation": False,
                     "code": "EX1",
                 },
+                {
+                    "action_type": "exit_trial",
+                    "status": "confirmed",
+                    "strategy_type": "trial",
+                    "requires_user_confirmation": True,
+                    "outcome_status": "reviewed",
+                    "outcome_review": "Synthetic private outcome that must not be printed.",
+                    "code": "EX2",
+                },
             ],
         }
     ]
@@ -69,15 +78,21 @@ def run_format_review_test():
     _assert_contains(review, "status=missing_rules")
     _assert_contains(review, "watch: score=")
     _assert_contains(review, "用户确认动作")
-    _assert_contains(review, "状态分布: {'pending': 1, 'confirmed': 1}")
-    _assert_contains(review, "动作类型分布: {'upgrade_strategy': 1, 'continue_dca': 1}")
+    _assert_contains(review, "状态分布: {'pending': 1, 'confirmed': 2}")
+    _assert_contains(review, "动作类型分布: {'upgrade_strategy': 1, 'continue_dca': 1, 'exit_trial': 1}")
     _assert_contains(review, "需要用户确认且未完成: 1")
+    _assert_contains(review, "确认后结果复盘")
+    _assert_contains(review, "已确认动作: 2")
+    _assert_contains(review, "结果状态分布: {'pending_review': 1, 'reviewed': 1}")
+    _assert_contains(review, "待结果复盘: 1")
     if "cost_basis" in review or "shares" in review or "amount" in review:
         raise AssertionError("Review leaked raw asset field names")
     if "EX1" in review or "EX2" in review or "EX3" in review or "EX4" in review:
         raise AssertionError("Review leaked asset codes")
     if "Synthetic private rationale" in review:
         raise AssertionError("Review leaked private rationale")
+    if "Synthetic private outcome" in review:
+        raise AssertionError("Review leaked private outcome")
 
 
 def run_load_private_records_test():

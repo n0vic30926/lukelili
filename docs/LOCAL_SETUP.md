@@ -120,7 +120,7 @@ Review decision and report history:
 python3 scripts/review_history.py
 ```
 
-Decision records can include `user_actions` for user-confirmed, pending, or rejected actions. Keep real records under ignored private paths such as `data/private/decision_track/`; the review command only prints aggregate confirmation status.
+Decision records can include `user_actions` for user-confirmed, pending, or rejected actions. Confirmed actions can also include `outcome_status` such as `reviewed` or `pending_review`. Keep real records under ignored private paths such as `data/private/decision_track/`; the review command only prints aggregate confirmation and outcome status.
 
 ## 6. Never Commit
 

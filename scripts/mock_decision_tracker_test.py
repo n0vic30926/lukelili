@@ -20,6 +20,8 @@ def run_append_user_action_test():
                 "code": "EXAMPLE",
                 "amount": 100,
                 "rationale": "Synthetic private rationale.",
+                "outcome_status": "reviewed",
+                "outcome_review": "Synthetic private outcome.",
             },
             record_date="2026-01-02",
         )
@@ -32,6 +34,8 @@ def run_append_user_action_test():
             raise AssertionError("Expected pending action status")
         if action.get("requires_user_confirmation") is not True:
             raise AssertionError("Expected explicit confirmation flag")
+        if action.get("outcome_status") != "reviewed":
+            raise AssertionError("Expected outcome status to be preserved")
         if record.get("date") != "2026-01-02":
             raise AssertionError("Expected record date to be preserved")
 

@@ -77,7 +77,16 @@ def append_user_action(action, record_date=None):
         "requires_user_confirmation": bool(action.get("requires_user_confirmation", True)),
         "created_at": action.get("created_at", datetime.now().isoformat(timespec="seconds")),
     }
-    optional_fields = ("code", "rationale", "amount", "confirmed_at", "notes")
+    optional_fields = (
+        "code",
+        "rationale",
+        "amount",
+        "confirmed_at",
+        "notes",
+        "outcome_status",
+        "outcome_review",
+        "outcome_reviewed_at",
+    )
     for field in optional_fields:
         if field in action:
             entry[field] = action[field]
