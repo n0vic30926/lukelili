@@ -52,12 +52,16 @@ def run_daily_mock():
         }
     ]
     daily.get_fund_top_holdings = lambda code: []
+    daily.macro_observation = lambda ak, pd, settings, tracker: ["## 🌏 宏观观察", "", "- Mock macro ok", ""]
+    daily.etf_observation = lambda ak, settings, tracker, holdings: ["## 🧾 ETF专项观察", "", "- Mock ETF ok", ""]
 
     report = daily.main()
     _assert_contains(report, "## 运行摘要")
     _assert_contains(report, "## 数据质量")
     _assert_contains(report, "当前使用示例持仓数据")
     _assert_contains(report, "## 📈 持仓基金")
+    _assert_contains(report, "## 🌏 宏观观察")
+    _assert_contains(report, "## 🧾 ETF专项观察")
     return report
 
 

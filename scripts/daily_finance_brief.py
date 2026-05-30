@@ -12,6 +12,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from common.config_loader import get_portfolio_path, get_report_dirs, load_settings
 from common.data_runtime import DataStatusTracker, cached_call, missing_dependencies
+from common.market_research import etf_observation, macro_observation
 from common.reporting import write_report
 
 try:
@@ -268,6 +269,9 @@ def main():
         lines.append("- 大盘指数: 数据获取失败")
 
     lines.append("")
+
+    lines.extend(macro_observation(ak, pd, SETTINGS, TRACKER))
+    lines.extend(etf_observation(ak, SETTINGS, TRACKER, portfolio["holdings"]))
 
     # ── 6. 持仓穿透（月度更新，每周一显示） ──
     if now.weekday() == 0:  # 周一
