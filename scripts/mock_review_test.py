@@ -34,6 +34,8 @@ def run_format_review_test():
             "holdings": [
                 {"code": "EX1", "strategy_type": "dca", "cost_basis": 100, "shares": 10},
                 {"code": "EX2", "strategy_type": "trial", "cost_basis": 50, "shares": 5},
+                {"code": "EX3", "strategy_type": "short_term", "cost_basis": 20, "shares": 2},
+                {"code": "EX4", "strategy_type": "watch"},
             ],
         }
     ]
@@ -42,8 +44,16 @@ def run_format_review_test():
     _assert_contains(review, "报告数量: 2")
     _assert_contains(review, "strategy_type 分布")
     _assert_contains(review, "DCA记录存在")
+    _assert_contains(review, "策略评分卡")
+    _assert_contains(review, "dca: score=")
+    _assert_contains(review, "trial: score=")
+    _assert_contains(review, "short_term: score=")
+    _assert_contains(review, "status=missing_rules")
+    _assert_contains(review, "watch: score=")
     if "cost_basis" in review or "shares" in review:
         raise AssertionError("Review leaked raw asset field names")
+    if "EX1" in review or "EX2" in review or "EX3" in review or "EX4" in review:
+        raise AssertionError("Review leaked asset codes")
 
 
 def run_load_private_records_test():

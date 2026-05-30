@@ -35,7 +35,7 @@ Finance Agent 不用于：
 - `scripts/mock_runtime_test.py`：离线测试缓存、运行状态和数据质量 helper。
 - `scripts/mock_report_test.py`：离线生成日报/周报 mock 报告，验证报告结构。
 - `scripts/report_index.py`：查看本地报告归档索引。
-- `scripts/review_history.py`：聚合报告索引和决策记录，做纪律复盘摘要。
+- `scripts/review_history.py`：聚合报告索引和决策记录，做纪律复盘摘要与策略评分卡。
 
 ## 快速开始
 
@@ -94,6 +94,8 @@ python3 scripts/report_index.py
 ```bash
 python3 scripts/review_history.py
 ```
+
+复盘只输出聚合信息和策略级检查，不打印成本、份额、资产代码或交易明细。
 
 ## 新闻模块
 

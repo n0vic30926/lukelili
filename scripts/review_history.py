@@ -77,9 +77,92 @@ def summarize_decisions(records):
     return strategy_counts, dates, sample_count
 
 
+def _has_short_term_rules(holding):
+    rule_keys = (
+        "take_profit",
+        "take_profit_rule",
+        "stop_loss",
+        "stop_loss_rule",
+        "exit_rule",
+        "risk_rule",
+    )
+    return any(holding.get(key) for key in rule_keys)
+
+
+def build_strategy_scorecards(records):
+    grouped = {}
+    for record in records:
+        record_date = record.get("date") or "unknown"
+        for holding in record.get("holdings", []):
+            strategy_type = holding.get("strategy_type", "unknown")
+            card = grouped.setdefault(
+                strategy_type,
+                {
+                    "strategy_type": strategy_type,
+                    "records": 0,
+                    "assets": set(),
+                    "dates": set(),
+                    "short_term_rule_count": 0,
+                },
+            )
+            card["records"] += 1
+            if holding.get("code"):
+                card["assets"].add(holding["code"])
+            card["dates"].add(record_date)
+            if strategy_type == "short_term" and _has_short_term_rules(holding):
+                card["short_term_rule_count"] += 1
+
+    cards = []
+    for strategy_type in sorted(grouped):
+        raw = grouped[strategy_type]
+        assets = len(raw["assets"])
+        dates = len(raw["dates"])
+        records_count = raw["records"]
+        if strategy_type == "dca":
+            score = 7 if dates > 1 else 6
+            status = "discipline_tracking"
+            focus = "评估纪律是否持续执行，不按短期盈亏评价。"
+            next_step = "继续记录执行日期；不要输出止损、择时暂停或波段化建议。"
+        elif strategy_type == "trial":
+            score = 5
+            status = "needs_user_review"
+            focus = "评估盈亏、回撤、学习结论，以及是否需要用户确认升级或退出。"
+            next_step = "补充学习结论、退出条件和是否升级为信念仓的用户确认。"
+        elif strategy_type == "short_term":
+            rules = raw["short_term_rule_count"]
+            score = 6 if rules == records_count else 3
+            status = "rules_present" if rules == records_count else "missing_rules"
+            focus = "评估止盈止损是否事先定义，而不是事后解释。"
+            next_step = "为每条短线记录补齐止盈、止损或退出规则。"
+        elif strategy_type == "watch":
+            score = 6
+            status = "research_only"
+            focus = "只做研究和入场条件观察，不视为持仓操作。"
+            next_step = "维护触发条件、否决条件和信息来源。"
+        else:
+            score = 2
+            status = "unknown_strategy"
+            focus = "策略类型无法映射到投资声明书。"
+            next_step = "由用户显式声明 strategy_type 后再复盘。"
+        cards.append(
+            {
+                "strategy_type": strategy_type,
+                "score": score,
+                "status": status,
+                "records": records_count,
+                "assets": assets,
+                "dates": dates,
+                "focus": focus,
+                "next_step": next_step,
+            }
+        )
+    return cards
+
+
 def format_review(report_index_path, report_records, decision_dir, decision_records):
     report_counts, status_counts = summarize_reports(report_records)
     strategy_counts, decision_dates, sample_count = summarize_decisions(decision_records)
+    strategy_cards = build_strategy_scorecards(decision_records)
     lines = ["# 历史复盘摘要", ""]
     lines.append("## 报告归档")
     lines.append(f"- 索引路径: {report_index_path}")
@@ -118,6 +201,19 @@ def format_review(report_index_path, report_records, decision_dir, decision_reco
         short_count = strategy_counts.get("short_term", 0)
         if short_count:
             lines.append(f"- Short-term记录存在: {short_count} 条。复盘重点是止盈止损规则是否事先定义。")
+    lines.append("")
+
+    lines.append("## 策略评分卡")
+    if not strategy_cards:
+        lines.append("- 暂无可评分策略记录。")
+    for card in strategy_cards:
+        lines.append(
+            "- "
+            f"{card['strategy_type']}: score={card['score']}/10, status={card['status']}, "
+            f"records={card['records']}, assets={card['assets']}, dates={card['dates']}"
+        )
+        lines.append(f"  - 复盘重点: {card['focus']}")
+        lines.append(f"  - 下一步: {card['next_step']}")
     lines.append("")
 
     lines.append("## 下一步")
