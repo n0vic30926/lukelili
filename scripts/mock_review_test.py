@@ -24,7 +24,7 @@ def run_format_review_test():
         {
             "type": "weekly",
             "path": "reports/weekly/weekly-2026-01-03.md",
-            "created_at": "2026-01-03T11:00:00",
+            "created_at": "2026-01-03T11:00:00Z",
             "status_counts": {"ok": 2, "failed": 0, "skipped": 1},
         },
     ]
@@ -52,6 +52,7 @@ def run_format_review_test():
                     "status": "confirmed",
                     "strategy_type": "dca",
                     "requires_user_confirmation": False,
+                    "confirmed_at": "2026-01-02T09:00:00",
                     "outcome_quality": "aligned",
                     "checklist": {
                         "discipline": "pass",
@@ -65,6 +66,7 @@ def run_format_review_test():
                     "status": "confirmed",
                     "strategy_type": "trial",
                     "requires_user_confirmation": True,
+                    "confirmed_at": "2026-01-04T09:00:00",
                     "outcome_status": "reviewed",
                     "outcome_quality": "mixed",
                     "checklist": {
@@ -100,6 +102,10 @@ def run_format_review_test():
     _assert_contains(review, "结果质量分布: {'aligned': 1, 'mixed': 1}")
     _assert_contains(review, "检查项状态分布: {'pass': 4, 'missing': 1, 'fail': 1}")
     _assert_contains(review, "失败或缺失检查项: 2")
+    _assert_contains(review, "跨报告归因")
+    _assert_contains(review, "有后续报告证据: 1")
+    _assert_contains(review, "缺少后续报告证据: 1")
+    _assert_contains(review, "后续报告类型分布: {'weekly': 1}")
     if "cost_basis" in review or "shares" in review or "amount" in review:
         raise AssertionError("Review leaked raw asset field names")
     if "EX1" in review or "EX2" in review or "EX3" in review or "EX4" in review:

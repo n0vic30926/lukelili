@@ -4,6 +4,7 @@
 import json
 import sys
 from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
 
 from common.config_loader import get_report_dirs, get_repo_root, load_settings, resolve_path
@@ -61,6 +62,24 @@ def summarize_reports(records):
         for key, value in item.get("status_counts", {}).items():
             status[key] += value
     return counts, status
+
+
+def _parse_datetime(value):
+    if not value:
+        return None
+    text = str(value).strip()
+    for candidate in (text, text.replace("Z", "+00:00")):
+        try:
+            parsed = datetime.fromisoformat(candidate)
+            if parsed.tzinfo:
+                return parsed.astimezone(timezone.utc).replace(tzinfo=None)
+            return parsed
+        except ValueError:
+            continue
+    try:
+        return datetime.strptime(text[:10], "%Y-%m-%d")
+    except ValueError:
+        return None
 
 
 def summarize_decisions(records):
@@ -142,6 +161,43 @@ def summarize_action_outcomes(records):
         "action_type_counts": action_type_counts,
         "pending_review": pending_review,
         "checklist_issues": checklist_issues,
+    }
+
+
+def summarize_cross_report_attribution(report_records, decision_records):
+    report_points = []
+    for record in report_records:
+        created_at = _parse_datetime(record.get("created_at"))
+        if created_at:
+            report_points.append((created_at, record.get("type", "unknown")))
+
+    with_evidence = 0
+    without_evidence = 0
+    later_type_counts = Counter()
+    confirmed_total = 0
+    for decision in decision_records:
+        record_date = decision.get("date")
+        for action in decision.get("user_actions", []):
+            if action.get("status") != "confirmed":
+                continue
+            confirmed_total += 1
+            action_time = (
+                _parse_datetime(action.get("confirmed_at"))
+                or _parse_datetime(action.get("created_at"))
+                or _parse_datetime(record_date)
+            )
+            later_reports = [(time, report_type) for time, report_type in report_points if action_time and time > action_time]
+            if later_reports:
+                with_evidence += 1
+                for _, report_type in later_reports[:3]:
+                    later_type_counts[report_type] += 1
+            else:
+                without_evidence += 1
+    return {
+        "confirmed_total": confirmed_total,
+        "with_evidence": with_evidence,
+        "without_evidence": without_evidence,
+        "later_type_counts": later_type_counts,
     }
 
 
@@ -233,6 +289,7 @@ def format_review(report_index_path, report_records, decision_dir, decision_reco
     strategy_cards = build_strategy_scorecards(decision_records)
     action_summary = summarize_user_actions(decision_records)
     outcome_summary = summarize_action_outcomes(decision_records)
+    attribution_summary = summarize_cross_report_attribution(report_records, decision_records)
     lines = ["# 历史复盘摘要", ""]
     lines.append("## 报告归档")
     lines.append(f"- 索引路径: {report_index_path}")
@@ -311,6 +368,17 @@ def format_review(report_index_path, report_records, decision_dir, decision_reco
         lines.append(f"- 待结果复盘: {outcome_summary['pending_review']}")
         lines.append(f"- 失败或缺失检查项: {outcome_summary['checklist_issues']}")
         lines.append("- 复盘边界: 只统计结果状态，不输出收益、金额、代码或复盘说明全文。")
+    lines.append("")
+
+    lines.append("## 跨报告归因")
+    if not attribution_summary["confirmed_total"]:
+        lines.append("- 暂无已确认动作，无法连接后续报告。")
+    else:
+        lines.append(f"- 已确认动作: {attribution_summary['confirmed_total']}")
+        lines.append(f"- 有后续报告证据: {attribution_summary['with_evidence']}")
+        lines.append(f"- 缺少后续报告证据: {attribution_summary['without_evidence']}")
+        lines.append(f"- 后续报告类型分布: {dict(attribution_summary['later_type_counts'])}")
+        lines.append("- 归因边界: 只证明后续报告证据存在，不把市场结果归因为单次动作。")
     lines.append("")
 
     lines.append("## 下一步")

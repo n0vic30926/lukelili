@@ -36,7 +36,7 @@ Finance Agent 不用于：
 - `scripts/mock_report_test.py`：离线生成日报/周报 mock 报告，验证成功、部分失败、新闻跳过和示例持仓分支。
 - `scripts/mock_decision_tracker_test.py`：离线测试用户确认动作、确认后结果复盘和检查项证据字段，不触碰真实持仓。
 - `scripts/report_index.py`：查看本地报告归档索引。
-- `scripts/review_history.py`：聚合报告索引、决策记录、用户确认动作、确认后结果复盘和检查项证据，做纪律复盘摘要与策略评分卡。
+- `scripts/review_history.py`：聚合报告索引、决策记录、用户确认动作、确认后结果复盘、检查项证据和跨报告证据链，做纪律复盘摘要与策略评分卡。
 
 ## 快速开始
 
@@ -97,7 +97,7 @@ python3 scripts/report_index.py
 python3 scripts/review_history.py
 ```
 
-复盘只输出聚合信息、策略级检查、用户确认状态、确认后结果状态和检查项状态，不打印成本、份额、资产代码、金额、理由或结果说明全文。
+复盘只输出聚合信息、策略级检查、用户确认状态、确认后结果状态、检查项状态和后续报告证据，不打印成本、份额、资产代码、金额、理由或结果说明全文。
 
 ## 新闻模块
 
