@@ -33,6 +33,7 @@ Important fields:
 - `log_dir`: log directory.
 - `use_cache`: whether to use best-effort local cache.
 - `cache_ttl_hours`: cache freshness window.
+- `macro_indicators`: configurable macro radar using candidate AkShare functions.
 - `enable_news`: whether to use Tavily news.
 - `tavily_api_key_env`: environment variable name for the Tavily key.
 - `timezone`: report timezone.

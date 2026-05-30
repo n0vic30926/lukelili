@@ -152,10 +152,108 @@ def run_etf_research_mock():
     return report
 
 
+def run_macro_radar_mock():
+    from common.data_runtime import DataStatusTracker
+    from common.market_research import macro_indicator_lines
+
+    class FakeAk:
+        @staticmethod
+        def macro_china_cpi_monthly():
+            return pd.DataFrame(
+                [
+                    {"月份": "2026-01", "今值": 1.0},
+                    {"月份": "2026-02", "今值": 1.3},
+                ]
+            )
+
+        @staticmethod
+        def macro_china_pmi_yearly():
+            return pd.DataFrame(
+                [
+                    {"月份": "2026-01", "制造业PMI": 49.8},
+                    {"月份": "2026-02", "制造业PMI": 50.5},
+                ]
+            )
+
+        @staticmethod
+        def macro_china_money_supply():
+            return pd.DataFrame(
+                [
+                    {"月份": "2026-01", "M2-同比增长": 8.0},
+                    {"月份": "2026-02", "M2-同比增长": 8.4},
+                ]
+            )
+
+        @staticmethod
+        def bond_zh_us_rate():
+            return pd.DataFrame(
+                [
+                    {"日期": "2026-01-01", "美国:国债收益率:10年": 4.1},
+                    {"日期": "2026-01-02", "美国:国债收益率:10年": 4.2},
+                ]
+            )
+
+    settings = {
+        "use_cache": False,
+        "cache_ttl_hours": 0,
+        "macro_indicators": [
+            {
+                "id": "china_cpi",
+                "label": "中国CPI",
+                "candidate_functions": ["macro_china_cpi_monthly"],
+                "date_columns": ["月份"],
+                "value_columns": ["今值"],
+                "unit": "%",
+            },
+            {
+                "id": "china_pmi",
+                "label": "中国PMI",
+                "candidate_functions": ["macro_china_pmi_yearly"],
+                "date_columns": ["月份"],
+                "value_columns": ["制造业PMI"],
+                "unit": "",
+            },
+            {
+                "id": "china_money_supply",
+                "label": "中国M2",
+                "candidate_functions": ["macro_china_money_supply"],
+                "date_columns": ["月份"],
+                "value_columns": ["M2-同比增长"],
+                "unit": "%",
+            },
+            {
+                "id": "us_treasury_10y",
+                "label": "美国10Y国债收益率",
+                "candidate_functions": ["bond_zh_us_rate"],
+                "date_columns": ["日期"],
+                "value_columns": ["美国:国债收益率:10年"],
+                "unit": "%",
+            },
+            {
+                "id": "missing_macro",
+                "label": "缺失宏观指标",
+                "candidate_functions": ["macro_missing_fixture"],
+                "date_columns": ["日期"],
+                "value_columns": ["今值"],
+                "unit": "%",
+            },
+        ],
+    }
+    tracker = DataStatusTracker()
+    report = "\n".join(macro_indicator_lines(FakeAk, settings, tracker))
+    _assert_contains(report, "中国CPI")
+    _assert_contains(report, "中国PMI")
+    _assert_contains(report, "中国M2")
+    _assert_contains(report, "美国10Y国债收益率")
+    _assert_contains(report, "宏观数据缺口")
+    return report
+
+
 def main():
     run_daily_mock()
     run_weekly_mock()
     run_etf_research_mock()
+    run_macro_radar_mock()
     print("Mock report test passed")
     return 0
 

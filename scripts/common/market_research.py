@@ -36,6 +36,99 @@ def _first_value(row, names):
     return None, ""
 
 
+def _last_numeric_value(row, preferred_columns):
+    value, col = _first_value(row, preferred_columns)
+    if value is not None:
+        return value, col
+    for col_name, raw in row.items():
+        value = _safe_float(str(raw).replace(",", ""))
+        if value is not None:
+            return value, col_name
+    return None, ""
+
+
+def _first_text_value(row, preferred_columns):
+    for name in preferred_columns:
+        try:
+            value = row.get(name)
+        except AttributeError:
+            value = None
+        if value not in (None, ""):
+            return str(value), name
+    for col_name, raw in row.items():
+        if raw not in (None, ""):
+            return str(raw), col_name
+    return "N/A", ""
+
+
+def _call_first_available(ak, settings, tracker, indicator):
+    candidates = indicator.get("candidate_functions", [])
+    for fn_name in candidates:
+        fn = getattr(ak, fn_name, None)
+        if not callable(fn):
+            continue
+        return cached_call(
+            settings,
+            tracker,
+            f"macro_indicator:{indicator.get('id', fn_name)}",
+            f"AkShare {fn_name}",
+            f"macro_indicator:{indicator.get('id', fn_name)}:{fn_name}",
+            fn,
+            None,
+        ), fn_name
+    tracker.skip(
+        f"macro_indicator:{indicator.get('id', 'unknown')}",
+        "AkShare",
+        f"candidate functions unavailable: {', '.join(candidates)}",
+    )
+    return None, ""
+
+
+def macro_indicator_lines(ak, settings, tracker):
+    """Return configured macro indicator radar lines."""
+    indicators = settings.get("macro_indicators", [])
+    lines = ["### 宏观指标雷达", ""]
+    if not indicators:
+        lines.append("- 未配置 macro_indicators。")
+        lines.append("")
+        return lines
+
+    unavailable = []
+    for indicator in indicators:
+        label = indicator.get("label", indicator.get("id", "macro"))
+        df, source_fn = _call_first_available(ak, settings, tracker, indicator)
+        if df is None or len(df) == 0:
+            unavailable.append(label)
+            lines.append(f"- {label}: 数据不可用")
+            continue
+        try:
+            latest = df.iloc[-1]
+            previous = df.iloc[-2] if len(df) >= 2 else latest
+            date_text, _ = _first_text_value(latest, indicator.get("date_columns", []))
+            latest_value, value_col = _last_numeric_value(latest, indicator.get("value_columns", []))
+            prev_value, _ = _last_numeric_value(previous, [value_col] if value_col else indicator.get("value_columns", []))
+            delta = latest_value - prev_value if latest_value is not None and prev_value is not None else None
+            unit = indicator.get("unit", "")
+            unit_text = unit if unit else ""
+            value_text = f"{latest_value:.2f}{unit_text}" if latest_value is not None else "N/A"
+            delta_text = f"{delta:+.2f}{unit_text}" if delta is not None else "N/A"
+            note = indicator.get("risk_note", "")
+            lines.append(
+                f"- {label}: {value_text} | 日期 {date_text} | 较前值 {delta_text} | source={source_fn}"
+            )
+            if note:
+                lines.append(f"  - {note}")
+        except Exception as exc:
+            tracker.fail(f"macro_indicator_parse:{indicator.get('id', label)}", f"AkShare {source_fn}", exc)
+            unavailable.append(label)
+            lines.append(f"- {label}: 解析失败")
+
+    if unavailable:
+        lines.append(f"- 宏观数据缺口: {', '.join(unavailable)}")
+    lines.append("")
+    return lines
+
+
 def liquidity_tier(amount):
     """Classify ETF turnover/liquidity using RMB amount when available."""
     if amount is None:
@@ -123,6 +216,7 @@ def macro_observation(ak, pd, settings, tracker):
     else:
         lines.append("- 人民币中间价近30日变化: 数据不可用")
 
+    lines.extend(macro_indicator_lines(ak, settings, tracker))
     lines.append("- 宏观结论: 仅描述环境，不构成买卖信号。")
     lines.append("")
     return lines

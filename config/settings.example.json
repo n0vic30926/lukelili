@@ -17,6 +17,71 @@
     "social": 6,
     "unknown": 24
   },
+  "macro_indicators": [
+    {
+      "id": "china_cpi",
+      "label": "中国CPI",
+      "candidate_functions": ["macro_china_cpi_monthly", "macro_china_cpi_yearly"],
+      "date_columns": ["月份", "日期", "时间"],
+      "value_columns": ["今值", "最新值", "CPI", "居民消费价格指数", "value"],
+      "unit": "%",
+      "risk_note": "通胀影响利率预期和权益估值。"
+    },
+    {
+      "id": "china_ppi",
+      "label": "中国PPI",
+      "candidate_functions": ["macro_china_ppi_monthly", "macro_china_ppi_yearly"],
+      "date_columns": ["月份", "日期", "时间"],
+      "value_columns": ["今值", "最新值", "PPI", "工业品出厂价格指数", "value"],
+      "unit": "%",
+      "risk_note": "PPI反映上游价格压力和工业周期。"
+    },
+    {
+      "id": "china_pmi",
+      "label": "中国PMI",
+      "candidate_functions": ["macro_china_pmi_yearly", "macro_china_pmi"],
+      "date_columns": ["月份", "日期", "时间"],
+      "value_columns": ["今值", "最新值", "制造业PMI", "PMI", "value"],
+      "unit": "",
+      "risk_note": "PMI高于50通常表示扩张，低于50通常表示收缩。"
+    },
+    {
+      "id": "china_money_supply",
+      "label": "中国M2",
+      "candidate_functions": ["macro_china_money_supply"],
+      "date_columns": ["月份", "日期", "时间"],
+      "value_columns": ["M2-同比增长", "M2同比", "货币和准货币(M2)同比增长", "今值", "value"],
+      "unit": "%",
+      "risk_note": "M2反映流动性环境。"
+    },
+    {
+      "id": "china_gdp",
+      "label": "中国GDP",
+      "candidate_functions": ["macro_china_gdp_yearly"],
+      "date_columns": ["季度", "日期", "时间", "年份"],
+      "value_columns": ["今值", "GDP同比", "国内生产总值同比增长", "value"],
+      "unit": "%",
+      "risk_note": "GDP反映宏观增长环境。"
+    },
+    {
+      "id": "china_social_financing",
+      "label": "中国社融",
+      "candidate_functions": ["macro_china_shrzgm"],
+      "date_columns": ["月份", "日期", "时间"],
+      "value_columns": ["社会融资规模增量", "社融规模增量", "今值", "value"],
+      "unit": "亿元",
+      "risk_note": "社融反映信用扩张和实体融资环境。"
+    },
+    {
+      "id": "us_treasury_10y",
+      "label": "美国10Y国债收益率",
+      "candidate_functions": ["bond_zh_us_rate"],
+      "date_columns": ["日期", "时间"],
+      "value_columns": ["美国:国债收益率:10年", "10年", "美国10年期国债收益率", "value"],
+      "unit": "%",
+      "risk_note": "美债收益率影响全球成长股估值和美元资产折现率。"
+    }
+  ],
   "enable_news": false,
   "tavily_api_key_env": "TAVILY_API_KEY",
   "timezone": "Asia/Shanghai"

@@ -11,7 +11,7 @@ The project has completed the L1-L2 foundation:
 - smoke test for local foundation;
 - core scripts no longer default to old OpenClaw workspace paths.
 
-L3 foundation is now stabilized: daily and weekly reports have dependency checks, best-effort cache support, structured logs, archive index, visible module status, local portfolio validation, source tiering, freshness summaries, macro observations, and ETF proxy observations with metadata/premium/liquidity gaps. The next step is broader source coverage and mocked AkShare fixtures for report-level tests.
+L3 foundation is now stabilized: daily and weekly reports have dependency checks, best-effort cache support, structured logs, archive index, visible module status, local portfolio validation, source tiering, freshness summaries, configurable macro observations, and ETF proxy observations with metadata/premium/liquidity gaps. The next step is verifying real data adapters against the installed AkShare version and adding richer source-specific interpretation.
 
 ## L1: Document Investment Assistant
 
@@ -72,7 +72,8 @@ Next steps:
 
 - expand mocked report tests to cover partial data failures and skipped news;
 - add per-source freshness thresholds;
-- expand macro beyond Nasdaq/FX into CPI/PPI/PMI/M2/社融/GDP/rates;
+- verify configured macro adapters for CPI/PPI/PMI/M2/社融/GDP/rates against local AkShare;
+- add release-date and interpretation rules for each macro indicator;
 - expand ETF beyond configured metadata into official premium/discount, fee comparison, historical tracking error, and dividend adapters;
 - add tests with mocked AkShare responses.
 

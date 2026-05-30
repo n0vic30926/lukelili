@@ -23,13 +23,13 @@
 - Best-effort cache exists for external data calls.
 - Data status tracking, source tiering, freshness summaries, and report index inspection exist.
 - Offline smoke, runtime, portfolio, and mocked report tests exist.
-- Daily report includes a first-pass macro observation section.
+- Daily report includes a macro observation section with Nasdaq/FX baseline plus configurable CPI/PPI/PMI/M2/GDP/social-financing/US-10Y candidate adapters.
 - Daily report includes an ETF proxy observation section with liquidity tiers, configured benchmark/fee/tracking-error/dividend metadata, premium/discount estimate when reference NAV is available, and explicit missing-data gaps.
 
 ## Not Completed Yet
 
 - Real report-level tests with mocked AkShare fixtures for every branch of daily/weekly logic.
-- Broader macro coverage such as CPI, PPI, PMI, M2,社融, GDP, Fed policy calendar, and US Treasury yields beyond the current Nasdaq/FX baseline.
+- Macro coverage still needs real-source verification and enrichment for Fed policy calendar, data release dates, and per-indicator interpretation rules beyond the current configurable AkShare adapters.
 - Richer ETF analysis such as cross-fund fee comparison, historical tracking error calculation, official dividend history, and reliable premium/discount sources beyond the current quote/metadata baseline.
 - Full migration of real holdings into ignored `data/private/portfolio.local.json`.
 - Historical report review workflow and decision-review dashboard.
@@ -43,7 +43,7 @@ Stay in L3 until report generation can be tested offline with realistic mocked d
 ## Next Recommended Tasks
 
 1. Add fixture-based daily and weekly report tests that cover success, partial data failure, skipped news, and example portfolio mode.
-2. Expand macro source adapters one at a time with source/freshness metadata.
+2. Verify macro source adapters against the installed AkShare version and add release-date/freshness rules per indicator.
 3. Add official ETF premium/discount, fee comparison, historical tracking error, and dividend adapters.
 4. Add a decision review command that summarizes past reports and decision tracker records.
 5. Migrate real portfolio data to `data/private/portfolio.local.json` manually and stop relying on tracked `memory/portfolio.json`.
