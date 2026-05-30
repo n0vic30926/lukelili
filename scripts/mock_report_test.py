@@ -193,11 +193,21 @@ def run_etf_research_mock():
                         "最新价": 1.5,
                         "涨跌幅": -0.2,
                         "成交额": 50000000,
+                        "IOPV": 1.49,
                     }
                 ]
             )
 
-    settings = {"use_cache": False, "cache_ttl_hours": 0}
+    settings = {
+        "use_cache": False,
+        "cache_ttl_hours": 0,
+        "etf_analysis": {
+            "premium_discount_warn_pct": 0.5,
+            "premium_discount_high_pct": 1.0,
+            "tracking_error_warn": 0.005,
+            "tracking_error_high": 0.01,
+        },
+    }
     tracker = DataStatusTracker()
     holdings = [
         {
@@ -208,12 +218,18 @@ def run_etf_research_mock():
                 "expense_ratio": 0.0015,
                 "tracking_error": 0.002,
                 "dividend_policy": "mock annual",
+                "last_dividend_date": "2025-12-31",
             },
         },
         {
-            "name": "Missing Metadata Holding",
+            "name": "High Fee ETF Holding",
             "proxy_etf": "sz159999",
-            "etf_profile": {},
+            "etf_profile": {
+                "benchmark": "Mock Benchmark",
+                "expense_ratio": 0.005,
+                "tracking_error": 0.015,
+                "dividend_policy": "mock quarterly",
+            },
         },
     ]
 
@@ -223,7 +239,13 @@ def run_etf_research_mock():
     _assert_contains(report, "跟踪误差: 0.20%")
     _assert_contains(report, "分红: mock annual")
     _assert_contains(report, "溢价/折价: +2.00%")
-    _assert_contains(report, "待补ETF数据")
+    _assert_contains(report, "费率比较")
+    _assert_contains(report, "低于同组中位数")
+    _assert_contains(report, "高于同组中位数")
+    _assert_contains(report, "溢价风险: high")
+    _assert_contains(report, "跟踪风险: high")
+    _assert_contains(report, "分红状态: 最近分红 2025-12-31")
+    _assert_contains(report, "分红状态: 缺少最近分红日期")
     return report
 
 

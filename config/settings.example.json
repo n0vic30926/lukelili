@@ -17,6 +17,12 @@
     "social": 6,
     "unknown": 24
   },
+  "etf_analysis": {
+    "premium_discount_warn_pct": 0.5,
+    "premium_discount_high_pct": 1.0,
+    "tracking_error_warn": 0.005,
+    "tracking_error_high": 0.01
+  },
   "macro_indicators": [
     {
       "id": "china_cpi",

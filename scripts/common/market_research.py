@@ -3,6 +3,7 @@
 
 from datetime import datetime
 import re
+from statistics import median
 
 from common.data_runtime import cached_call
 
@@ -206,6 +207,51 @@ def premium_discount(price, reference_nav):
     return (price / reference_nav - 1) * 100
 
 
+def _risk_level(value, warn_threshold, high_threshold, use_abs=True):
+    if value is None:
+        return "unknown"
+    score = abs(value) if use_abs else value
+    if high_threshold is not None and score >= high_threshold:
+        return "high"
+    if warn_threshold is not None and score >= warn_threshold:
+        return "elevated"
+    return "normal"
+
+
+def _expense_medians(holdings):
+    grouped = {}
+    for holding in holdings:
+        profile = holding.get("etf_profile", {}) or {}
+        benchmark = profile.get("benchmark")
+        ratio = _safe_float(profile.get("expense_ratio"))
+        if benchmark and benchmark != "未配置" and ratio is not None:
+            grouped.setdefault(benchmark, []).append(ratio)
+    return {benchmark: median(values) for benchmark, values in grouped.items() if values}
+
+
+def _expense_comparison(expense_ratio, benchmark, medians):
+    if expense_ratio is None or benchmark not in medians:
+        return "费率比较: 数据不足"
+    median_ratio = medians[benchmark]
+    if expense_ratio < median_ratio:
+        label = "低于同组中位数"
+    elif expense_ratio > median_ratio:
+        label = "高于同组中位数"
+    else:
+        label = "等于同组中位数"
+    return f"费率比较: {label} {_format_ratio(median_ratio)}"
+
+
+def _dividend_status(profile):
+    last_date = profile.get("last_dividend_date")
+    dividend_policy = profile.get("dividend_policy")
+    if last_date:
+        return f"最近分红 {last_date}"
+    if dividend_policy and dividend_policy != "未配置":
+        return "缺少最近分红日期"
+    return "未配置"
+
+
 def macro_observation(ak, pd, settings, tracker):
     """Return markdown lines for macro conditions using best-effort AkShare data."""
     lines = ["## 🌏 宏观观察", ""]
@@ -306,6 +352,12 @@ def etf_observation(ak, settings, tracker, holdings):
         return lines
 
     gaps = []
+    etf_settings = settings.get("etf_analysis", {}) or {}
+    premium_warn = _safe_float(etf_settings.get("premium_discount_warn_pct", 0.5))
+    premium_high = _safe_float(etf_settings.get("premium_discount_high_pct", 1.0))
+    tracking_warn = _safe_float(etf_settings.get("tracking_error_warn", 0.005))
+    tracking_high = _safe_float(etf_settings.get("tracking_error_high", 0.01))
+    expense_medians = _expense_medians(holdings)
     for holding in holdings:
         code = holding.get("proxy_etf")
         if not code:
@@ -335,6 +387,10 @@ def etf_observation(ak, settings, tracker, holdings):
         expense_ratio = _safe_float(profile.get("expense_ratio"))
         tracking_error = _safe_float(profile.get("tracking_error"))
         dividend_policy = profile.get("dividend_policy", "未配置")
+        dividend_status = _dividend_status(profile)
+        premium_risk = _risk_level(pd_pct, premium_warn, premium_high)
+        tracking_risk = _risk_level(tracking_error, tracking_warn, tracking_high, use_abs=False)
+        fee_comparison = _expense_comparison(expense_ratio, benchmark, expense_medians)
         premium_text = _format_pct(pd_pct) if pd_pct is not None else "数据不可用"
         nav_text = f"{reference_nav:.4f}({nav_col})" if reference_nav is not None else "N/A"
         lines.append(
@@ -344,6 +400,9 @@ def etf_observation(ak, settings, tracker, holdings):
             f"  - 基准: {benchmark} | 费率: {_format_ratio(expense_ratio)} | 跟踪误差: {_format_ratio(tracking_error)} | 分红: {dividend_policy}"
         )
         lines.append(f"  - 溢价/折价: {premium_text} | 参考净值: {nav_text}")
+        lines.append(
+            f"  - {fee_comparison} | 溢价风险: {premium_risk} | 跟踪风险: {tracking_risk} | 分红状态: {dividend_status}"
+        )
 
         if benchmark == "未配置":
             gaps.append(f"{code}: benchmark")
@@ -353,6 +412,8 @@ def etf_observation(ak, settings, tracker, holdings):
             gaps.append(f"{code}: tracking_error")
         if dividend_policy == "未配置":
             gaps.append(f"{code}: dividend_policy")
+        if dividend_status == "缺少最近分红日期":
+            gaps.append(f"{code}: last_dividend_date")
         if pd_pct is None:
             gaps.append(f"{code}: premium_discount_source")
 

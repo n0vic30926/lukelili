@@ -25,13 +25,13 @@
 - Offline smoke, runtime, portfolio, and mocked report tests exist; report tests cover success, partial data failure, skipped news, and example portfolio mode.
 - Historical review command aggregates report index and decision records, and includes strategy scorecards without printing raw asset details.
 - Daily report includes a macro observation section with Nasdaq/FX baseline plus configurable CPI/PPI/PMI/M2/GDP/social-financing/US-10Y candidate adapters, data freshness labels, and rule-based interpretation text.
-- Daily report includes an ETF proxy observation section with liquidity tiers, configured benchmark/fee/tracking-error/dividend metadata, premium/discount estimate when reference NAV is available, and explicit missing-data gaps.
+- Daily report includes an ETF proxy observation section with liquidity tiers, configured benchmark/fee/tracking-error/dividend metadata, fee comparison, tracking-risk labels, dividend status, premium/discount risk labels, and explicit missing-data gaps.
 
 ## Not Completed Yet
 
 - Realistic AkShare-shaped fixtures still do not cover every branch of daily/weekly logic.
 - Macro coverage still needs real-source verification and enrichment for Fed policy calendar, official release calendars, and stronger per-indicator rules beyond the current configurable AkShare adapters.
-- Richer ETF analysis such as cross-fund fee comparison, historical tracking error calculation, official dividend history, and reliable premium/discount sources beyond the current quote/metadata baseline.
+- Richer ETF analysis still needs historical tracking error calculation, official dividend history adapters, and reliable premium/discount sources beyond the current quote/profile baseline.
 - Full migration of real holdings into ignored `data/private/portfolio.local.json`.
 - Historical report review workflow exists as a command-line summary with strategy scorecards; dashboard, richer metrics, and user-confirmed action tracking remain incomplete.
 - L4 multi-agent research system.
@@ -44,7 +44,7 @@ Stay in L3 until report generation can be tested offline with realistic mocked d
 ## Next Recommended Tasks
 
 1. Verify macro source adapters against the installed AkShare version and add official release-calendar checks per indicator.
-2. Add official ETF premium/discount, fee comparison, historical tracking error, and dividend adapters.
+2. Add official ETF premium/discount, historical tracking error, and dividend-history adapters.
 3. Expand decision review into richer metrics: report streaks, repeated failures, explicit checklist pass/fail evidence, and user-confirmed actions.
 4. Add more realistic AkShare-shaped fixtures for each report branch.
 5. Migrate real portfolio data to `data/private/portfolio.local.json` manually and stop relying on tracked `memory/portfolio.json`.
