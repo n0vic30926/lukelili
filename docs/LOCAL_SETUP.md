@@ -43,6 +43,7 @@ Optional `factor_profile` values route attribution modules:
 ```bash
 python3 scripts/smoke_test.py
 python3 scripts/mock_data_quality_test.py
+python3 scripts/mock_decision_support_test.py
 python3 scripts/mock_dependency_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_routing_test.py
@@ -75,6 +76,16 @@ python3 scripts/research_dispatch.py --execute "宏观 利率 ETF 组合风险 �
 The dispatch command only creates a role/task contract or a merged research
 report. It does not run broker actions or convert research into
 user-confirmed trades.
+
+Create a decision-support packet:
+
+```bash
+python3 scripts/decision_support.py "组合风险 复盘 决策辅助"
+```
+
+The decision-support packet contains candidate actions, evidence, risks, and
+confirmation checks. It is not executable and must not be treated as user
+consent.
 
 The smoke test checks local guardrails, config examples, schema, fictional example data, OpenClaw path removal, and Tavily key isolation. It does not install dependencies or call market data APIs.
 

@@ -110,6 +110,7 @@
 python3 scripts/smoke_test.py
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 python3 scripts/mock_data_quality_test.py
+python3 scripts/mock_decision_support_test.py
 python3 scripts/mock_dependency_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_routing_test.py
@@ -173,6 +174,14 @@ python3 scripts/research_dispatch.py --execute "宏观 利率 ETF 组合风险 �
 
 `research_dispatch.py` 只输出研究任务契约或聚合研究报告，不连接券商、不下单、不替用户确认交易。
 
+生成 L5 决策辅助包：
+
+```bash
+python3 scripts/decision_support.py "组合风险 复盘 决策辅助"
+```
+
+`decision_support.py` 只输出候选动作、依据、风险和用户确认清单；`execution_allowed` 永远为 `false`。
+
 ## 原 Cron 任务配置
 
 ```
@@ -220,7 +229,8 @@ Delivery配置（所有cron通用）：
 - [x] L4 最小研究调度：Macro / Industry / ETF / Risk / Review 角色契约
 - [x] L4 只读研究执行：本地角色 runner 与聚合研究报告
 - [ ] L4 多 Agent 研究角色：接入更完整的真实数据工具与证据排序
-- [ ] L5 半自动决策辅助：必须用户确认，不允许自动交易
+- [x] L5 决策辅助安全层：候选动作、风险、确认清单，不允许自动交易
+- [ ] L5 半自动决策辅助：接入更完整数据后的人工确认工作流
 
 ---
 

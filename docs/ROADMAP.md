@@ -46,6 +46,11 @@ each role's tool coverage and ranking evidence by freshness and reliability.
 
 Goal: provide buy/sell/hold/watch decision support with explicit user confirmation.
 
+Status: a local decision-support packet builder now converts portfolio strategy
+types and research observations into candidate actions, rationale, risks, and
+required confirmation checks. It sets `execution_allowed=false` and does not
+connect to broker endpoints.
+
 Explicitly out of scope:
 
 - broker integration;
