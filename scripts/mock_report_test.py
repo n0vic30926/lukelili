@@ -316,6 +316,18 @@ def run_macro_radar_mock():
     settings = {
         "use_cache": False,
         "cache_ttl_hours": 0,
+        "fed_policy_calendar": {
+            "source": "FOMC fixture",
+            "source_tier": "official",
+            "current_target_rate": "5.25%-5.50%",
+            "events": [
+                {
+                    "date": "2026-03-18",
+                    "event": "FOMC decision",
+                    "watch": "dot plot and press conference",
+                }
+            ],
+        },
         "macro_indicators": [
             {
                 "id": "china_cpi",
@@ -404,6 +416,10 @@ def run_macro_radar_mock():
     _assert_contains(report, "source=NBS fixture")
     _assert_contains(report, "发布日历缺口")
     _assert_contains(report, "缺失宏观指标")
+    _assert_contains(report, "Fed政策日历")
+    _assert_contains(report, "当前目标利率: 5.25%-5.50%")
+    _assert_contains(report, "2026-03-18 | FOMC decision")
+    _assert_contains(report, "关注点: dot plot and press conference")
     _assert_contains(report, "宏观数据缺口")
     return report
 

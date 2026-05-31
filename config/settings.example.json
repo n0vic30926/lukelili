@@ -23,6 +23,13 @@
     "tracking_error_warn": 0.005,
     "tracking_error_high": 0.01
   },
+  "fed_policy_calendar": {
+    "source": "FOMC official calendar",
+    "source_tier": "official",
+    "current_target_rate": "",
+    "events": [],
+    "note": "Fill upcoming FOMC decision dates, minutes dates, and press conferences in settings.local.json."
+  },
   "macro_indicators": [
     {
       "id": "china_cpi",

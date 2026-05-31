@@ -21,6 +21,11 @@ def _assert_contains(text, expected):
 
 def run_adapter_audit_test():
     settings = {
+        "fed_policy_calendar": {
+            "source": "FOMC fixture",
+            "source_tier": "official",
+            "events": [{"date": "2026-03-18", "event": "FOMC decision"}],
+        },
         "macro_indicators": [
             {
                 "id": "china_cpi",
@@ -55,6 +60,7 @@ def run_adapter_audit_test():
     _assert_contains(report, "candidate_functions")
     _assert_contains(report, "value_columns")
     _assert_contains(report, "release_calendar")
+    _assert_contains(report, "Fed policy calendar: status=ok")
     _assert_contains(report, "ETF adapter: ETF行情 | function=fund_etf_spot_em | status=ok")
 
 

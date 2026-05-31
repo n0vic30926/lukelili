@@ -99,6 +99,8 @@ Missing dependencies are not installed automatically. The user must explicitly r
 
 Data adapter audits must remain offline by default: they may inspect local configuration and imported module symbols, but must not call market data functions, broker interfaces, or remote APIs.
 
+Macro and Fed calendars are local configuration aids. Reports may show configured dates and gaps, but must not invent official release dates or policy outcomes.
+
 Historical review may scan local archived report text for non-sensitive action markers such as `action_id` or `report_evidence_terms`. It may also aggregate structured runtime events to detect repeated module failures. It must only print aggregate match and module status, not asset codes, matched terms, report excerpts, error messages, amounts, costs, shares, or private rationale text.
 
 ## Source Quality

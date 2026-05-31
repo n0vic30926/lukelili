@@ -55,6 +55,21 @@ def _macro_config_issues(indicator):
     return issues
 
 
+def _fed_calendar_issues(settings):
+    issues = []
+    calendar = settings.get("fed_policy_calendar")
+    if not isinstance(calendar, dict):
+        return ["fed_policy_calendar"]
+    if not calendar.get("source"):
+        issues.append("source")
+    if not calendar.get("source_tier"):
+        issues.append("source_tier")
+    events = calendar.get("events")
+    if not isinstance(events, list):
+        issues.append("events")
+    return issues
+
+
 def _available_functions(ak_module, function_names):
     if ak_module is None:
         return [], list(function_names)
@@ -113,6 +128,10 @@ def audit_settings(settings, ak_module=None, dependency_status=None):
 
     return {
         "akshare_dependency": dependency_status,
+        "fed_policy_calendar": {
+            "status": "config_issue" if _fed_calendar_issues(settings) else "ok",
+            "issues": _fed_calendar_issues(settings),
+        },
         "macro_adapters": macro_results,
         "etf_adapters": etf_results,
     }
@@ -122,6 +141,11 @@ def format_audit(audit):
     lines = ["# 数据 Adapter 离线审计", ""]
     lines.append(f"- AkShare dependency: {audit['akshare_dependency']}")
     lines.append("- 审计边界: 只检查本地配置和函数符号存在性，不联网、不调用行情接口。")
+    fed = audit["fed_policy_calendar"]
+    fed_line = f"- Fed policy calendar: status={fed['status']}"
+    if fed["issues"]:
+        fed_line += f" | issues={','.join(fed['issues'])}"
+    lines.append(fed_line)
     lines.append("")
     lines.append("## 宏观 Adapter")
     if not audit["macro_adapters"]:

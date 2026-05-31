@@ -153,6 +153,35 @@ def macro_release_calendar_lines(indicators, today=None):
     return lines
 
 
+def fed_policy_calendar_lines(settings, today=None):
+    """Return Fed/FOMC calendar lines from local settings."""
+    calendar = settings.get("fed_policy_calendar", {}) or {}
+    lines = ["### Fed政策日历", ""]
+    source = calendar.get("source", "未配置")
+    source_tier = calendar.get("source_tier", "unknown")
+    target_rate = calendar.get("current_target_rate", "未配置")
+    events = calendar.get("events", []) or []
+    today = today or datetime.now().date()
+    lines.append(f"- source={source} | tier={source_tier}")
+    lines.append(f"- 当前目标利率: {target_rate}")
+    if not events:
+        lines.append("- Fed日历缺口: 未配置 FOMC/Fed 事件。")
+    for event in events:
+        date_text = event.get("date", "")
+        parsed = _parse_indicator_date(date_text)
+        days_text = "日期不可解析"
+        if parsed:
+            days = (parsed - today).days
+            days_text = f"{days}天后" if days >= 0 else f"已过期{abs(days)}天"
+        event_name = event.get("event", "Fed event")
+        lines.append(f"- {date_text} | {event_name} | {days_text}")
+        if event.get("watch"):
+            lines.append(f"  - 关注点: {event['watch']}")
+    lines.append("- Fed日历边界: 只读取本地配置，不自动联网确认会议日期或政策结果。")
+    lines.append("")
+    return lines
+
+
 def _call_first_available(ak, settings, tracker, indicator):
     candidates = indicator.get("candidate_functions", [])
     for fn_name in candidates:
@@ -222,6 +251,7 @@ def macro_indicator_lines(ak, settings, tracker):
     if unavailable:
         lines.append(f"- 宏观数据缺口: {', '.join(unavailable)}")
     lines.extend(macro_release_calendar_lines(indicators))
+    lines.extend(fed_policy_calendar_lines(settings))
     lines.append("")
     return lines
 
