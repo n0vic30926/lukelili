@@ -40,6 +40,7 @@ python3 scripts/mock_dependency_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_runtime_test.py
 python3 scripts/mock_reporting_test.py
+python3 scripts/mock_weekly_status_test.py
 ```
 
 The smoke test checks local guardrails, config examples, schema, fictional example data, OpenClaw path removal, and Tavily key isolation. It does not install dependencies or call market data APIs.

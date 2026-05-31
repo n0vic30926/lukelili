@@ -10,6 +10,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from common.dependencies import REPORT_DEPENDENCIES, exit_if_missing
 from common.config_loader import get_portfolio_path, load_settings, resolve_path
+from common.data_runtime import DataStatusTracker
 from common.reporting import write_report
 
 try:
@@ -30,78 +31,88 @@ except ImportError:
 PORTFOLIO_PATH = str(get_portfolio_path())
 
 
-def build_run_summary():
+def build_run_summary(tracker=None):
     settings = load_settings()
     portfolio_path = Path(PORTFOLIO_PATH)
     example_path = resolve_path(settings["example_portfolio_path"])
     is_example = portfolio_path == example_path
-    return {
+    summary = {
         "portfolio_source": "example" if is_example else "private",
         "is_example_data": is_example,
         "dependencies": {"akshare": "available", "pandas": "available", "numpy": "available"},
         "modules": {"success": 1, "failed": 0, "skipped": 0},
     }
+    if tracker:
+        summary.update(tracker.to_run_summary())
+    return summary
 
 def load_portfolio():
     with open(PORTFOLIO_PATH) as f:
         return json.load(f)
 
-def weekly_returns():
+def weekly_returns(tracker=None):
     """模块1: 每只持仓的本周收益"""
     portfolio = load_portfolio()
     today = datetime.now()
     # 本周一
     monday = today - timedelta(days=today.weekday())
     results = []
-    for h in portfolio['holdings']:
-        df = ak.fund_open_fund_info_em(symbol=h['code'], indicator="单位净值走势")
-        df['净值日期'] = pd.to_datetime(df['净值日期'])
-        df = df.drop_duplicates(subset='净值日期').sort_values('净值日期')
-        # 找上周五和本周五(或最新)
-        last_friday = monday - timedelta(days=3)
-        mask = df['净值日期'] >= last_friday
-        df_week = df[mask].tail(10)
-        if len(df_week) < 2:
-            continue
-        nav_start = float(df_week.iloc[0]['单位净值'])
-        nav_end = float(df_week.iloc[-1]['单位净值'])
-        week_ret = (nav_end / nav_start - 1) * 100
-        date_start = df_week.iloc[0]['净值日期'].strftime('%m/%d')
-        date_end = df_week.iloc[-1]['净值日期'].strftime('%m/%d')
+    try:
+        for h in portfolio['holdings']:
+            df = ak.fund_open_fund_info_em(symbol=h['code'], indicator="单位净值走势")
+            df['净值日期'] = pd.to_datetime(df['净值日期'])
+            df = df.drop_duplicates(subset='净值日期').sort_values('净值日期')
+            # 找上周五和本周五(或最新)
+            last_friday = monday - timedelta(days=3)
+            mask = df['净值日期'] >= last_friday
+            df_week = df[mask].tail(10)
+            if len(df_week) < 2:
+                continue
+            nav_start = float(df_week.iloc[0]['单位净值'])
+            nav_end = float(df_week.iloc[-1]['单位净值'])
+            week_ret = (nav_end / nav_start - 1) * 100
+            date_start = df_week.iloc[0]['净值日期'].strftime('%m/%d')
+            date_end = df_week.iloc[-1]['净值日期'].strftime('%m/%d')
 
-        # 持仓盈亏
-        cost = h.get('cost_basis')
-        shares = h.get('shares')
-        pnl = None
-        pnl_pct = None
-        if cost and shares:
-            market_value = shares * nav_end
-            pnl = market_value - cost
-            pnl_pct = (pnl / cost) * 100
+            # 持仓盈亏
+            cost = h.get('cost_basis')
+            shares = h.get('shares')
+            pnl = None
+            pnl_pct = None
+            if cost and shares:
+                market_value = shares * nav_end
+                pnl = market_value - cost
+                pnl_pct = (pnl / cost) * 100
 
-        results.append({
-            'code': h['code'],
-            'name': h['name'],
-            'nav_start': nav_start,
-            'nav_end': nav_end,
-            'week_ret': round(week_ret, 2),
-            'period': f"{date_start}→{date_end}",
-            'pnl': round(pnl, 2) if pnl else None,
-            'pnl_pct': round(pnl_pct, 2) if pnl_pct else None,
-            'strategy': h.get('strategy', ''),
-        })
+            results.append({
+                'code': h['code'],
+                'name': h['name'],
+                'nav_start': nav_start,
+                'nav_end': nav_end,
+                'week_ret': round(week_ret, 2),
+                'period': f"{date_start}→{date_end}",
+                'pnl': round(pnl, 2) if pnl else None,
+                'pnl_pct': round(pnl_pct, 2) if pnl_pct else None,
+                'strategy': h.get('strategy', ''),
+            })
+        if tracker:
+            tracker.success("weekly_returns", source="AkShare", detail=f"{len(results)} holdings")
+    except Exception as e:
+        if tracker:
+            tracker.failure("weekly_returns", source="AkShare", error=e)
     return results
 
 
 KEY_INDUSTRIES = ['半导体', '白酒', '新能源车', '人工智能', '软件开发', '通信设备', '消费电子', '银行', '医药商业', '光伏设备', '证券', '汽车整车', '电力设备', '计算机设备', '光学光电子']
 
 
-def industry_rotation():
+def industry_rotation(tracker=None):
     """模块2: 本周行业资金流TOP3流入+TOP3流出
     主接口: stock_fund_flow_industry (全行业排名)
     备用接口: stock_sector_fund_flow_hist (逐行业查历史)
     """
     # 主接口
+    primary_error = None
     try:
         df = ak.stock_fund_flow_industry()
         df = df.sort_values('净额', ascending=True)
@@ -109,9 +120,11 @@ def industry_rotation():
         top_outflow = df.head(3)[['行业', '净额', '行业-涨跌幅']].to_dict('records')
         top_inflow = df.tail(3)[['行业', '净额', '行业-涨跌幅']].to_dict('records')
         top_inflow.reverse()
+        if tracker:
+            tracker.success("industry_rotation", source="AkShare", detail="primary")
         return {'inflow': top_inflow, 'outflow': top_outflow, 'source': 'primary'}
-    except Exception:
-        pass
+    except Exception as e:
+        primary_error = e
 
     # 备用接口：逐行业查最近1天主力净流入
     try:
@@ -129,6 +142,8 @@ def industry_rotation():
             except Exception:
                 continue
         if not results:
+            if tracker:
+                tracker.failure("industry_rotation", source="AkShare", error=primary_error)
             return None
         rdf = pd.DataFrame(results).sort_values('净额', ascending=True)
         top_outflow = rdf.head(3).to_dict('records')
@@ -137,8 +152,12 @@ def industry_rotation():
         # 补涨跌幅字段（备用接口没有，置0）
         for item in top_inflow + top_outflow:
             item['行业-涨跌幅'] = 0
+        if tracker:
+            tracker.success("industry_rotation", source="AkShare", detail="fallback")
         return {'inflow': top_inflow, 'outflow': top_outflow, 'source': 'fallback'}
-    except Exception:
+    except Exception as e:
+        if tracker:
+            tracker.failure("industry_rotation", source="AkShare", error=e)
         return None
 
 
@@ -208,73 +227,80 @@ def decision_template(weekly_rets, industry_data, qdii_factor, ai_factor):
     return advice
 
 
-def dca_curve():
+def dca_curve(tracker=None):
     """模块5: 定投收益曲线——每笔确认日的累计成本 vs 累计市值"""
     portfolio = load_portfolio()
     results = []
-    for h in portfolio['holdings']:
-        records = [r for r in h.get('buy_records', []) if r.get('status') != 'pending' and r.get('nav') and r.get('shares')]
-        if not records:
-            continue
-        records.sort(key=lambda x: x['confirm_date'])
+    try:
+        for h in portfolio['holdings']:
+            records = [r for r in h.get('buy_records', []) if r.get('status') != 'pending' and r.get('nav') and r.get('shares')]
+            if not records:
+                continue
+            records.sort(key=lambda x: x['confirm_date'])
 
-        # 获取当前净值
-        df = ak.fund_open_fund_info_em(symbol=h['code'], indicator="单位净值走势")
-        df['净值日期'] = pd.to_datetime(df['净值日期'])
-        current_nav = float(df.iloc[-1]['单位净值'])
+            # 获取当前净值
+            df = ak.fund_open_fund_info_em(symbol=h['code'], indicator="单位净值走势")
+            df['净值日期'] = pd.to_datetime(df['净值日期'])
+            current_nav = float(df.iloc[-1]['单位净值'])
 
-        cumulative_cost = 0
-        cumulative_shares = 0
-        entries = []
-        for r in records:
-            cumulative_cost += r['amount']
-            cumulative_shares += r['shares']
-            market_val = cumulative_shares * current_nav
-            pnl = market_val - cumulative_cost
-            pnl_pct = (pnl / cumulative_cost) * 100 if cumulative_cost else 0
-            avg_cost = cumulative_cost / cumulative_shares if cumulative_shares else 0
-            entries.append({
-                'date': r['confirm_date'],
-                'amount': r['amount'],
-                'nav': r['nav'],
-                'cum_cost': cumulative_cost,
-                'cum_shares': round(cumulative_shares, 2),
-                'avg_cost_nav': round(avg_cost, 4),
-                'current_nav': current_nav,
-                'market_val': round(market_val, 2),
-                'pnl': round(pnl, 2),
-                'pnl_pct': round(pnl_pct, 2),
+            cumulative_cost = 0
+            cumulative_shares = 0
+            entries = []
+            for r in records:
+                cumulative_cost += r['amount']
+                cumulative_shares += r['shares']
+                market_val = cumulative_shares * current_nav
+                pnl = market_val - cumulative_cost
+                pnl_pct = (pnl / cumulative_cost) * 100 if cumulative_cost else 0
+                avg_cost = cumulative_cost / cumulative_shares if cumulative_shares else 0
+                entries.append({
+                    'date': r['confirm_date'],
+                    'amount': r['amount'],
+                    'nav': r['nav'],
+                    'cum_cost': cumulative_cost,
+                    'cum_shares': round(cumulative_shares, 2),
+                    'avg_cost_nav': round(avg_cost, 4),
+                    'current_nav': current_nav,
+                    'market_val': round(market_val, 2),
+                    'pnl': round(pnl, 2),
+                    'pnl_pct': round(pnl_pct, 2),
+                })
+
+            # 汇总
+            final = entries[-1] if entries else {}
+            results.append({
+                'code': h['code'],
+                'name': h['name'],
+                'strategy': h.get('strategy', ''),
+                'entries': entries,
+                'summary': {
+                    'total_cost': final.get('cum_cost', 0),
+                    'total_shares': final.get('cum_shares', 0),
+                    'avg_cost': final.get('avg_cost_nav', 0),
+                    'current_nav': current_nav,
+                    'market_val': final.get('market_val', 0),
+                    'pnl': final.get('pnl', 0),
+                    'pnl_pct': final.get('pnl_pct', 0),
+                }
             })
-
-        # 汇总
-        final = entries[-1] if entries else {}
-        results.append({
-            'code': h['code'],
-            'name': h['name'],
-            'strategy': h.get('strategy', ''),
-            'entries': entries,
-            'summary': {
-                'total_cost': final.get('cum_cost', 0),
-                'total_shares': final.get('cum_shares', 0),
-                'avg_cost': final.get('avg_cost_nav', 0),
-                'current_nav': current_nav,
-                'market_val': final.get('market_val', 0),
-                'pnl': final.get('pnl', 0),
-                'pnl_pct': final.get('pnl_pct', 0),
-            }
-        })
+        if tracker:
+            tracker.success("dca_curve", source="AkShare", detail=f"{len(results)} holdings")
+    except Exception as e:
+        if tracker:
+            tracker.failure("dca_curve", source="AkShare", error=e)
     return results
 
 
-def format_report():
+def format_report(tracker=None):
     """生成完整周报"""
+    tracker = tracker or DataStatusTracker()
     now = datetime.now()
     lines = []
     lines.append(f"# 📋 周度复盘 | {now.strftime('%Y-%m-%d')}")
     lines.append("")
 
     # 模块1: 收益
-    rets = weekly_returns()
+    rets = weekly_returns(tracker=tracker)
     lines.append("## 📈 本周收益")
     lines.append("")
     total_cost = 0
@@ -288,7 +314,7 @@ def format_report():
     lines.append("")
 
     # 模块2: 行业轮动
-    ind = industry_rotation()
+    ind = industry_rotation(tracker=tracker)
     if ind:
         lines.append("## 🔄 行业资金流")
         lines.append("")
@@ -331,7 +357,7 @@ def format_report():
     lines.append("")
 
     # 模块5: 定投收益曲线
-    dca = dca_curve()
+    dca = dca_curve(tracker=tracker)
     if dca:
         lines.append("## 📊 定投收益曲线")
         lines.append("")
@@ -373,6 +399,7 @@ if __name__ == "__main__":
     if exit_if_missing("weekly_finance_review.py", REPORT_DEPENDENCIES):
         raise SystemExit(1)
 
-    report = format_report()
-    archived = write_report("weekly", report, run_summary=build_run_summary())
+    tracker = DataStatusTracker()
+    report = format_report(tracker=tracker)
+    archived = write_report("weekly", report, run_summary=build_run_summary(tracker))
     print(archived["content"])
