@@ -36,9 +36,18 @@ python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 
 ```bash
 python3 scripts/smoke_test.py
+python3 scripts/mock_dependency_test.py
 ```
 
 The smoke test checks local guardrails, config examples, schema, fictional example data, OpenClaw path removal, and Tavily key isolation. It does not install dependencies or call market data APIs.
+
+Install runtime dependencies manually before running daily or weekly reports:
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+If a required dependency such as `akshare` is missing, report entrypoints should print the install command and exit without producing market analysis.
 
 ## 4. Optional News
 
@@ -48,4 +57,3 @@ News is disabled by default. To enable Tavily-backed news:
 2. Set `"enable_news": true` in `config/settings.local.json`.
 
 If the key is missing or news is disabled, news functions return no articles and should not block the core report flow.
-

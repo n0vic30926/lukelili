@@ -8,14 +8,25 @@
 import json, os, sys, traceback
 from datetime import datetime, timedelta
 
-import akshare as ak
-import pandas as pd
-import numpy as np
-
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
+from common.dependencies import REPORT_DEPENDENCIES, exit_if_missing
 from common.config_loader import get_portfolio_path
-from qdii_three_factor import qdii_attribution, portfolio_risk_scan, ai_fund_attribution
+
+try:
+    import akshare as ak
+except ImportError:
+    ak = None
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 PORTFOLIO_PATH = str(get_portfolio_path())
 
@@ -116,6 +127,8 @@ def get_fund_top_holdings(code):
 # ── 生成简报 ──
 
 def main():
+    from qdii_three_factor import qdii_attribution, portfolio_risk_scan, ai_fund_attribution
+
     portfolio = load_portfolio()
     now = datetime.now()
     today = now.strftime("%Y-%m-%d")
@@ -481,6 +494,9 @@ def main():
 
 
 if __name__ == "__main__":
+    if exit_if_missing("daily_finance_brief.py", REPORT_DEPENDENCIES):
+        raise SystemExit(1)
+
     # 生成简报
     report = main()
     print(report)

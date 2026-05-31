@@ -109,7 +109,16 @@
 ```bash
 python3 scripts/smoke_test.py
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
+python3 scripts/mock_dependency_test.py
 ```
+
+运行日报/周报前需要用户手动安装依赖：
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+如果缺少 `akshare` 等运行依赖，日报/周报会输出安装提示并退出，不生成伪报告。
 
 ## 原 Cron 任务配置
 

@@ -33,6 +33,7 @@ def check_foundation_files():
         "AGENTS.md",
         ".env.example",
         ".gitignore",
+        "requirements.txt",
         "config/settings.example.json",
         "schemas/portfolio.schema.json",
         "data/examples/portfolio.example.json",
@@ -40,7 +41,9 @@ def check_foundation_files():
         "docs/SECURITY_AND_BOUNDARIES.md",
         "docs/ROADMAP.md",
         "scripts/common/config_loader.py",
+        "scripts/common/dependencies.py",
         "scripts/validate_portfolio.py",
+        "scripts/mock_dependency_test.py",
     ]
     for path in required:
         if (ROOT / path).exists():
