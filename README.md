@@ -116,6 +116,7 @@ python3 scripts/mock_factor_routing_test.py
 python3 scripts/mock_factor_status_test.py
 python3 scripts/mock_industry_intel_dynamic_test.py
 python3 scripts/mock_news_status_test.py
+python3 scripts/mock_research_execution_test.py
 python3 scripts/mock_research_dispatch_test.py
 python3 scripts/mock_report_index_test.py
 python3 scripts/mock_review_history_test.py
@@ -164,7 +165,13 @@ python3 scripts/review_history.py
 python3 scripts/research_dispatch.py "宏观 利率 ETF 组合风险 复盘"
 ```
 
-`research_dispatch.py` 只输出研究任务契约，不连接券商、不下单、不替用户确认交易。
+执行本地只读角色并合并研究报告：
+
+```bash
+python3 scripts/research_dispatch.py --execute "宏观 利率 ETF 组合风险 复盘"
+```
+
+`research_dispatch.py` 只输出研究任务契约或聚合研究报告，不连接券商、不下单、不替用户确认交易。
 
 ## 原 Cron 任务配置
 
@@ -211,7 +218,8 @@ Delivery配置（所有cron通用）：
 - [x] 行业情报本地化：从 portfolio 动态生成资讯查询和影响标签
 - [x] 因子归因本地化：从 portfolio `factor_profile` 动态路由 QDII/AI 归因
 - [x] L4 最小研究调度：Macro / Industry / ETF / Risk / Review 角色契约
-- [ ] L4 多 Agent 研究角色：接入真实工具执行与报告合并
+- [x] L4 只读研究执行：本地角色 runner 与聚合研究报告
+- [ ] L4 多 Agent 研究角色：接入更完整的真实数据工具与证据排序
 - [ ] L5 半自动决策辅助：必须用户确认，不允许自动交易
 
 ---

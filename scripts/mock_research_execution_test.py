@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+"""Offline tests for L4 research role execution and report merging."""
+
+from research_dispatch import build_research_plan, execute_research_plan, format_research_report
+
+
+def _assert_contains(text, expected):
+    if expected not in text:
+        raise AssertionError(f"Expected text to contain: {expected}")
+
+
+def _assert_not_contains(text, unexpected):
+    if unexpected in text:
+        raise AssertionError(f"Text should not contain: {unexpected}")
+
+
+def run_research_execution_test():
+    portfolio = {
+        "holdings": [
+            {
+                "code": "PRIVATE_A",
+                "name": "Private Holding A",
+                "strategy_type": "dca",
+                "factor_profile": {"type": "qdii_us_equity"},
+            }
+        ],
+        "watchlist": [],
+        "risk_rules": {"single_loss_pct": 2, "daily_loss_pct": 6},
+    }
+    plan = build_research_plan("组合风险 历史复盘 行业", portfolio)
+
+    def fake_risk(task, portfolio_data):
+        return {
+            "status": "ok",
+            "observations": ["risk rules present", "one holding in portfolio"],
+            "evidence": ["portfolio.risk_rules", "portfolio.holdings"],
+            "limitations": ["no live market data"],
+        }
+
+    def fake_review(task, portfolio_data):
+        return {
+            "status": "ok",
+            "observations": ["report continuity checked"],
+            "evidence": ["reports/index.jsonl"],
+            "limitations": [],
+        }
+
+    def fake_industry(task, portfolio_data):
+        return {
+            "status": "skipped",
+            "observations": ["news disabled"],
+            "evidence": ["settings.enable_news=false"],
+            "limitations": ["no external news fetched"],
+        }
+
+    result = execute_research_plan(
+        plan,
+        portfolio,
+        runners={"risk": fake_risk, "review": fake_review, "industry": fake_industry},
+    )
+    if [item["role"] for item in result["role_results"]] != ["industry", "risk", "review"]:
+        raise AssertionError(f"Unexpected role order: {result}")
+    if result["requires_user_confirmation"] is not True:
+        raise AssertionError(f"Research result must require user confirmation: {result}")
+
+    output = format_research_report(result)
+    _assert_contains(output, "# Research Execution Report")
+    _assert_contains(output, "## industry")
+    _assert_contains(output, "- status: skipped")
+    _assert_contains(output, "## risk")
+    _assert_contains(output, "- risk rules present")
+    _assert_contains(output, "## review")
+    _assert_contains(output, "- report continuity checked")
+    _assert_contains(output, "- Requires user confirmation: yes")
+    _assert_not_contains(output, "PRIVATE_A")
+    _assert_not_contains(output, "Private Holding A")
+    _assert_not_contains(output, "买入")
+    _assert_not_contains(output, "卖出")
+    _assert_not_contains(output, "自动交易")
+
+
+def main():
+    run_research_execution_test()
+    print("Mock research execution test passed")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
