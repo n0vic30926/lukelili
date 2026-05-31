@@ -36,6 +36,7 @@ python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 
 ```bash
 python3 scripts/smoke_test.py
+python3 scripts/mock_data_quality_test.py
 python3 scripts/mock_dependency_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_status_test.py
@@ -64,6 +65,11 @@ Successful report runs write Markdown reports and structured JSONL records:
 - `cache/`
 
 Cache behavior is configured through `use_cache`, `cache_ttl_hours`, and `cache_dir` in local settings. Cache writes are best-effort and should not block report generation.
+
+Run summaries include data quality labels:
+
+- `source_tier`: local user data, community data, news/search data, example data, or unknown.
+- `freshness`: fresh, stale, or unknown.
 
 ## 4. Optional News
 

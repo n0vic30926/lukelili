@@ -30,8 +30,8 @@ def run_status_tracker_test():
 
     rendered = format_run_summary(summary)
     _assert_contains(rendered, "- modules: success=1 failed=1 skipped=1 cache_hit=1")
-    _assert_contains(rendered, "- data_module: north_flow | status=failed | source=AkShare | error_type=RuntimeError")
-    _assert_contains(rendered, "- data_module: news | status=skipped | source=Tavily | reason=disabled")
+    _assert_contains(rendered, "- data_module: north_flow | status=failed | source=AkShare | source_tier=community_data | freshness=unknown | error_type=RuntimeError")
+    _assert_contains(rendered, "- data_module: news | status=skipped | source=Tavily | source_tier=news_search | freshness=unknown | reason=disabled")
 
 
 def run_safe_call_test():

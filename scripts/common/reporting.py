@@ -60,6 +60,17 @@ def format_run_summary(run_summary):
                 f"skipped={value.get('skipped', 0)} "
                 f"cache_hit={value.get('cache_hit', 0)}"
             )
+        elif isinstance(value, dict) and key == "data_quality":
+            lines.append(
+                "- data_quality: "
+                f"fresh={value.get('fresh', 0)} "
+                f"stale={value.get('stale', 0)} "
+                f"unknown={value.get('unknown', 0)}"
+            )
+            tiers = value.get("source_tiers", {})
+            if tiers:
+                rendered = " ".join(f"{k}={tiers[k]}" for k in sorted(tiers))
+                lines.append(f"- source_tiers: {rendered}")
         elif isinstance(value, list) and key == "data_modules":
             for item in value:
                 parts = [
@@ -68,6 +79,10 @@ def format_run_summary(run_summary):
                 ]
                 if item.get("source"):
                     parts.append(f"source={item['source']}")
+                if item.get("source_tier"):
+                    parts.append(f"source_tier={item['source_tier']}")
+                if item.get("freshness"):
+                    parts.append(f"freshness={item['freshness']}")
                 if item.get("error_type"):
                     parts.append(f"error_type={item['error_type']}")
                 if item.get("reason"):

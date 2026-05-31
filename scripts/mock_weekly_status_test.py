@@ -53,7 +53,7 @@ def run_weekly_data_status_test():
         rendered = format_run_summary(summary)
         _assert_contains(rendered, "- modules: success=2 failed=1 skipped=0 cache_hit=0")
         _assert_contains(rendered, "- data_module: weekly_returns | status=success | source=AkShare")
-        _assert_contains(rendered, "- data_module: industry_rotation | status=failed | source=AkShare | error_type=RuntimeError")
+        _assert_contains(rendered, "- data_module: industry_rotation | status=failed | source=AkShare | source_tier=community_data | freshness=unknown | error_type=RuntimeError")
         _assert_contains(rendered, "- data_module: dca_curve | status=success | source=AkShare")
         if "private industry upstream detail" in rendered or "private fallback detail" in rendered:
             raise AssertionError("Runtime summary should not expose raw upstream error text")

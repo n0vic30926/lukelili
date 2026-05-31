@@ -28,7 +28,7 @@ Status: local path/config/schema foundation in place. Next step is expanding val
 
 Goal: stable daily and weekly reports with visible dependency/data status.
 
-Status: original report scripts exist and now read local config for portfolio/news paths. Daily and weekly entrypoints check required runtime dependencies, avoid generating reports when `akshare` is missing, archive successful reports with structured index/log records, and have shared helpers for data status tracking plus best-effort cache. Daily and weekly report AkShare fetch helpers, QDII factor functions, portfolio risk scan, valuation anchors, and Tavily news helpers now record module success/failure/skipped states. Remaining work includes richer external data quality details and broader report branch fixtures.
+Status: original report scripts exist and now read local config for portfolio/news paths. Daily and weekly entrypoints check required runtime dependencies, avoid generating reports when `akshare` is missing, archive successful reports with structured index/log records, and have shared helpers for data status tracking plus best-effort cache. Daily and weekly report AkShare fetch helpers, QDII factor functions, portfolio risk scan, valuation anchors, and Tavily news helpers now record module success/failure/skipped states plus source-tier and freshness labels. Remaining work includes broader report branch fixtures and richer per-source interpretation.
 
 ## L4: Multi-Agent Research
 

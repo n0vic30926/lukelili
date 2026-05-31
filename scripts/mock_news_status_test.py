@@ -43,7 +43,7 @@ def run_disabled_news_status_test():
             raise AssertionError("Disabled news should return no articles")
         rendered = format_run_summary(tracker.to_run_summary())
         _assert_contains(rendered, "- modules: success=0 failed=0 skipped=1 cache_hit=0")
-        _assert_contains(rendered, "- data_module: industry_intel | status=skipped | source=Tavily | reason=disabled")
+        _assert_contains(rendered, "- data_module: industry_intel | status=skipped | source=Tavily | source_tier=news_search | freshness=unknown | reason=disabled")
     finally:
         industry_intel.news_enabled = original_news_enabled
 
@@ -65,7 +65,7 @@ def run_success_sanitizes_external_text_test():
         _assert_not_contains(combined.lower(), "developer message")
         _assert_not_contains(combined.lower(), "system prompt")
         rendered = format_run_summary(tracker.to_run_summary())
-        _assert_contains(rendered, "- data_module: industry_intel | status=success | source=Tavily")
+        _assert_contains(rendered, "- data_module: industry_intel | status=success | source=Tavily | source_tier=news_search")
     finally:
         industry_intel.news_enabled = original_news_enabled
         industry_intel.get_tavily_api_key = original_get_key
@@ -89,7 +89,7 @@ def run_cycle_news_status_test():
         if result["headlines"] != []:
             raise AssertionError("Disabled cycle news should return no headlines")
         rendered = format_run_summary(tracker.to_run_summary())
-        _assert_contains(rendered, "- data_module: industry_cycle_news | status=skipped | source=Tavily | reason=disabled")
+        _assert_contains(rendered, "- data_module: industry_cycle_news | status=skipped | source=Tavily | source_tier=news_search | freshness=unknown | reason=disabled")
     finally:
         industry_cycle.news_enabled = original_news_enabled
 

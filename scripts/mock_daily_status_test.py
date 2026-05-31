@@ -49,8 +49,8 @@ def run_daily_data_status_test():
         rendered = format_run_summary(summary)
         _assert_contains(rendered, "- modules: success=1 failed=1 skipped=1 cache_hit=0")
         _assert_contains(rendered, "- data_module: fund_nav | status=success | source=AkShare")
-        _assert_contains(rendered, "- data_module: north_flow | status=failed | source=AkShare | error_type=RuntimeError")
-        _assert_contains(rendered, "- data_module: etf_quote | status=skipped | source=AkShare | reason=no_codes")
+        _assert_contains(rendered, "- data_module: north_flow | status=failed | source=AkShare | source_tier=community_data | freshness=unknown | error_type=RuntimeError")
+        _assert_contains(rendered, "- data_module: etf_quote | status=skipped | source=AkShare | source_tier=community_data | freshness=unknown | reason=no_codes")
         if "private upstream details" in rendered:
             raise AssertionError("Runtime summary should not expose raw upstream error text")
     finally:

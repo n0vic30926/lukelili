@@ -31,11 +31,11 @@ def run_missing_dependency_status_test():
 
         rendered = format_run_summary(tracker.to_run_summary())
         _assert_contains(rendered, "- modules: success=0 failed=5 skipped=0 cache_hit=0")
-        _assert_contains(rendered, "- data_module: qdii_attribution | status=failed | source=AkShare | error_type=RuntimeError")
-        _assert_contains(rendered, "- data_module: portfolio_risk_scan | status=failed | source=AkShare | error_type=RuntimeError")
-        _assert_contains(rendered, "- data_module: ai_fund_attribution | status=failed | source=AkShare | error_type=RuntimeError")
-        _assert_contains(rendered, "- data_module: nasdaq_valuation | status=failed | source=AkShare | error_type=RuntimeError")
-        _assert_contains(rendered, "- data_module: ai_index_valuation | status=failed | source=AkShare | error_type=RuntimeError")
+        _assert_contains(rendered, "- data_module: qdii_attribution | status=failed | source=AkShare | source_tier=community_data | freshness=unknown | error_type=RuntimeError")
+        _assert_contains(rendered, "- data_module: portfolio_risk_scan | status=failed | source=AkShare | source_tier=community_data | freshness=unknown | error_type=RuntimeError")
+        _assert_contains(rendered, "- data_module: ai_fund_attribution | status=failed | source=AkShare | source_tier=community_data | freshness=unknown | error_type=RuntimeError")
+        _assert_contains(rendered, "- data_module: nasdaq_valuation | status=failed | source=AkShare | source_tier=community_data | freshness=unknown | error_type=RuntimeError")
+        _assert_contains(rendered, "- data_module: ai_index_valuation | status=failed | source=AkShare | source_tier=community_data | freshness=unknown | error_type=RuntimeError")
     finally:
         qdii.ak = qdii_ak
         valuation.ak = valuation_ak

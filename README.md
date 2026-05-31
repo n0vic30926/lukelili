@@ -109,6 +109,7 @@
 ```bash
 python3 scripts/smoke_test.py
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
+python3 scripts/mock_data_quality_test.py
 python3 scripts/mock_dependency_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_status_test.py
@@ -133,6 +134,8 @@ python3 -m pip install -r requirements.txt
 - `reports/index.jsonl`
 - `logs/finance-agent.jsonl`
 - `cache/`
+
+报告运行摘要会展示模块成功/失败/跳过数量、来源层级和数据新鲜度标签。
 
 ## 原 Cron 任务配置
 

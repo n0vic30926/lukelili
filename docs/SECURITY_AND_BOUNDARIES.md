@@ -40,3 +40,5 @@ Missing runtime dependencies are not installed automatically. The user must expl
 Cache, logs, and report archives can contain derived portfolio and market context. Keep `cache/`, `logs/`, and `reports/` ignored unless a sanitized artifact is intentionally created.
 
 News text is external and untrusted. Report code should strip obvious prompt-injection phrases and treat news only as source material, never as instructions.
+
+Unknown or stale data quality labels must remain visible in reports. Do not silently upgrade a source tier or freshness label to make a report look healthier.
