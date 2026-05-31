@@ -58,7 +58,7 @@
 
 | 文件 | 功能 |
 |---|---|
-| `portfolio.json` | 持仓档案（基金代码+策略类型+成本+份额+风控规则+用户画像） |
+| `portfolio.json` | 已脱敏的 legacy 持仓模板；真实持仓放入 `data/private/portfolio.local.json` |
 | `investment_policy.md` | IPS投资者策略声明书 |
 | `industry_cycle_framework.md` | 15赛道4层产业周期框架 |
 
@@ -118,7 +118,9 @@ python3 scripts/mock_report_index_test.py
 python3 scripts/mock_review_history_test.py
 python3 scripts/mock_runtime_test.py
 python3 scripts/mock_reporting_test.py
+python3 scripts/mock_security_scan_test.py
 python3 scripts/mock_weekly_status_test.py
+python3 scripts/security_scan.py
 ```
 
 运行日报/周报前需要用户手动安装依赖：
@@ -194,6 +196,7 @@ Delivery配置（所有cron通用）：
 - [x] L3 报告稳定化：依赖检查、日志、缓存、归档、模块状态摘要
 - [x] L3 数据质量：宏观/ETF/新闻数据源质量分层和失败可见化
 - [x] L3 历史复盘摘要：报告连续性、重复失败模块、策略纪律聚合统计
+- [x] 安全基线：tracked 文件敏感信息扫描、memory/Skill 脱敏模板化
 - [ ] L4 多 Agent 研究角色
 - [ ] L5 半自动决策辅助：必须用户确认，不允许自动交易
 

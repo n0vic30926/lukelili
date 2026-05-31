@@ -6,6 +6,8 @@ import pathlib
 import re
 import sys
 
+from security_scan import format_findings, scan_paths, tracked_paths
+
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -47,6 +49,7 @@ def check_foundation_files():
         "scripts/common/reporting.py",
         "scripts/report_index.py",
         "scripts/review_history.py",
+        "scripts/security_scan.py",
         "scripts/validate_portfolio.py",
         "scripts/mock_data_quality_test.py",
         "scripts/mock_dependency_test.py",
@@ -57,6 +60,7 @@ def check_foundation_files():
         "scripts/mock_report_index_test.py",
         "scripts/mock_review_history_test.py",
         "scripts/mock_runtime_test.py",
+        "scripts/mock_security_scan_test.py",
         "scripts/mock_weekly_status_test.py",
     ]
     for path in required:
@@ -106,11 +110,21 @@ def check_sensitive_patterns():
     return failures
 
 
+def check_tracked_sensitive_files():
+    findings = scan_paths(tracked_paths(ROOT), root=ROOT)
+    if findings:
+        print(format_findings(findings))
+        return [_fail("tracked files must not contain private portfolio details or secrets")]
+    _pass("tracked files do not contain scanned private portfolio details or secrets")
+    return []
+
+
 def main():
     failures = []
     failures.extend(check_foundation_files())
     failures.extend(check_json_files())
     failures.extend(check_sensitive_patterns())
+    failures.extend(check_tracked_sensitive_files())
     if failures:
         print("")
         print(f"Smoke test failed: {len(failures)} issue(s)")

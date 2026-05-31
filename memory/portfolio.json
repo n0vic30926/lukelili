@@ -1,129 +1,61 @@
 {
-  "updated": "2026-05-28",
+  "updated": "2026-05-31",
+  "note": "Sanitized legacy template. Put real holdings in data/private/portfolio.local.json.",
   "user_profile": {
-    "investor_type": "个人投资者",
-    "experience": "入门阶段（2026年1月开始实操）",
-    "total_budget": 300000,
-    "strategy_range": "混合策略：定投+短线+美股探索",
-    "risk_tolerance": "中等（单仓2%/组合6%回撤警戒）",
-    "notes": "不局限于定投，可能有短线操作、个股或美股方向"
+    "investor_type": "personal_investor",
+    "experience": "user_defined",
+    "strategy_range": "user_defined",
+    "risk_tolerance": "user_defined"
   },
   "risk_rules": {
     "single_loss_pct": 2,
     "daily_loss_pct": 6,
-    "source": "investment-risk-control-2pct-6pct.md"
+    "source": "user_defined"
   },
   "holdings": [
     {
-      "code": "016452",
-      "name": "南方纳斯达克100指数发起(QDII)A",
-      "type": "QDII-场外",
-      "market": "美股-纳斯达克100",
-      "proxy_etf": "sh513300",
-      "buy_date": "2026-05",
+      "code": "ASSET_A",
+      "name": "Example Conviction Asset",
+      "type": "example",
+      "market": "example",
+      "proxy_etf": "EXAMPLE_A",
+      "buy_date": "example",
       "strategy_type": "dca",
-      "strategy_label": "日定投5000",
+      "strategy_label": "example recurring plan",
       "strategy_rules": {
-        "daily_amount": 5000,
-        "budget_total": 300000,
-        "discipline": "穿越波动，不择时，不停扣",
-        "notes": "A类长持省费率（姐姐建议）"
+        "discipline": "user_defined",
+        "notes": "example only"
       },
-      "cost_basis": 16000,
-      "shares": 6947.23,
-      "buy_records": [
-        {
-          "date": "2026-05-19",
-          "confirm_date": "2026-05-20",
-          "amount": 5000,
-          "nav": 2.2978,
-          "shares": 2175.99
-        },
-        {
-          "date": "2026-05-20",
-          "confirm_date": "2026-05-21",
-          "amount": 5000,
-          "nav": 2.3005,
-          "shares": 2173.44
-        },
-        {
-          "date": "2026-05-21",
-          "confirm_date": "2026-05-22",
-          "amount": 3000,
-          "nav": 2.3106,
-          "shares": 1298.36
-        },
-        {
-          "date": "2026-05-22",
-          "confirm_date": "2026-05-25",
-          "amount": 3000,
-          "nav": 2.3087,
-          "shares": 1299.43
-        },
-        {
-          "date": "2026-05-26",
-          "confirm_date": "2026-05-27",
-          "amount": 1500,
-          "nav": null,
-          "shares": null,
-          "status": "pending"
-        },
-        {
-          "date": "2026-05-27",
-          "confirm_date": "2026-05-28",
-          "amount": 1500,
-          "nav": null,
-          "shares": null,
-          "status": "pending"
-        }
-      ],
+      "cost_basis": 0,
+      "shares": 0,
+      "buy_records": [],
       "bucket": "conviction"
     },
     {
-      "code": "011840",
-      "name": "天弘中证人工智能C",
-      "type": "场外-指数",
-      "market": "A股-AI主题",
-      "proxy_etf": "sz159819",
-      "buy_date": "2026-01-19",
+      "code": "ASSET_B",
+      "name": "Example Trial Asset",
+      "type": "example",
+      "market": "example",
+      "proxy_etf": "EXAMPLE_B",
+      "buy_date": "example",
       "strategy_type": "trial",
-      "strategy_label": "试水仓",
+      "strategy_label": "example trial position",
       "strategy_rules": {
-        "entry_reason": "看好AI方向，试水学习",
-        "user_emotion": "FOMO+信念+好奇混合",
-        "max_drawdown_tolerance": "30%",
-        "exit_condition": "待定——需要Luke设定止盈线或决定升级为信念仓",
-        "notes": "4500试水资金，亏了不影响生活。C类适合灵活进出"
+        "entry_reason": "user_defined",
+        "exit_condition": "user_defined",
+        "notes": "example only"
       },
-      "cost_basis": 4500,
-      "shares": 2760.91,
-      "buy_records": [
-        {
-          "date": "2026-01-19",
-          "confirm_date": "2026-01-20",
-          "amount": 4500,
-          "nav": 1.6299,
-          "shares": 2760.91
-        }
-      ],
+      "cost_basis": 0,
+      "shares": 0,
+      "buy_records": [],
       "bucket": "exploration"
     }
   ],
   "watchlist": [
     {
-      "code": "us.IXIC",
-      "name": "纳斯达克综合指数",
-      "reason": "纳指100基准"
-    },
-    {
-      "code": "sz399284",
-      "name": "AI50指数",
-      "reason": "AI主题基准"
-    },
-    {
-      "code": "sh000300",
-      "name": "沪深300",
-      "reason": "A股大盘"
+      "code": "WATCH_A",
+      "name": "Example Watch Asset",
+      "reason": "example only"
     }
   ]
 }

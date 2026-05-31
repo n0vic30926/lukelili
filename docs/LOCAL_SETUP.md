@@ -45,7 +45,9 @@ python3 scripts/mock_report_index_test.py
 python3 scripts/mock_review_history_test.py
 python3 scripts/mock_runtime_test.py
 python3 scripts/mock_reporting_test.py
+python3 scripts/mock_security_scan_test.py
 python3 scripts/mock_weekly_status_test.py
+python3 scripts/security_scan.py
 ```
 
 The smoke test checks local guardrails, config examples, schema, fictional example data, OpenClaw path removal, and Tavily key isolation. It does not install dependencies or call market data APIs.
@@ -84,6 +86,12 @@ private holdings:
 
 ```bash
 python3 scripts/review_history.py
+```
+
+Scan tracked files for common secret and private-portfolio leakage patterns:
+
+```bash
+python3 scripts/security_scan.py
 ```
 
 ## 4. Optional News

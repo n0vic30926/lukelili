@@ -1,21 +1,22 @@
 {
   "date": "2026-05-29",
+  "note": "Sanitized sample. Real decision records belong in data/private/decision_track/.",
   "holdings": [
     {
-      "code": "016452",
-      "name": "南方纳斯达克100指数发起(QDII)A",
+      "code": "ASSET_A",
+      "name": "Example Conviction Asset",
       "strategy_type": "dca",
-      "strategy_label": "日定投5000",
-      "cost_basis": 16000,
-      "shares": 6947.23
+      "strategy_label": "example recurring plan",
+      "cost_basis": 0,
+      "shares": 0
     },
     {
-      "code": "011840",
-      "name": "天弘中证人工智能C",
+      "code": "ASSET_B",
+      "name": "Example Trial Asset",
       "strategy_type": "trial",
-      "strategy_label": "试水仓",
-      "cost_basis": 4500,
-      "shares": 2760.91
+      "strategy_label": "example trial position",
+      "cost_basis": 0,
+      "shares": 0
     }
   ]
 }

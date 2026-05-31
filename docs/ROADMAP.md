@@ -10,7 +10,9 @@ This worktree now has a local L1/L2 foundation:
 - fictional portfolio example;
 - minimal portfolio schema and validator;
 - smoke test for secret/path isolation;
-- core scripts no longer hardcode OpenClaw portfolio paths or Tavily key values.
+- core scripts no longer hardcode OpenClaw portfolio paths or Tavily key values;
+- tracked `memory/` and Skill files use sanitized templates instead of real holdings;
+- a tracked-file security scanner guards against common secret and private-portfolio leakage.
 
 ## L1: Document Investment Assistant
 

@@ -105,9 +105,9 @@
 - **汇率历史30天** → ✅ AkShare `currency_boc_safe()` — 人民银行中间价，1994年至今日线数据，单位：人民币/百美元，除以100即可
 - **竞争对手** → AkShare `stock_zh_growth_comparison_em` 返回同行业排名公司列表
 
-## Luke 当前持仓（决策参考）
+## 用户持仓读取规则
 
-- **016452** 南方纳斯达克100 QDII A类（日定投5000，30万预算）
-- **011840** 天弘中证AI主题C类（试水仓trial，亏了无所谓）
-- **风控**: 单笔2% / 组合6% 日跌上限
-- **已知风险**: 两只持仓底层高度相关（全球科技Beta），风险集中度高
+- 从 `data/private/portfolio.local.json` 读取真实持仓；没有该文件时只使用 `data/examples/portfolio.example.json` 并明确标注示例数据。
+- 不在 Skill、README、docs 或测试样例中写入真实基金代码、名称、成本、份额、预算或交易记录。
+- 风控规则以 portfolio 文件中的 `risk_rules` 为准；缺失时只提示“风控规则未声明”，不要替用户编造。
+- 组合集中度、底层相关性和策略类型必须从本地 portfolio 推导，不能依赖硬编码持仓。
