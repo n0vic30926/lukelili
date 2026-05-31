@@ -14,9 +14,11 @@ def run_append_user_action_test():
         path = decision_tracker.append_user_action(
             {
                 "action_type": "upgrade_strategy",
+                "action_id": "trial-upgrade-2026-01-02",
                 "strategy_type": "trial",
                 "status": "pending",
                 "requires_user_confirmation": True,
+                "report_evidence_terms": ["trial-upgrade-2026-01-02"],
                 "code": "EXAMPLE",
                 "amount": 100,
                 "rationale": "Synthetic private rationale.",
@@ -39,6 +41,10 @@ def run_append_user_action_test():
             raise AssertionError("Expected pending action status")
         if action.get("requires_user_confirmation") is not True:
             raise AssertionError("Expected explicit confirmation flag")
+        if action.get("action_id") != "trial-upgrade-2026-01-02":
+            raise AssertionError("Expected action_id to be preserved")
+        if action.get("report_evidence_terms") != ["trial-upgrade-2026-01-02"]:
+            raise AssertionError("Expected report evidence terms to be preserved")
         if action.get("outcome_status") != "reviewed":
             raise AssertionError("Expected outcome status to be preserved")
         if action.get("outcome_quality") != "aligned":

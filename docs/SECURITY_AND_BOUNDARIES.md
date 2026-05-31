@@ -97,6 +97,8 @@ These artifacts may contain report text or market data. Avoid pasting them into 
 
 Missing dependencies are not installed automatically. The user must explicitly run `python3 -m pip install -r requirements.txt`.
 
+Historical review may scan local archived report text for non-sensitive action markers such as `action_id` or `report_evidence_terms`. It must only print aggregate match status, not asset codes, matched terms, report excerpts, amounts, costs, shares, or private rationale text.
+
 ## Source Quality
 
 Reports classify data sources into coarse trust tiers such as official/regulatory, market data, media, social/sentiment, and unknown. These tiers are decision-support metadata, not guarantees of correctness.

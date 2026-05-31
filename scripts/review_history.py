@@ -82,6 +82,43 @@ def _parse_datetime(value):
         return None
 
 
+def _iter_text_values(value):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, (list, tuple, set)):
+        for item in value:
+            if isinstance(item, str):
+                yield item
+
+
+def _action_content_terms(action):
+    terms = set()
+    for field in ("report_evidence_terms", "evidence_terms", "tags"):
+        for value in _iter_text_values(action.get(field)):
+            text = value.strip().lower()
+            if 3 <= len(text) <= 80:
+                terms.add(text)
+    for field in ("action_id", "action_type"):
+        value = action.get(field)
+        if isinstance(value, str):
+            text = value.strip().lower()
+            if text and text != "unknown":
+                terms.add(text)
+    return terms
+
+
+def _read_report_content(path_value):
+    if not path_value:
+        return None
+    path = Path(path_value)
+    if not path.is_absolute():
+        path = get_repo_root() / path
+    try:
+        return path.read_text(encoding="utf-8").lower()
+    except (OSError, UnicodeDecodeError):
+        return None
+
+
 def summarize_decisions(records):
     strategy_counts = Counter()
     dates = []
@@ -169,11 +206,23 @@ def summarize_cross_report_attribution(report_records, decision_records):
     for record in report_records:
         created_at = _parse_datetime(record.get("created_at"))
         if created_at:
-            report_points.append((created_at, record.get("type", "unknown")))
+            report_points.append(
+                {
+                    "created_at": created_at,
+                    "type": record.get("type", "unknown"),
+                    "path": record.get("path"),
+                }
+            )
+    report_points = sorted(report_points, key=lambda item: item["created_at"])
 
     with_evidence = 0
     without_evidence = 0
     later_type_counts = Counter()
+    content_matched = 0
+    content_unmatched = 0
+    content_unreadable = 0
+    content_missing_terms = 0
+    content_type_counts = Counter()
     confirmed_total = 0
     for decision in decision_records:
         record_date = decision.get("date")
@@ -186,11 +235,32 @@ def summarize_cross_report_attribution(report_records, decision_records):
                 or _parse_datetime(action.get("created_at"))
                 or _parse_datetime(record_date)
             )
-            later_reports = [(time, report_type) for time, report_type in report_points if action_time and time > action_time]
+            later_reports = [item for item in report_points if action_time and item["created_at"] > action_time]
             if later_reports:
                 with_evidence += 1
-                for _, report_type in later_reports[:3]:
-                    later_type_counts[report_type] += 1
+                for report in later_reports[:3]:
+                    later_type_counts[report["type"]] += 1
+                terms = _action_content_terms(action)
+                if not terms:
+                    content_missing_terms += 1
+                    continue
+                readable = 0
+                matched_report_type = None
+                for report in later_reports[:3]:
+                    content = _read_report_content(report.get("path"))
+                    if content is None:
+                        continue
+                    readable += 1
+                    if any(term in content for term in terms):
+                        matched_report_type = report["type"]
+                        break
+                if matched_report_type:
+                    content_matched += 1
+                    content_type_counts[matched_report_type] += 1
+                elif readable:
+                    content_unmatched += 1
+                else:
+                    content_unreadable += 1
             else:
                 without_evidence += 1
     return {
@@ -198,6 +268,11 @@ def summarize_cross_report_attribution(report_records, decision_records):
         "with_evidence": with_evidence,
         "without_evidence": without_evidence,
         "later_type_counts": later_type_counts,
+        "content_matched": content_matched,
+        "content_unmatched": content_unmatched,
+        "content_unreadable": content_unreadable,
+        "content_missing_terms": content_missing_terms,
+        "content_type_counts": content_type_counts,
     }
 
 
@@ -378,7 +453,13 @@ def format_review(report_index_path, report_records, decision_dir, decision_reco
         lines.append(f"- 有后续报告证据: {attribution_summary['with_evidence']}")
         lines.append(f"- 缺少后续报告证据: {attribution_summary['without_evidence']}")
         lines.append(f"- 后续报告类型分布: {dict(attribution_summary['later_type_counts'])}")
-        lines.append("- 归因边界: 只证明后续报告证据存在，不把市场结果归因为单次动作。")
+        lines.append(f"- 后续报告内容命中: {attribution_summary['content_matched']}")
+        lines.append(f"- 有后续报告但未命中内容: {attribution_summary['content_unmatched']}")
+        lines.append(f"- 后续报告不可读取: {attribution_summary['content_unreadable']}")
+        lines.append(f"- 缺少非敏感匹配标记: {attribution_summary['content_missing_terms']}")
+        if attribution_summary["content_type_counts"]:
+            lines.append(f"- 内容命中报告类型分布: {dict(attribution_summary['content_type_counts'])}")
+        lines.append("- 归因边界: 只证明后续报告内容出现非敏感动作标记，不把市场结果归因为单次动作。")
     lines.append("")
 
     lines.append("## 下一步")

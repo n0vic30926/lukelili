@@ -78,6 +78,7 @@ def append_user_action(action, record_date=None):
         "created_at": action.get("created_at", datetime.now().isoformat(timespec="seconds")),
     }
     optional_fields = (
+        "action_id",
         "code",
         "rationale",
         "amount",
@@ -88,6 +89,7 @@ def append_user_action(action, record_date=None):
         "outcome_reviewed_at",
         "outcome_quality",
         "checklist",
+        "report_evidence_terms",
     )
     for field in optional_fields:
         if field in action:

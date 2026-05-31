@@ -14,16 +14,22 @@ def _assert_contains(text, expected):
 
 
 def run_format_review_test():
+    tmp_reports = tempfile.TemporaryDirectory()
+    report_dir = Path(tmp_reports.name)
+    daily_path = report_dir / "daily-2026-01-01.md"
+    weekly_path = report_dir / "weekly-2026-01-03.md"
+    daily_path.write_text("# Daily\nNo action evidence yet.\n", encoding="utf-8")
+    weekly_path.write_text("# Weekly\nReview marker: continue_dca discipline follow-up.\n", encoding="utf-8")
     report_records = [
         {
             "type": "daily",
-            "path": "reports/daily/daily-2026-01-01.md",
+            "path": str(daily_path),
             "created_at": "2026-01-01T15:30:00",
             "status_counts": {"ok": 3, "failed": 1, "skipped": 1},
         },
         {
             "type": "weekly",
-            "path": "reports/weekly/weekly-2026-01-03.md",
+            "path": str(weekly_path),
             "created_at": "2026-01-03T11:00:00Z",
             "status_counts": {"ok": 2, "failed": 0, "skipped": 1},
         },
@@ -106,6 +112,10 @@ def run_format_review_test():
     _assert_contains(review, "有后续报告证据: 1")
     _assert_contains(review, "缺少后续报告证据: 1")
     _assert_contains(review, "后续报告类型分布: {'weekly': 1}")
+    _assert_contains(review, "后续报告内容命中: 1")
+    _assert_contains(review, "有后续报告但未命中内容: 0")
+    _assert_contains(review, "后续报告不可读取: 0")
+    tmp_reports.cleanup()
     if "cost_basis" in review or "shares" in review or "amount" in review:
         raise AssertionError("Review leaked raw asset field names")
     if "EX1" in review or "EX2" in review or "EX3" in review or "EX4" in review:
