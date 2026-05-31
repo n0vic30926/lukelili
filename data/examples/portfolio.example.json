@@ -33,6 +33,34 @@
         "tracking_error": 0.002,
         "dividend_policy": "example annual distribution",
         "last_dividend_date": "2025-12-31",
+        "tracking_history": [
+          {
+            "date": "2026-01-01",
+            "etf_return_pct": 1.0,
+            "benchmark_return_pct": 0.8,
+            "notes": "Synthetic daily return pair."
+          },
+          {
+            "date": "2026-01-02",
+            "etf_return_pct": -0.5,
+            "benchmark_return_pct": -0.4,
+            "notes": "Synthetic daily return pair."
+          }
+        ],
+        "dividend_history": [
+          {
+            "ex_date": "2025-12-31",
+            "amount": 0.02,
+            "currency": "CNY",
+            "notes": "Synthetic dividend record."
+          },
+          {
+            "ex_date": "2025-06-30",
+            "amount": 0.01,
+            "currency": "CNY",
+            "notes": "Synthetic dividend record."
+          }
+        ],
         "premium_discount_note": "Example data only; real premium/discount requires live ETF NAV or IOPV.",
         "fee_note": "Synthetic fee for smoke tests."
       },
@@ -69,6 +97,8 @@
         "tracking_error": 0.012,
         "dividend_policy": "example no regular distribution",
         "last_dividend_date": "2025-06-30",
+        "tracking_history": [],
+        "dividend_history": [],
         "premium_discount_note": "Synthetic metadata only."
       },
       "strategy_type": "trial",

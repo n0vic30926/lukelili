@@ -219,6 +219,14 @@ def run_etf_research_mock():
                 "tracking_error": 0.002,
                 "dividend_policy": "mock annual",
                 "last_dividend_date": "2025-12-31",
+                "tracking_history": [
+                    {"date": "2026-01-01", "etf_return_pct": 1.0, "benchmark_return_pct": 0.8},
+                    {"date": "2026-01-02", "etf_return_pct": -0.5, "benchmark_return_pct": -0.4},
+                ],
+                "dividend_history": [
+                    {"ex_date": "2025-12-31", "amount": 0.02},
+                    {"ex_date": "2025-06-30", "amount": 0.01},
+                ],
             },
         },
         {
@@ -245,6 +253,9 @@ def run_etf_research_mock():
     _assert_contains(report, "溢价风险: high")
     _assert_contains(report, "跟踪风险: high")
     _assert_contains(report, "分红状态: 最近分红 2025-12-31")
+    _assert_contains(report, "历史跟踪误差: 0.16%")
+    _assert_contains(report, "分红记录: 2")
+    _assert_contains(report, "分红率: 2.94%")
     _assert_contains(report, "分红状态: 缺少最近分红日期")
     return report
 

@@ -59,7 +59,7 @@ The private portfolio should contain:
 - watchlist;
 - risk rules;
 - strategy type and notes.
-- optional `etf_profile` for ETF-like holdings, including benchmark, expense ratio, tracking error, and dividend policy.
+- optional `etf_profile` for ETF-like holdings, including benchmark, expense ratio, tracking error, tracking history, dividend policy, and dividend history.
 
 ## 4. Tavily News
 
@@ -87,6 +87,7 @@ python3 scripts/smoke_test.py
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 python3 scripts/mock_runtime_test.py
 python3 scripts/mock_report_test.py
+python3 scripts/mock_portfolio_validation_test.py
 python3 scripts/mock_decision_tracker_test.py
 python3 scripts/mock_review_test.py
 ```

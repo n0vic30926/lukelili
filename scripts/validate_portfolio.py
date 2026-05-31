@@ -61,6 +61,31 @@ def validate_portfolio_data(data):
                 for field in ["expense_ratio", "tracking_error"]:
                     if field in etf_profile and not _is_number(etf_profile[field]):
                         errors.append(f"holdings[{idx}].etf_profile.{field} must be a number")
+                tracking_history = etf_profile.get("tracking_history", [])
+                if not isinstance(tracking_history, list):
+                    errors.append(f"holdings[{idx}].etf_profile.tracking_history must be an array")
+                else:
+                    for hist_idx, record in enumerate(tracking_history):
+                        if not isinstance(record, dict):
+                            errors.append(f"holdings[{idx}].etf_profile.tracking_history[{hist_idx}] must be an object")
+                            continue
+                        for field in ["etf_return_pct", "benchmark_return_pct"]:
+                            if field in record and not _is_number(record[field]):
+                                errors.append(
+                                    f"holdings[{idx}].etf_profile.tracking_history[{hist_idx}].{field} must be a number"
+                                )
+                dividend_history = etf_profile.get("dividend_history", [])
+                if not isinstance(dividend_history, list):
+                    errors.append(f"holdings[{idx}].etf_profile.dividend_history must be an array")
+                else:
+                    for div_idx, record in enumerate(dividend_history):
+                        if not isinstance(record, dict):
+                            errors.append(f"holdings[{idx}].etf_profile.dividend_history[{div_idx}] must be an object")
+                            continue
+                        if "amount" in record and not _is_number(record["amount"]):
+                            errors.append(
+                                f"holdings[{idx}].etf_profile.dividend_history[{div_idx}].amount must be a number"
+                            )
         buy_records = holding.get("buy_records", [])
         if not isinstance(buy_records, list):
             errors.append(f"holdings[{idx}].buy_records must be an array")

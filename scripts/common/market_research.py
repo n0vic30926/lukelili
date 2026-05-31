@@ -2,6 +2,7 @@
 """Macro and ETF research helpers for daily reports."""
 
 from datetime import datetime
+from math import sqrt
 import re
 from statistics import median
 
@@ -252,6 +253,30 @@ def _dividend_status(profile):
     return "未配置"
 
 
+def _historical_tracking_error(profile):
+    active_returns = []
+    for item in profile.get("tracking_history", []) or []:
+        etf_return = _safe_float(item.get("etf_return_pct"))
+        benchmark_return = _safe_float(item.get("benchmark_return_pct"))
+        if etf_return is not None and benchmark_return is not None:
+            active_returns.append(etf_return - benchmark_return)
+    if not active_returns:
+        return None
+    return sqrt(sum(value * value for value in active_returns) / len(active_returns))
+
+
+def _dividend_summary(profile, price):
+    history = profile.get("dividend_history", []) or []
+    amounts = []
+    for item in history:
+        amount = _safe_float(item.get("amount"))
+        if amount is not None and amount >= 0:
+            amounts.append(amount)
+    total = sum(amounts)
+    yield_pct = total / price * 100 if price and total else None
+    return len(amounts), yield_pct
+
+
 def macro_observation(ak, pd, settings, tracker):
     """Return markdown lines for macro conditions using best-effort AkShare data."""
     lines = ["## 🌏 宏观观察", ""]
@@ -388,11 +413,15 @@ def etf_observation(ak, settings, tracker, holdings):
         tracking_error = _safe_float(profile.get("tracking_error"))
         dividend_policy = profile.get("dividend_policy", "未配置")
         dividend_status = _dividend_status(profile)
+        historical_tracking_error = _historical_tracking_error(profile)
+        dividend_count, dividend_yield = _dividend_summary(profile, price)
         premium_risk = _risk_level(pd_pct, premium_warn, premium_high)
         tracking_risk = _risk_level(tracking_error, tracking_warn, tracking_high, use_abs=False)
         fee_comparison = _expense_comparison(expense_ratio, benchmark, expense_medians)
         premium_text = _format_pct(pd_pct) if pd_pct is not None else "数据不可用"
         nav_text = f"{reference_nav:.4f}({nav_col})" if reference_nav is not None else "N/A"
+        historical_tracking_text = f"{historical_tracking_error:.2f}%" if historical_tracking_error is not None else "数据不足"
+        dividend_yield_text = f"{dividend_yield:.2f}%" if dividend_yield is not None else "数据不足"
         lines.append(
             f"- {holding.get('name', code)} / {code}: 价格 {price_text} | 涨跌 {_format_pct(change_pct)} | 成交额 {amount_text} | 流动性 {tier}"
         )
@@ -403,6 +432,9 @@ def etf_observation(ak, settings, tracker, holdings):
         lines.append(
             f"  - {fee_comparison} | 溢价风险: {premium_risk} | 跟踪风险: {tracking_risk} | 分红状态: {dividend_status}"
         )
+        lines.append(
+            f"  - 历史跟踪误差: {historical_tracking_text} | 分红记录: {dividend_count} | 分红率: {dividend_yield_text}"
+        )
 
         if benchmark == "未配置":
             gaps.append(f"{code}: benchmark")
@@ -410,8 +442,12 @@ def etf_observation(ak, settings, tracker, holdings):
             gaps.append(f"{code}: expense_ratio")
         if tracking_error is None:
             gaps.append(f"{code}: tracking_error")
+        if historical_tracking_error is None:
+            gaps.append(f"{code}: tracking_history")
         if dividend_policy == "未配置":
             gaps.append(f"{code}: dividend_policy")
+        if dividend_count == 0:
+            gaps.append(f"{code}: dividend_history")
         if dividend_status == "缺少最近分红日期":
             gaps.append(f"{code}: last_dividend_date")
         if pd_pct is None:

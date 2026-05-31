@@ -30,10 +30,11 @@ Finance Agent 不用于：
 - `scripts/valuation_anchor.py`：估值锚风险提示。
 - `scripts/industry_intel.py`：可选 Tavily 新闻模块。
 - `scripts/industry_cycle.py`：AI 产业周期信号。
-- `scripts/common/market_research.py`：日报中的宏观观察与 ETF 代理观察，包括可配置宏观指标、数据时效、规则化解读、ETF流动性、费率比较、跟踪风险、分红状态和溢价/折价估算。
+- `scripts/common/market_research.py`：日报中的宏观观察与 ETF 代理观察，包括可配置宏观指标、数据时效、规则化解读、ETF流动性、费率比较、跟踪风险、历史跟踪误差、分红历史、分红状态和溢价/折价估算。
 - `scripts/smoke_test.py`：本地基础设施检查。
 - `scripts/mock_runtime_test.py`：离线测试缓存、运行状态和数据质量 helper。
 - `scripts/mock_report_test.py`：离线生成日报/周报 mock 报告，验证成功、部分失败、新闻跳过和示例持仓分支。
+- `scripts/mock_portfolio_validation_test.py`：离线测试 portfolio schema 中 ETF 历史字段的校验。
 - `scripts/mock_adapter_audit_test.py`：离线测试数据 adapter 配置审计，不调用行情接口。
 - `scripts/mock_decision_tracker_test.py`：离线测试用户确认动作、确认后结果复盘、检查项证据和报告匹配标记字段，不触碰真实持仓。
 - `scripts/audit_data_adapters.py`：审计 AkShare 候选函数和宏观指标配置，只检查本地符号存在性。
@@ -62,6 +63,7 @@ data/private/portfolio.local.json
 python3 scripts/smoke_test.py
 python3 scripts/mock_runtime_test.py
 python3 scripts/mock_report_test.py
+python3 scripts/mock_portfolio_validation_test.py
 python3 scripts/mock_adapter_audit_test.py
 python3 scripts/mock_decision_tracker_test.py
 python3 scripts/mock_review_test.py

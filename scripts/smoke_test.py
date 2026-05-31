@@ -56,6 +56,7 @@ def main():
         "data/examples/portfolio.example.json",
         "scripts/common/config_loader.py",
         "scripts/mock_report_test.py",
+        "scripts/mock_portfolio_validation_test.py",
         "scripts/mock_decision_tracker_test.py",
         "scripts/mock_adapter_audit_test.py",
         "scripts/audit_data_adapters.py",

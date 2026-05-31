@@ -75,6 +75,15 @@
             "expense_ratio": { "type": "number" },
             "tracking_error": { "type": "number" },
             "dividend_policy": { "type": "string" },
+            "last_dividend_date": { "type": "string" },
+            "tracking_history": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/tracking_history_item" }
+            },
+            "dividend_history": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/dividend_history_item" }
+            },
             "premium_discount_note": { "type": "string" },
             "fee_note": { "type": "string" },
             "data_source_note": { "type": "string" }
@@ -115,6 +124,28 @@
         "nav": { "type": ["number", "null"] },
         "shares": { "type": ["number", "null"] },
         "status": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "tracking_history_item": {
+      "type": "object",
+      "required": ["date", "etf_return_pct", "benchmark_return_pct"],
+      "additionalProperties": true,
+      "properties": {
+        "date": { "type": "string" },
+        "etf_return_pct": { "type": "number" },
+        "benchmark_return_pct": { "type": "number" },
+        "notes": { "type": "string" }
+      }
+    },
+    "dividend_history_item": {
+      "type": "object",
+      "required": ["ex_date", "amount"],
+      "additionalProperties": true,
+      "properties": {
+        "ex_date": { "type": "string" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string" },
         "notes": { "type": "string" }
       }
     },
