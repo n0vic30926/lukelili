@@ -49,6 +49,13 @@ python3 -m pip install -r requirements.txt
 
 If a required dependency such as `akshare` is missing, report entrypoints should print the install command and exit without producing market analysis.
 
+Successful report runs write Markdown reports and structured JSONL records:
+
+- `reports/daily/`
+- `reports/weekly/`
+- `reports/index.jsonl`
+- `logs/finance-agent.jsonl`
+
 ## 4. Optional News
 
 News is disabled by default. To enable Tavily-backed news:

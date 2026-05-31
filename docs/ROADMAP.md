@@ -28,7 +28,7 @@ Status: local path/config/schema foundation in place. Next step is expanding val
 
 Goal: stable daily and weekly reports with visible dependency/data status.
 
-Status: original report scripts exist and now read local config for portfolio/news paths. Daily and weekly entrypoints check required runtime dependencies and avoid generating reports when `akshare` is missing. Remaining work includes structured logs, report archive paths, cache, and visible module success/failure summaries.
+Status: original report scripts exist and now read local config for portfolio/news paths. Daily and weekly entrypoints check required runtime dependencies, avoid generating reports when `akshare` is missing, and archive successful reports with structured index/log records. Remaining work includes cache, richer module-level success/failure summaries, and external data status details.
 
 ## L4: Multi-Agent Research
 

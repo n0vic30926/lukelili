@@ -120,6 +120,13 @@ python3 -m pip install -r requirements.txt
 
 如果缺少 `akshare` 等运行依赖，日报/周报会输出安装提示并退出，不生成伪报告。
 
+生成成功后会写入：
+
+- `reports/daily/`
+- `reports/weekly/`
+- `reports/index.jsonl`
+- `logs/finance-agent.jsonl`
+
 ## 原 Cron 任务配置
 
 ```

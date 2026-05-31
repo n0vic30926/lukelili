@@ -4,11 +4,13 @@
 """
 import json, os, sys
 from datetime import datetime, timedelta
+from pathlib import Path
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from common.dependencies import REPORT_DEPENDENCIES, exit_if_missing
-from common.config_loader import get_portfolio_path
+from common.config_loader import get_portfolio_path, load_settings, resolve_path
+from common.reporting import write_report
 
 try:
     import akshare as ak
@@ -26,6 +28,19 @@ except ImportError:
     np = None
 
 PORTFOLIO_PATH = str(get_portfolio_path())
+
+
+def build_run_summary():
+    settings = load_settings()
+    portfolio_path = Path(PORTFOLIO_PATH)
+    example_path = resolve_path(settings["example_portfolio_path"])
+    is_example = portfolio_path == example_path
+    return {
+        "portfolio_source": "example" if is_example else "private",
+        "is_example_data": is_example,
+        "dependencies": {"akshare": "available", "pandas": "available", "numpy": "available"},
+        "modules": {"success": 1, "failed": 0, "skipped": 0},
+    }
 
 def load_portfolio():
     with open(PORTFOLIO_PATH) as f:
@@ -358,4 +373,6 @@ if __name__ == "__main__":
     if exit_if_missing("weekly_finance_review.py", REPORT_DEPENDENCIES):
         raise SystemExit(1)
 
-    print(format_report())
+    report = format_report()
+    archived = write_report("weekly", report, run_summary=build_run_summary())
+    print(archived["content"])
