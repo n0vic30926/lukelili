@@ -17,7 +17,22 @@ def _read_json(path):
 
 def load_report_index(limit=30):
     settings = load_settings()
-    index_path = get_report_dirs(settings)["report_output_dir"] / "index.jsonl"
+    report_dirs = get_report_dirs(settings)
+    index_path = report_dirs["report_output_dir"] / "index.jsonl"
+    log_path = report_dirs["log_dir"] / "finance-agent.jsonl"
+    events_by_path = {}
+    if log_path.exists():
+        with log_path.open(encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    item = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if item.get("path") and isinstance(item.get("events"), list):
+                    events_by_path[item["path"]] = item["events"]
     records = []
     if index_path.exists():
         with index_path.open(encoding="utf-8") as f:
@@ -26,9 +41,12 @@ def load_report_index(limit=30):
                 if not line:
                     continue
                 try:
-                    records.append(json.loads(line))
+                    item = json.loads(line)
                 except json.JSONDecodeError:
                     continue
+                if item.get("path") in events_by_path:
+                    item["events"] = events_by_path[item["path"]]
+                records.append(item)
     return index_path, records[-limit:]
 
 
@@ -62,6 +80,69 @@ def summarize_reports(records):
         for key, value in item.get("status_counts", {}).items():
             status[key] += value
     return counts, status
+
+
+def summarize_report_continuity(records):
+    dates = sorted(
+        {
+            parsed.date()
+            for parsed in (_parse_datetime(item.get("created_at")) for item in records)
+            if parsed
+        }
+    )
+    if not dates:
+        return {
+            "report_days": 0,
+            "date_range": None,
+            "max_gap_days": 0,
+            "current_streak_days": 0,
+        }
+    gaps = [(dates[index] - dates[index - 1]).days for index in range(1, len(dates))]
+    current_streak = 1
+    for gap in reversed(gaps):
+        if gap == 1:
+            current_streak += 1
+        else:
+            break
+    return {
+        "report_days": len(dates),
+        "date_range": f"{dates[0].isoformat()} → {dates[-1].isoformat()}",
+        "max_gap_days": max(gaps) if gaps else 0,
+        "current_streak_days": current_streak,
+    }
+
+
+def summarize_repeated_failures(records):
+    failed_modules = Counter()
+    skipped_modules = Counter()
+    reports_with_events = 0
+    reports_with_failures = 0
+    aggregate_failed = 0
+    for record in records:
+        events = record.get("events")
+        if isinstance(events, list) and events:
+            reports_with_events += 1
+            report_failed = False
+            for event in events:
+                module = event.get("module", "unknown")
+                status = event.get("status")
+                if status == "failed":
+                    failed_modules[module] += 1
+                    report_failed = True
+                elif status == "skipped":
+                    skipped_modules[module] += 1
+            if report_failed:
+                reports_with_failures += 1
+        else:
+            aggregate_failed += int(record.get("status_counts", {}).get("failed", 0) or 0)
+    return {
+        "reports_with_events": reports_with_events,
+        "reports_with_failures": reports_with_failures,
+        "failed_modules": failed_modules,
+        "repeated_failed_modules": Counter({key: value for key, value in failed_modules.items() if value >= 2}),
+        "skipped_modules": skipped_modules,
+        "aggregate_failed_without_events": aggregate_failed,
+    }
 
 
 def _parse_datetime(value):
@@ -360,6 +441,8 @@ def build_strategy_scorecards(records):
 
 def format_review(report_index_path, report_records, decision_dir, decision_records):
     report_counts, status_counts = summarize_reports(report_records)
+    continuity_summary = summarize_report_continuity(report_records)
+    failure_summary = summarize_repeated_failures(report_records)
     strategy_counts, decision_dates, sample_count = summarize_decisions(decision_records)
     strategy_cards = build_strategy_scorecards(decision_records)
     action_summary = summarize_user_actions(decision_records)
@@ -375,6 +458,35 @@ def format_review(report_index_path, report_records, decision_dir, decision_reco
         lines.append(f"- 数据状态累计: {dict(status_counts)}")
     if not report_records:
         lines.append("- 暂无报告索引记录。")
+    lines.append("")
+
+    lines.append("## 报告连续性")
+    if not continuity_summary["report_days"]:
+        lines.append("- 暂无可解析报告日期，无法评估连续性。")
+    else:
+        lines.append(f"- 报告日期范围: {continuity_summary['date_range']}")
+        lines.append(f"- 有报告的自然日: {continuity_summary['report_days']}")
+        lines.append(f"- 最大报告间隔: {continuity_summary['max_gap_days']} 天")
+        lines.append(f"- 当前连续报告天数: {continuity_summary['current_streak_days']}")
+        lines.append("- 连续性边界: 只按本地归档日期统计，不代表市场交易日完整覆盖。")
+    lines.append("")
+
+    lines.append("## 重复失败检测")
+    if not report_records:
+        lines.append("- 暂无报告记录，无法检测重复失败。")
+    else:
+        lines.append(f"- 有事件明细的报告: {failure_summary['reports_with_events']}")
+        lines.append(f"- 含失败事件的报告: {failure_summary['reports_with_failures']}")
+        if failure_summary["failed_modules"]:
+            lines.append(f"- 失败模块分布: {dict(failure_summary['failed_modules'])}")
+            lines.append(f"- 重复失败模块: {dict(failure_summary['repeated_failed_modules'])}")
+        elif failure_summary["aggregate_failed_without_events"]:
+            lines.append(f"- 仅有聚合失败次数: {failure_summary['aggregate_failed_without_events']}，缺少模块明细。")
+        else:
+            lines.append("- 暂无失败模块记录。")
+        if failure_summary["skipped_modules"]:
+            lines.append(f"- 跳过模块分布: {dict(failure_summary['skipped_modules'])}")
+        lines.append("- 检测边界: 只输出模块级聚合，不输出错误消息、报告原文或私人数据。")
     lines.append("")
 
     lines.append("## 决策记录")

@@ -26,12 +26,20 @@ def run_format_review_test():
             "path": str(daily_path),
             "created_at": "2026-01-01T15:30:00",
             "status_counts": {"ok": 3, "failed": 1, "skipped": 1},
+            "events": [
+                {"module": "north_flow", "status": "failed", "source": "AkShare"},
+                {"module": "industry_cycle", "status": "skipped", "source": "Tavily"},
+            ],
         },
         {
             "type": "weekly",
             "path": str(weekly_path),
             "created_at": "2026-01-03T11:00:00Z",
-            "status_counts": {"ok": 2, "failed": 0, "skipped": 1},
+            "status_counts": {"ok": 2, "failed": 1, "skipped": 1},
+            "events": [
+                {"module": "north_flow", "status": "failed", "source": "AkShare"},
+                {"module": "valuation_anchor", "status": "failed", "source": "AkShare"},
+            ],
         },
     ]
     decision_records = [
@@ -89,6 +97,15 @@ def run_format_review_test():
     review = format_review(Path("reports/index.jsonl"), report_records, Path("data/private/decision_track"), decision_records)
     _assert_contains(review, "历史复盘摘要")
     _assert_contains(review, "报告数量: 2")
+    _assert_contains(review, "报告连续性")
+    _assert_contains(review, "报告日期范围: 2026-01-01 → 2026-01-03")
+    _assert_contains(review, "最大报告间隔: 2 天")
+    _assert_contains(review, "当前连续报告天数: 1")
+    _assert_contains(review, "重复失败检测")
+    _assert_contains(review, "有事件明细的报告: 2")
+    _assert_contains(review, "失败模块分布: {'north_flow': 2, 'valuation_anchor': 1}")
+    _assert_contains(review, "重复失败模块: {'north_flow': 2}")
+    _assert_contains(review, "跳过模块分布: {'industry_cycle': 1}")
     _assert_contains(review, "strategy_type 分布")
     _assert_contains(review, "DCA记录存在")
     _assert_contains(review, "策略评分卡")
