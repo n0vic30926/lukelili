@@ -1,7 +1,6 @@
-# 金融投资辅助Agent — 完整包
+# Finance Agent
 
-> 从零搭建、经过实战验证的个人投资辅助系统。
-> 3天从Phase 1到Phase 4，2189行代码，7个脚本，3个cron任务。
+个人投资分析 Agent 的本地基础工程。它来自 OpenClaw 导出版本，当前方向是逐步变成本地可维护、可审计、边界清晰的长期工具。
 
 ## 系统定位
 
@@ -91,7 +90,28 @@
 
 **已知限制**：东方财富反爬拦截云服务器IP（stock_board_industry_name_em等不可用）
 
-## Cron任务配置
+## 本地化状态
+
+当前 worktree 已补上本地基础：
+
+- `AGENTS.md`：项目级投资与工程边界；
+- `.env.example` / `config/settings.example.json`：本地密钥和路径配置示例；
+- `schemas/portfolio.schema.json`：最小 portfolio schema；
+- `data/examples/portfolio.example.json`：虚构示例持仓；
+- `scripts/common/config_loader.py`：统一读取本地配置；
+- `scripts/validate_portfolio.py`：标准库 portfolio 校验；
+- `scripts/smoke_test.py`：离线基础检查。
+
+真实持仓应放在 `data/private/portfolio.local.json`，不要提交到 git。
+
+## 本地检查
+
+```bash
+python3 scripts/smoke_test.py
+python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
+```
+
+## 原 Cron 任务配置
 
 ```
 daily-finance-brief   Mon-Fri 15:30   每日收盘推送
@@ -128,10 +148,11 @@ Delivery配置（所有cron通用）：
 
 ## 路线图
 
-- [ ] Phase 4a: 投资者画像完善（风险承受力量化测试）
-- [ ] Phase 4b: 策略声明书IPS正式版（Luke定义，Agent执行）
-- [ ] Phase 5: 产业周期地图可视化 + narrative追踪 + 观点可信度系统
-- [ ] 拆分为独立Agent（已决定，暂不急）
+- [x] L1/L2 本地基础：规则、配置隔离、示例数据、schema、smoke test
+- [ ] L3 报告稳定化：依赖检查、日志、缓存、归档、模块状态摘要
+- [ ] L3 数据质量：宏观/ETF/新闻数据源质量分层和失败可见化
+- [ ] L4 多 Agent 研究角色
+- [ ] L5 半自动决策辅助：必须用户确认，不允许自动交易
 
 ---
 

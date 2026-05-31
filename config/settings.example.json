@@ -1,0 +1,13 @@
+{
+  "portfolio_path": "data/private/portfolio.local.json",
+  "example_portfolio_path": "data/examples/portfolio.example.json",
+  "decision_track_dir": "data/private/decision_track",
+  "daily_report_dir": "reports/daily",
+  "weekly_report_dir": "reports/weekly",
+  "cache_dir": "cache",
+  "log_dir": "logs",
+  "enable_news": false,
+  "tavily_api_key_env": "TAVILY_API_KEY",
+  "timezone": "Asia/Shanghai"
+}
+

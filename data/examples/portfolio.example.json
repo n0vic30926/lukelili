@@ -1,0 +1,48 @@
+{
+  "updated": "2026-05-31",
+  "user_profile": {
+    "investor_type": "example_investor",
+    "experience": "fictional example only",
+    "strategy_range": "dca_plus_watchlist",
+    "risk_tolerance": "medium"
+  },
+  "cash": {
+    "currency": "CNY",
+    "amount": 50000
+  },
+  "risk_rules": {
+    "single_loss_pct": 2,
+    "daily_loss_pct": 6,
+    "max_single_position_pct": 35
+  },
+  "holdings": [
+    {
+      "code": "000000",
+      "name": "Example Global Tech Fund",
+      "type": "mutual_fund",
+      "market": "example_market",
+      "proxy_etf": "sh000000",
+      "strategy_type": "dca",
+      "strategy_label": "fictional monthly plan",
+      "cost_basis": 10000,
+      "shares": 1000,
+      "buy_records": [
+        {
+          "date": "2026-01-02",
+          "confirm_date": "2026-01-03",
+          "amount": 10000,
+          "nav": 10,
+          "shares": 1000
+        }
+      ]
+    }
+  ],
+  "watchlist": [
+    {
+      "code": "EXAMPLE",
+      "name": "Example Watch Asset",
+      "reason": "structure example"
+    }
+  ]
+}
+

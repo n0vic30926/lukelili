@@ -7,8 +7,9 @@
 """
 import json, os
 from datetime import datetime, timedelta
+from common.config_loader import get_decision_track_dir, get_portfolio_path
 
-TRACK_DIR = os.path.expanduser("~/.openclaw/workspace/memory/decision_track")
+TRACK_DIR = str(get_decision_track_dir())
 
 
 def save_daily_decisions(portfolio_path):
@@ -76,7 +77,7 @@ def list_tracking_records():
 
 
 if __name__ == "__main__":
-    portfolio_path = os.path.expanduser("~/.openclaw/workspace/memory/portfolio.json")
+    portfolio_path = str(get_portfolio_path())
     fp = save_daily_decisions(portfolio_path)
     print(f"Saved: {fp}")
     print()

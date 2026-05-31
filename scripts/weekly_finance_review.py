@@ -8,7 +8,11 @@ import akshare as ak
 import pandas as pd
 import numpy as np
 
-PORTFOLIO_PATH = os.path.expanduser("~/.openclaw/workspace/memory/portfolio.json")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, SCRIPT_DIR)
+from common.config_loader import get_portfolio_path
+
+PORTFOLIO_PATH = str(get_portfolio_path())
 
 def load_portfolio():
     with open(PORTFOLIO_PATH) as f:

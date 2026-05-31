@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Finance Agent Portfolio",
+  "type": "object",
+  "required": ["user_profile", "risk_rules", "holdings", "watchlist"],
+  "properties": {
+    "updated": {"type": "string"},
+    "user_profile": {"type": "object"},
+    "cash": {"type": "object"},
+    "risk_rules": {"type": "object"},
+    "holdings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "name", "strategy_type", "cost_basis", "shares", "buy_records"],
+        "properties": {
+          "code": {"type": "string"},
+          "name": {"type": "string"},
+          "strategy_type": {"type": "string"},
+          "cost_basis": {"type": ["number", "integer"]},
+          "shares": {"type": ["number", "integer"]},
+          "buy_records": {"type": "array"}
+        }
+      }
+    },
+    "watchlist": {"type": "array"}
+  }
+}
+

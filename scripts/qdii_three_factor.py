@@ -4,7 +4,13 @@ AI基金三因子归因：基金收益 = 指数贡献 + 行业轮动贡献 + 残
 import akshare as ak
 import pandas as pd
 import numpy as np
+import os
+import sys
 from datetime import datetime, timedelta
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, SCRIPT_DIR)
+from common.config_loader import get_portfolio_path
 
 def qdii_attribution(fund_code="016452", days=30):
     """计算QDII基金的三因子归因"""
@@ -70,8 +76,8 @@ def qdii_attribution(fund_code="016452", days=30):
 
 def portfolio_risk_scan():
     """组合风险扫描：波动率+相关性+因子暴露"""
-    import json, os
-    portfolio_path = os.path.expanduser("~/.openclaw/workspace/memory/portfolio.json")
+    import json
+    portfolio_path = str(get_portfolio_path())
     with open(portfolio_path) as f:
         portfolio = json.load(f)
 
