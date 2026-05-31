@@ -13,6 +13,28 @@ from common.config_loader import get_portfolio_path, get_tavily_api_key, news_en
 
 PORTFOLIO_PATH = str(get_portfolio_path())
 
+INJECTION_PATTERNS = [
+    "ignore previous instructions",
+    "developer message",
+    "system prompt",
+    "reveal system prompt",
+    "泄露系统提示",
+    "忽略之前的指令",
+]
+
+
+def sanitize_external_text(text, max_length=300):
+    cleaned = str(text or "")
+    lowered = cleaned.lower()
+    for pattern in INJECTION_PATTERNS:
+        start = lowered.find(pattern)
+        while start >= 0:
+            end = start + len(pattern)
+            cleaned = cleaned[:start] + "[removed external instruction]" + cleaned[end:]
+            lowered = cleaned.lower()
+            start = lowered.find(pattern)
+    return cleaned.strip()[:max_length]
+
 # 搜索关键词矩阵：按持仓关联度分组
 SEARCH_QUERIES = [
     # QDII相关（纳指100/美股科技）
@@ -46,9 +68,11 @@ SEARCH_QUERIES = [
 ]
 
 
-def search_tavily(query, days=3, max_results=5):
+def search_tavily(query, days=3, max_results=5, tracker=None):
     """Tavily搜索，返回最近N天的相关资讯"""
     if not news_enabled():
+        if tracker:
+            tracker.skipped("industry_intel", source="Tavily", reason="disabled")
         return []
     api_key = get_tavily_api_key()
     url = "https://api.tavily.com/search"
@@ -66,9 +90,13 @@ def search_tavily(query, days=3, max_results=5):
         resp.raise_for_status()
         data = resp.json()
         results = data.get("results", [])
+        if tracker:
+            tracker.success("industry_intel", source="Tavily", detail=query)
         return results
     except Exception as e:
-        return [{"title": f"搜索失败: {query}", "content": str(e), "url": ""}]
+        if tracker:
+            tracker.failure("industry_intel", source="Tavily", error=e)
+        return []
 
 
 def classify_signal(title, content, tags):
@@ -102,20 +130,25 @@ def classify_signal(title, content, tags):
         return "⚪", "参考信息"
 
 
-def fetch_industry_intel():
+def fetch_industry_intel(tracker=None):
     """采集全部行业资讯，去重+分级"""
+    if not news_enabled():
+        if tracker:
+            tracker.skipped("industry_intel", source="Tavily", reason="disabled")
+        return []
+
     all_articles = []
     seen_titles = set()
 
     for sq in SEARCH_QUERIES:
-        results = search_tavily(sq["query"], days=3, max_results=5)
+        results = search_tavily(sq["query"], days=3, max_results=5, tracker=tracker)
         for r in results:
-            title = r.get("title", "").strip()
+            title = sanitize_external_text(r.get("title", ""), max_length=160)
             if not title or title in seen_titles:
                 continue
             seen_titles.add(title)
 
-            content = r.get("content", "").strip()
+            content = sanitize_external_text(r.get("content", ""), max_length=300)
             # 过滤导航栏垃圾内容
             if 'Best gifts for' in content or len(content) < 50:
                 continue
@@ -127,7 +160,7 @@ def fetch_industry_intel():
 
             all_articles.append({
                 "title": title,
-                "content": content[:300],  # 截断
+                "content": content,
                 "url": url,
                 "tags": sq["tags"],
                 "impact": sq["impact"],

@@ -4,9 +4,6 @@ industry_cycle.py - AI产业周期追踪器
 分块构建：块1=可量化赛道（AkShare数据驱动）
 """
 
-import akshare as ak
-import pandas as pd
-import numpy as np
 import json
 import sys
 import os
@@ -15,6 +12,22 @@ from datetime import datetime, timedelta
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from common.config_loader import get_tavily_api_key, news_enabled
+from industry_intel import sanitize_external_text
+
+try:
+    import akshare as ak
+except ImportError:
+    ak = None
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 # ============================================================
 # 块1A: 宏观层 — 利率/流动性 + 北向资金
@@ -317,9 +330,11 @@ QUALITATIVE_SECTORS = [
 ]
 
 
-def _tavily_search(query, days=7, max_results=3):
+def _tavily_search(query, days=7, max_results=3, tracker=None):
     """复用Tavily搜索"""
     if not news_enabled():
+        if tracker:
+            tracker.skipped("industry_cycle_news", source="Tavily", reason="disabled")
         return []
     api_key = get_tavily_api_key()
     import requests as req
@@ -335,8 +350,12 @@ def _tavily_search(query, days=7, max_results=3):
     try:
         resp = req.post(url, json=payload, timeout=15)
         resp.raise_for_status()
+        if tracker:
+            tracker.success("industry_cycle_news", source="Tavily", detail=query)
         return resp.json().get("results", [])
-    except Exception:
+    except Exception as e:
+        if tracker:
+            tracker.failure("industry_cycle_news", source="Tavily", error=e)
         return []
 
 
@@ -361,7 +380,7 @@ def _classify_news_signal(title, content):
         return "⚪", "参考"
 
 
-def get_qualitative_sector(sector_config):
+def get_qualitative_sector(sector_config, tracker=None):
     """采集单个定性赛道的新闻信号"""
     result = {
         "id": sector_config["id"],
@@ -376,13 +395,13 @@ def get_qualitative_sector(sector_config):
     seen = set()
 
     for q in sector_config["queries"]:
-        articles = _tavily_search(q, days=7, max_results=3)
+        articles = _tavily_search(q, days=7, max_results=3, tracker=tracker)
         for a in articles:
-            title = a.get("title", "").strip()
+            title = sanitize_external_text(a.get("title", ""), max_length=120)
             if not title or title in seen:
                 continue
             seen.add(title)
-            content = a.get("content", "")[:200]
+            content = sanitize_external_text(a.get("content", ""), max_length=200)
             sig, label = _classify_news_signal(title, content)
             signal_counts[sig] += 1
             result["headlines"].append({
@@ -408,7 +427,7 @@ def get_qualitative_sector(sector_config):
     return result
 
 
-def generate_block2_report():
+def generate_block2_report(tracker=None):
     """生成定性赛道报告"""
     lines = []
     lines.append("=" * 50)
@@ -422,7 +441,7 @@ def generate_block2_report():
             current_layer = sector["layer"]
             lines.append(f"\n## {current_layer}")
 
-        data = get_qualitative_sector(sector)
+        data = get_qualitative_sector(sector, tracker=tracker)
         lines.append(f"  [{data['name']}] {data['dominant_signal']}{data['signal_label']}")
         for h in data["headlines"][:3]:  # 每个赛道最多显示3条
             lines.append(f"    {h['signal']} {h['title']}")

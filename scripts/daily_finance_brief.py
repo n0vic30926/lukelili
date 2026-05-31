@@ -481,7 +481,7 @@ def main(tracker=None):
     # 纪律守护（不择时，只锚定纪律）
     try:
         from industry_intel import fetch_industry_intel
-        intel = fetch_industry_intel()
+        intel = fetch_industry_intel(tracker=tracker)
         has_red = any(a["signal"] == "\U0001f534" for a in intel)
         has_yellow = any(a["signal"] == "\U0001f7e1" for a in intel)
 
@@ -520,7 +520,7 @@ def main(tracker=None):
     lines.append("")
     try:
         from industry_intel import fetch_industry_intel
-        intel = fetch_industry_intel()
+        intel = fetch_industry_intel(tracker=tracker)
         signals = [a for a in intel if a["signal"] in ("\U0001f534", "\U0001f7e1")]
         greens = [a for a in intel if a["signal"] == "\U0001f7e2"][:2]
         if signals:

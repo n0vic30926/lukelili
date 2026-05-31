@@ -39,6 +39,7 @@ python3 scripts/smoke_test.py
 python3 scripts/mock_dependency_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_status_test.py
+python3 scripts/mock_news_status_test.py
 python3 scripts/mock_runtime_test.py
 python3 scripts/mock_reporting_test.py
 python3 scripts/mock_weekly_status_test.py

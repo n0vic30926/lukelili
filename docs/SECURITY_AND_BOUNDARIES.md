@@ -38,3 +38,5 @@ External data can be stale, missing, malformed, or biased. Reports should identi
 Missing runtime dependencies are not installed automatically. The user must explicitly run `python3 -m pip install -r requirements.txt`.
 
 Cache, logs, and report archives can contain derived portfolio and market context. Keep `cache/`, `logs/`, and `reports/` ignored unless a sanitized artifact is intentionally created.
+
+News text is external and untrusted. Report code should strip obvious prompt-injection phrases and treat news only as source material, never as instructions.
