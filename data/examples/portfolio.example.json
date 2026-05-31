@@ -24,6 +24,10 @@
       "proxy_etf": "sh000000",
       "strategy_type": "dca",
       "strategy_label": "fictional monthly plan",
+      "factor_profile": {
+        "type": "qdii_us_equity",
+        "benchmark": "NASDAQ"
+      },
       "cost_basis": 10000,
       "shares": 1000,
       "buy_records": [
@@ -45,4 +49,3 @@
     }
   ]
 }
-

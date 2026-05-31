@@ -42,10 +42,71 @@ def _record_failure(module, tracker=None, error=None):
         tracker.failure(module, source="AkShare", error=error)
 
 
-def qdii_attribution(fund_code="016452", days=30, tracker=None):
+SUPPORTED_FACTOR_TYPES = {"qdii_us_equity", "a_share_ai"}
+
+
+def _holding_label(holding):
+    return str(holding.get("name") or holding.get("code") or "Unnamed Holding")
+
+
+def build_factor_jobs(portfolio):
+    """Build attribution jobs from explicit portfolio factor profiles."""
+    jobs = []
+    for holding in portfolio.get("holdings", []):
+        profile = holding.get("factor_profile") or {}
+        attribution_type = str(profile.get("type") or "none")
+        if attribution_type not in SUPPORTED_FACTOR_TYPES:
+            continue
+        jobs.append(
+            {
+                "code": str(holding.get("code") or ""),
+                "label": _holding_label(holding),
+                "attribution_type": attribution_type,
+                "benchmark": str(profile.get("benchmark") or ""),
+            }
+        )
+    return jobs
+
+
+def run_factor_job(job, days=30, tracker=None):
+    if job["attribution_type"] == "qdii_us_equity":
+        return qdii_attribution(fund_code=job["code"], days=days, tracker=tracker)
+    if job["attribution_type"] == "a_share_ai":
+        return ai_fund_attribution(fund_code=job["code"], days=days, tracker=tracker)
+    return {"error": f"unsupported_factor_profile: {job['attribution_type']}"}
+
+
+def run_factor_jobs(portfolio, days=30, tracker=None):
+    return [(job, run_factor_job(job, days=days, tracker=tracker)) for job in build_factor_jobs(portfolio)]
+
+
+def format_factor_result(job, result):
+    label = job.get("label") or job.get("code") or "Holding"
+    lines = [f"**{label}** ({job.get('attribution_type', 'unknown')})"]
+    if not result or "error" in result:
+        lines.append(f"- 归因计算失败: {result.get('error', 'unknown_error') if result else 'unknown_error'}")
+        return "\n".join(lines)
+
+    lines.append(f"- 基金收益: {result['fund_ret']:+.2f}%")
+    if job.get("attribution_type") == "qdii_us_equity":
+        lines.append(f"- 纳指贡献: {result['nasdaq_contrib']:+.2f}%")
+        lines.append(f"- 汇率贡献: {result['fx_contrib']:+.2f}%")
+        lines.append(f"- 残差(超额/跟踪误差): {result['residual']:+.2f}%")
+    elif job.get("attribution_type") == "a_share_ai":
+        lines.append(f"- 指数贡献: {result['index_contrib']:+.2f}%")
+        lines.append(f"- 行业轮动贡献: {result['rotation_contrib']:+.2f}%")
+        lines.append(f"- 残差(alpha/跟踪误差): {result['residual']:+.2f}%")
+    lines.append(f"- 解释度: {result['explained_pct']:.1f}%")
+    return "\n".join(lines)
+
+
+def qdii_attribution(fund_code=None, days=30, tracker=None):
     """计算QDII基金的三因子归因"""
     if ak is None:
         return _missing_dependency("qdii_attribution", tracker)
+    if not fund_code:
+        _record_failure("qdii_attribution", tracker, RuntimeError("missing_fund_code"))
+        return {"error": "missing_fund_code"}
 
     # 1. 基金净值序列
     df_fund = ak.fund_open_fund_info_em(symbol=fund_code, indicator="单位净值走势")
@@ -175,7 +236,7 @@ def portfolio_risk_scan(tracker=None):
     return results
 
 
-def ai_fund_attribution(fund_code="011840", days=30, tracker=None):
+def ai_fund_attribution(fund_code=None, days=30, tracker=None):
     """AI基金三因子归因：指数贡献 + 行业轮动贡献 + 残差
     因子1: 中证AI指数(930713)贡献 — 基准beta
     因子2: 行业轮动 — 基金重仓行业vs整体AI行业的资金流差异
@@ -183,6 +244,9 @@ def ai_fund_attribution(fund_code="011840", days=30, tracker=None):
     """
     if ak is None:
         return _missing_dependency("ai_fund_attribution", tracker)
+    if not fund_code:
+        _record_failure("ai_fund_attribution", tracker, RuntimeError("missing_fund_code"))
+        return {"error": "missing_fund_code"}
 
     # 1. 基金净值序列
     df_fund = ak.fund_open_fund_info_em(symbol=fund_code, indicator="单位净值走势")
@@ -252,12 +316,17 @@ def ai_fund_attribution(fund_code="011840", days=30, tracker=None):
 
 
 if __name__ == "__main__":
-    print("=== QDII三因子归因 ===")
-    attr = qdii_attribution(days=30)
-    for k, v in attr.items():
-        print(f"  {k}: {v}")
+    import json
 
-    print("\n=== 组合风险扫描 ===")
+    with open(get_portfolio_path(), encoding="utf-8") as f:
+        portfolio = json.load(f)
+
+    print("=== 因子归因 ===")
+    for job, result in run_factor_jobs(portfolio, days=30):
+        print(format_factor_result(job, result))
+        print()
+
+    print("=== 组合风险扫描 ===")
     risk = portfolio_risk_scan()
     for k, v in risk.items():
         print(f"  {k}: {v}")

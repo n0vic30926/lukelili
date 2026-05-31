@@ -112,6 +112,7 @@ python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 python3 scripts/mock_data_quality_test.py
 python3 scripts/mock_dependency_test.py
 python3 scripts/mock_daily_status_test.py
+python3 scripts/mock_factor_routing_test.py
 python3 scripts/mock_factor_status_test.py
 python3 scripts/mock_industry_intel_dynamic_test.py
 python3 scripts/mock_news_status_test.py
@@ -199,6 +200,7 @@ Delivery配置（所有cron通用）：
 - [x] L3 历史复盘摘要：报告连续性、重复失败模块、策略纪律聚合统计
 - [x] 安全基线：tracked 文件敏感信息扫描、memory/Skill 脱敏模板化
 - [x] 行业情报本地化：从 portfolio 动态生成资讯查询和影响标签
+- [x] 因子归因本地化：从 portfolio `factor_profile` 动态路由 QDII/AI 归因
 - [ ] L4 多 Agent 研究角色
 - [ ] L5 半自动决策辅助：必须用户确认，不允许自动交易
 

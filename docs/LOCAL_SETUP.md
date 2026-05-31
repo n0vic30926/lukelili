@@ -32,6 +32,12 @@ Validate a portfolio file:
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 ```
 
+Optional `factor_profile` values route attribution modules:
+
+- `qdii_us_equity`: fund return, US tech benchmark, and USD/CNY contribution.
+- `a_share_ai`: fund return, CSI AI benchmark, and industry-rotation contribution.
+- omit the field or set `"type": "none"` to skip attribution for that holding.
+
 ## 3. Foundation Check
 
 ```bash
@@ -39,6 +45,7 @@ python3 scripts/smoke_test.py
 python3 scripts/mock_data_quality_test.py
 python3 scripts/mock_dependency_test.py
 python3 scripts/mock_daily_status_test.py
+python3 scripts/mock_factor_routing_test.py
 python3 scripts/mock_factor_status_test.py
 python3 scripts/mock_industry_intel_dynamic_test.py
 python3 scripts/mock_news_status_test.py

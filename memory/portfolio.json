@@ -22,6 +22,10 @@
       "buy_date": "example",
       "strategy_type": "dca",
       "strategy_label": "example recurring plan",
+      "factor_profile": {
+        "type": "qdii_us_equity",
+        "benchmark": "NASDAQ"
+      },
       "strategy_rules": {
         "discipline": "user_defined",
         "notes": "example only"
@@ -40,6 +44,10 @@
       "buy_date": "example",
       "strategy_type": "trial",
       "strategy_label": "example trial position",
+      "factor_profile": {
+        "type": "a_share_ai",
+        "benchmark": "CSI_AI"
+      },
       "strategy_rules": {
         "entry_reason": "user_defined",
         "exit_condition": "user_defined",

@@ -17,6 +17,13 @@
           "code": {"type": "string"},
           "name": {"type": "string"},
           "strategy_type": {"type": "string"},
+          "factor_profile": {
+            "type": "object",
+            "properties": {
+              "type": {"type": "string"},
+              "benchmark": {"type": "string"}
+            }
+          },
           "cost_basis": {"type": ["number", "integer"]},
           "shares": {"type": ["number", "integer"]},
           "buy_records": {"type": "array"}
@@ -26,4 +33,3 @@
     "watchlist": {"type": "array"}
   }
 }
-

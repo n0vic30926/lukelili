@@ -173,7 +173,7 @@ def get_fund_top_holdings(code, tracker=None):
 # ── 生成简报 ──
 
 def main(tracker=None):
-    from qdii_three_factor import qdii_attribution, portfolio_risk_scan, ai_fund_attribution
+    from qdii_three_factor import format_factor_result, portfolio_risk_scan, run_factor_jobs
     tracker = tracker or DataStatusTracker()
 
     portfolio = load_portfolio()
@@ -371,44 +371,20 @@ def main(tracker=None):
         lines.append(f"- {emoji} **组合合计**: 成本{total_cost:.0f} → 市值{total_market:.0f} | {total_pnl_pct:+.1f}% ({total_pnl:+.0f}元)")
     lines.append("")
 
-    # ── 9. QDII三因子归因 ──
-    lines.append("## 🔬 QDII三因子归因（近30日）")
+    # ── 9. 因子归因 ──
+    lines.append("## 🔬 因子归因（近30日）")
     lines.append("")
+    factor_results = []
     try:
-        attr = qdii_attribution(days=30, tracker=tracker)
-        if 'error' not in attr:
-            lines.append(f"- 基金收益: {attr['fund_ret']:+.2f}%")
-            lines.append(f"- 纳指贡献: {attr['nasdaq_contrib']:+.2f}%")
-            lines.append(f"- 汇率贡献: {attr['fx_contrib']:+.2f}%")
-            lines.append(f"- 残差(超额/跟踪误差): {attr['residual']:+.2f}%")
-            lines.append(f"- 解释度: {attr['explained_pct']:.1f}%")
-            attr_data = attr  # 供决策模块用
+        factor_results = run_factor_jobs(portfolio, days=30, tracker=tracker)
+        if factor_results:
+            for job, result in factor_results:
+                lines.append(format_factor_result(job, result))
+                lines.append("")
         else:
-            lines.append(f"- 归因计算失败: {attr['error']}")
-            attr_data = None
+            lines.append("- 未配置可用 factor_profile，跳过归因")
     except Exception as e:
         lines.append(f"- 归因计算异常: {e}")
-        attr_data = None
-    lines.append("")
-
-    # ── 9b. AI基金三因子归因 ──
-    lines.append("## 🔬 AI基金三因子归因（近30日）")
-    lines.append("")
-    try:
-        ai_attr = ai_fund_attribution(days=30, tracker=tracker)
-        if 'error' not in ai_attr:
-            lines.append(f"- 基金收益: {ai_attr['fund_ret']:+.2f}%")
-            lines.append(f"- 中证AI指数贡献: {ai_attr['index_contrib']:+.2f}%")
-            lines.append(f"- 行业轮动贡献: {ai_attr['rotation_contrib']:+.2f}%")
-            lines.append(f"- 残差(alpha/跟踪误差): {ai_attr['residual']:+.2f}%")
-            lines.append(f"- 解释度: {ai_attr['explained_pct']:.1f}%")
-            ai_attr_data = ai_attr
-        else:
-            lines.append(f"- 归因计算失败: {ai_attr['error']}")
-            ai_attr_data = None
-    except Exception as e:
-        lines.append(f"- 归因计算异常: {e}")
-        ai_attr_data = None
     lines.append("")
 
     # ── 10. 组合风险扫描 ──
@@ -470,11 +446,14 @@ def main(tracker=None):
             advice.append(f"\u2705 **{h['name']}** 浮盈亏{pnl_pct:+.1f}%")
 
     # 纯状态提示（不带操作暗示）
-    if attr_data and attr_data.get('explained_pct', 0) > 90:
-        advice.append(f"\U0001f4ca QDII因子集中度：纳指解释{attr_data['explained_pct']:.0f}%")
-    if attr_data and abs(attr_data.get('fx_contrib', 0)) > 0.5:
-        direction = "走弱" if attr_data['fx_contrib'] < 0 else "走强"
-        advice.append(f"\U0001f4b1 汇率{direction}{attr_data['fx_contrib']:+.2f}%")
+    for job, result in factor_results:
+        if not result or 'error' in result:
+            continue
+        if result.get('explained_pct', 0) > 90:
+            advice.append(f"\U0001f4ca {job['label']}因子集中度：解释度{result['explained_pct']:.0f}%")
+        if abs(result.get('fx_contrib', 0)) > 0.5:
+            direction = "走弱" if result['fx_contrib'] < 0 else "走强"
+            advice.append(f"\U0001f4b1 {job['label']}汇率{direction}{result['fx_contrib']:+.2f}%")
     if risk_data and risk_data.get('correlation', 0) > 0.5:
         advice.append(f"\U0001f517 组合相关性{risk_data['correlation']:.2f}")
 

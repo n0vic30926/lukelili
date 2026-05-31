@@ -161,21 +161,14 @@ def industry_rotation(tracker=None):
         return None
 
 
-def qdii_factor_weekly(tracker=None):
-    """模块3: 本周QDII因子变化"""
+def factor_weekly(portfolio, tracker=None):
+    """模块3: 按 portfolio factor_profile 生成本周因子归因"""
     sys.path.insert(0, os.path.dirname(__file__))
-    from qdii_three_factor import qdii_attribution
-    return qdii_attribution(days=7, tracker=tracker)
+    from qdii_three_factor import run_factor_jobs
+    return run_factor_jobs(portfolio, days=7, tracker=tracker)
 
 
-def ai_fund_factor_weekly(tracker=None):
-    """模块3b: 本周AI基金因子变化"""
-    sys.path.insert(0, os.path.dirname(__file__))
-    from qdii_three_factor import ai_fund_attribution
-    return ai_fund_attribution(days=7, tracker=tracker)
-
-
-def decision_template(weekly_rets, industry_data, qdii_factor, ai_factor):
+def decision_template(weekly_rets, industry_data, factor_results):
     """模块4: 决策建议（按strategy_type隔离逻辑）"""
     portfolio = load_portfolio()
     strategy_map = {h['code']: h.get('strategy_type', 'dca') for h in portfolio['holdings']}
@@ -201,28 +194,29 @@ def decision_template(weekly_rets, industry_data, qdii_factor, ai_factor):
             advice.append(f"{item['name']}: 本周{item['week_ret']:+.2f}%")
 
     # 因子建议
-    if qdii_factor and 'nasdaq_contrib' in qdii_factor:
-        fx = qdii_factor.get('fx_contrib', 0)
-        if fx < -0.5:
-            advice.append(f"QDII汇率因子: 美元走弱{fx:+.2f}%拖累收益，短期不必调整，汇率波动属常态")
-        elif fx > 0.5:
-            advice.append(f"QDII汇率因子: 美元走强{fx:+.2f}%增厚收益")
+    for job, result in factor_results:
+        if not result or 'error' in result:
+            continue
+        fx = result.get('fx_contrib')
+        if fx is not None and fx < -0.5:
+            advice.append(f"{job['label']}汇率因子: 美元走弱{fx:+.2f}%拖累收益，汇率波动属常态")
+        elif fx is not None and fx > 0.5:
+            advice.append(f"{job['label']}汇率因子: 美元走强{fx:+.2f}%增厚收益")
+
+        rotation = result.get('rotation_contrib')
+        residual = result.get('residual', 0)
+        if job.get('attribution_type') == 'a_share_ai':
+            if residual < -2:
+                advice.append(f"{job['label']}: 本周alpha为{residual:+.1f}%，跑输指数，基金经理选股拖累")
+            elif residual > 2:
+                advice.append(f"{job['label']}: 本周alpha为{residual:+.1f}%，跑赢指数，选股能力突出")
+            if rotation is not None and rotation < -1:
+                advice.append(f"{job['label']}: 行业轮动拖累{rotation:+.1f}%，重仓行业资金流出")
 
     # 行业轮动提示
     if industry_data:
         top_in = [x['行业'] for x in industry_data['inflow'][:3]]
         advice.append(f"本周资金流入前三: {', '.join(top_in)}")
-
-    # AI因子建议
-    if ai_factor and 'error' not in ai_factor:
-        rotation = ai_factor.get('rotation_contrib', 0)
-        residual = ai_factor.get('residual', 0)
-        if residual < -2:
-            advice.append(f"AI基金: 本周alpha为{residual:+.1f}%，跑输指数，基金经理选股拖累")
-        elif residual > 2:
-            advice.append(f"AI基金: 本周alpha为{residual:+.1f}%，跑赢指数，选股能力突出")
-        if rotation < -1:
-            advice.append(f"AI基金: 行业轮动拖累{rotation:+.1f}%，重仓行业资金流出")
 
     return advice
 
@@ -294,6 +288,7 @@ def dca_curve(tracker=None):
 def format_report(tracker=None):
     """生成完整周报"""
     tracker = tracker or DataStatusTracker()
+    portfolio = load_portfolio()
     now = datetime.now()
     lines = []
     lines.append(f"# 📋 周度复盘 | {now.strftime('%Y-%m-%d')}")
@@ -326,30 +321,21 @@ def format_report(tracker=None):
             lines.append(f"  - {x['行业']}: 净流出{abs(x['净额']):.1f}亿 ({x['行业-涨跌幅']:+.2f}%)")
         lines.append("")
 
-    # 模块3: QDII因子
-    qf = qdii_factor_weekly(tracker=tracker)
-    if qf and 'error' not in qf:
-        lines.append("## 🔬 QDII因子周变化")
-        lines.append("")
-        lines.append(f"- 基金周收益: {qf['fund_ret']:+.2f}%")
-        lines.append(f"- 纳指贡献: {qf['nasdaq_contrib']:+.2f}%")
-        lines.append(f"- 汇率贡献: {qf['fx_contrib']:+.2f}%")
-        lines.append(f"- 残差(超额/跟踪误差): {qf['residual']:+.2f}%")
-        lines.append("")
-
-    # 模块3b: AI基金因子
-    af = ai_fund_factor_weekly(tracker=tracker)
-    if af and 'error' not in af:
-        lines.append("## 🔬 AI基金因子周变化")
-        lines.append("")
-        lines.append(f"- 基金周收益: {af['fund_ret']:+.2f}%")
-        lines.append(f"- 中证AI指数贡献: {af['index_contrib']:+.2f}%")
-        lines.append(f"- 行业轮动贡献: {af['rotation_contrib']:+.2f}%")
-        lines.append(f"- 残差(alpha/跟踪误差): {af['residual']:+.2f}%")
+    # 模块3: 因子归因
+    factors = factor_weekly(portfolio, tracker=tracker)
+    lines.append("## 🔬 因子周变化")
+    lines.append("")
+    if factors:
+        from qdii_three_factor import format_factor_result
+        for job, result in factors:
+            lines.append(format_factor_result(job, result))
+            lines.append("")
+    else:
+        lines.append("- 未配置可用 factor_profile，跳过归因")
         lines.append("")
 
     # 模块4: 决策建议
-    advice = decision_template(rets, ind, qf, af)
+    advice = decision_template(rets, ind, factors)
     lines.append("## 💡 下周建议")
     lines.append("")
     for a in advice:
