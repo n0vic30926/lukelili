@@ -37,6 +37,7 @@ python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 ```bash
 python3 scripts/smoke_test.py
 python3 scripts/mock_dependency_test.py
+python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_runtime_test.py
 python3 scripts/mock_reporting_test.py
 ```
