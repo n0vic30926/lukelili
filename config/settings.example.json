@@ -33,6 +33,12 @@
       "unit": "%",
       "cadence": "monthly",
       "max_age_days": 75,
+      "release_calendar": {
+        "source": "NBS official release calendar",
+        "source_tier": "official",
+        "next_release_date": "",
+        "note": "Fill in the next official release date in settings.local.json."
+      },
       "risk_note": "通胀影响利率预期和权益估值。",
       "interpretation": {
         "trend_up": "通胀上行，利率和估值压力需要观察。",
@@ -49,6 +55,12 @@
       "unit": "%",
       "cadence": "monthly",
       "max_age_days": 75,
+      "release_calendar": {
+        "source": "NBS official release calendar",
+        "source_tier": "official",
+        "next_release_date": "",
+        "note": "Fill in the next official release date in settings.local.json."
+      },
       "risk_note": "PPI反映上游价格压力和工业周期。",
       "interpretation": {
         "trend_up": "工业品价格压力上行，观察利润率和补库存周期。",
@@ -65,6 +77,12 @@
       "unit": "",
       "cadence": "monthly",
       "max_age_days": 45,
+      "release_calendar": {
+        "source": "NBS official release calendar",
+        "source_tier": "official",
+        "next_release_date": "",
+        "note": "Fill in the next official release date in settings.local.json."
+      },
       "risk_note": "PMI高于50通常表示扩张，低于50通常表示收缩。",
       "interpretation": {
         "threshold": 50,
@@ -81,6 +99,12 @@
       "unit": "%",
       "cadence": "monthly",
       "max_age_days": 75,
+      "release_calendar": {
+        "source": "PBOC official release calendar",
+        "source_tier": "official",
+        "next_release_date": "",
+        "note": "Fill in the next official release date in settings.local.json."
+      },
       "risk_note": "M2反映流动性环境。",
       "interpretation": {
         "trend_up": "流动性同比增速上行，风险资产流动性环境可能改善。",
@@ -97,6 +121,12 @@
       "unit": "%",
       "cadence": "quarterly",
       "max_age_days": 140,
+      "release_calendar": {
+        "source": "NBS official release calendar",
+        "source_tier": "official",
+        "next_release_date": "",
+        "note": "Fill in the next official release date in settings.local.json."
+      },
       "risk_note": "GDP反映宏观增长环境。",
       "interpretation": {
         "trend_up": "增长动能边际改善。",
@@ -113,6 +143,12 @@
       "unit": "亿元",
       "cadence": "monthly",
       "max_age_days": 75,
+      "release_calendar": {
+        "source": "PBOC official release calendar",
+        "source_tier": "official",
+        "next_release_date": "",
+        "note": "Fill in the next official release date in settings.local.json."
+      },
       "risk_note": "社融反映信用扩张和实体融资环境。",
       "interpretation": {
         "trend_up": "信用扩张边际增强，观察实体融资和行业景气传导。",
@@ -129,6 +165,12 @@
       "unit": "%",
       "cadence": "daily",
       "max_age_days": 10,
+      "release_calendar": {
+        "source": "US Treasury daily market data",
+        "source_tier": "official",
+        "next_release_date": "",
+        "note": "Daily market data has no monthly release calendar; fill only if a local calendar is needed."
+      },
       "risk_note": "美债收益率影响全球成长股估值和美元资产折现率。",
       "interpretation": {
         "trend_up": "美债收益率上行，成长股估值折现压力上升。",

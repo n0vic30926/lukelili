@@ -44,6 +44,14 @@ def _macro_config_issues(indicator):
         issues.append("cadence")
     if indicator.get("max_age_days") is None:
         issues.append("max_age_days")
+    calendar = indicator.get("release_calendar")
+    if not isinstance(calendar, dict):
+        issues.append("release_calendar")
+    else:
+        if not calendar.get("source"):
+            issues.append("release_calendar.source")
+        if not calendar.get("source_tier"):
+            issues.append("release_calendar.source_tier")
     return issues
 
 

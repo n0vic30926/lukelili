@@ -324,6 +324,12 @@ def run_macro_radar_mock():
                 "date_columns": ["月份"],
                 "value_columns": ["今值"],
                 "unit": "%",
+                "release_calendar": {
+                    "next_release_date": "2026-03-09",
+                    "source": "NBS fixture",
+                    "source_tier": "official",
+                    "note": "fixture calendar",
+                },
                 "interpretation": {
                     "trend_up": "通胀上行，利率和估值压力需要观察。",
                     "trend_down": "通胀回落，估值压力可能边际缓和。",
@@ -393,6 +399,11 @@ def run_macro_radar_mock():
     _assert_contains(report, "制造业处于扩张区间")
     _assert_contains(report, "增长动能边际改善")
     _assert_not_contains(report, "日期不可解析 | cadence=quarterly")
+    _assert_contains(report, "宏观发布日历")
+    _assert_contains(report, "中国CPI: 下一发布日期 2026-03-09")
+    _assert_contains(report, "source=NBS fixture")
+    _assert_contains(report, "发布日历缺口")
+    _assert_contains(report, "缺失宏观指标")
     _assert_contains(report, "宏观数据缺口")
     return report
 

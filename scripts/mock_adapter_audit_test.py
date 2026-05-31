@@ -30,6 +30,11 @@ def run_adapter_audit_test():
                 "value_columns": ["今值"],
                 "cadence": "monthly",
                 "max_age_days": 75,
+                "release_calendar": {
+                    "source": "NBS fixture",
+                    "source_tier": "official",
+                    "next_release_date": "2026-03-09",
+                },
             },
             {
                 "id": "broken_macro",
@@ -49,6 +54,7 @@ def run_adapter_audit_test():
     _assert_contains(report, "宏观 adapter: 坏宏观指标 | status=config_issue")
     _assert_contains(report, "candidate_functions")
     _assert_contains(report, "value_columns")
+    _assert_contains(report, "release_calendar")
     _assert_contains(report, "ETF adapter: ETF行情 | function=fund_etf_spot_em | status=ok")
 
 

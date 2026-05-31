@@ -119,6 +119,40 @@ def _interpret_indicator(latest_value, delta, indicator):
     return rules.get("default", "")
 
 
+def macro_release_calendar_lines(indicators, today=None):
+    """Return release-calendar lines from local indicator config."""
+    lines = ["### 宏观发布日历", ""]
+    missing = []
+    today = today or datetime.now().date()
+    for indicator in indicators:
+        label = indicator.get("label", indicator.get("id", "macro"))
+        calendar = indicator.get("release_calendar", {}) or {}
+        release_date = calendar.get("next_release_date")
+        if not release_date:
+            missing.append(label)
+            continue
+        parsed = _parse_indicator_date(release_date)
+        days_text = "日期不可解析"
+        if parsed:
+            days = (parsed - today).days
+            if days >= 0:
+                days_text = f"{days}天后"
+            else:
+                days_text = f"已过期{abs(days)}天"
+        source = calendar.get("source", "未配置")
+        source_tier = calendar.get("source_tier", "unknown")
+        lines.append(
+            f"- {label}: 下一发布日期 {release_date} | {days_text} | source={source} | tier={source_tier}"
+        )
+        if calendar.get("note"):
+            lines.append(f"  - {calendar['note']}")
+    if missing:
+        lines.append(f"- 发布日历缺口: {', '.join(missing)}")
+    lines.append("- 日历边界: 只读取本地配置，不自动联网确认官方发布日期。")
+    lines.append("")
+    return lines
+
+
 def _call_first_available(ak, settings, tracker, indicator):
     candidates = indicator.get("candidate_functions", [])
     for fn_name in candidates:
@@ -187,6 +221,7 @@ def macro_indicator_lines(ak, settings, tracker):
 
     if unavailable:
         lines.append(f"- 宏观数据缺口: {', '.join(unavailable)}")
+    lines.extend(macro_release_calendar_lines(indicators))
     lines.append("")
     return lines
 

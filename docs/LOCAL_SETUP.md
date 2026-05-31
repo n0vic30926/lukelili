@@ -33,7 +33,7 @@ Important fields:
 - `log_dir`: log directory.
 - `use_cache`: whether to use best-effort local cache.
 - `cache_ttl_hours`: cache freshness window.
-- `macro_indicators`: configurable macro radar using candidate AkShare functions.
+- `macro_indicators`: configurable macro radar using candidate AkShare functions, local release-calendar metadata, date columns, and value columns.
 - `enable_news`: whether to use Tavily news.
 - `tavily_api_key_env`: environment variable name for the Tavily key.
 - `timezone`: report timezone.
@@ -60,6 +60,8 @@ The private portfolio should contain:
 - risk rules;
 - strategy type and notes.
 - optional `etf_profile` for ETF-like holdings, including benchmark, expense ratio, tracking error, tracking history, dividend policy, and dividend history.
+
+For each configured macro indicator, keep `release_calendar.next_release_date` updated in `config/settings.local.json` from an official source. The report shows missing release dates as a calendar gap instead of guessing.
 
 ## 4. Tavily News
 
