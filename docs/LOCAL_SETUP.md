@@ -40,6 +40,7 @@ python3 scripts/mock_data_quality_test.py
 python3 scripts/mock_dependency_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_status_test.py
+python3 scripts/mock_industry_intel_dynamic_test.py
 python3 scripts/mock_news_status_test.py
 python3 scripts/mock_report_index_test.py
 python3 scripts/mock_review_history_test.py

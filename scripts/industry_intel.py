@@ -35,37 +35,70 @@ def sanitize_external_text(text, max_length=300):
             start = lowered.find(pattern)
     return cleaned.strip()[:max_length]
 
-# 搜索关键词矩阵：按持仓关联度分组
-SEARCH_QUERIES = [
-    # QDII相关（纳指100/美股科技）
-    {
-        "query": "纳斯达克 美股科技 走势分析",
-        "tags": ["QDII", "美股"],
-        "impact": "016452"
-    },
-    {
-        "query": "美联储 利率决议 美元指数",
-        "tags": ["QDII", "宏观", "汇率"],
-        "impact": "016452"
-    },
-    # AI基金相关（中证AI/A股科技）
-    {
-        "query": "AI人工智能 半导体 板块 资金流向",
-        "tags": ["AI", "A股"],
-        "impact": "011840"
-    },
-    {
-        "query": "AI行业 政策 技术突破 产业动态",
-        "tags": ["AI", "行业"],
-        "impact": "011840"
-    },
-    # 宏观/汇率
-    {
-        "query": "人民币汇率 离岸人民币 央行政策",
-        "tags": ["汇率", "宏观"],
-        "impact": "016452"
-    },
-]
+def _load_portfolio():
+    with open(PORTFOLIO_PATH, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _compact_terms(*values):
+    terms = []
+    for value in values:
+        text = str(value or "").strip()
+        if text:
+            terms.append(text)
+    return " ".join(terms)
+
+
+def _holding_label(item):
+    return str(item.get("name") or item.get("code") or "组合")
+
+
+def build_search_queries(portfolio):
+    """Build news search queries from holdings and watchlist instead of fixed codes."""
+    queries = []
+    for holding in portfolio.get("holdings", []):
+        label = _holding_label(holding)
+        query = _compact_terms(
+            label,
+            holding.get("market"),
+            holding.get("type"),
+            "走势 风险 资金流 新闻",
+        )
+        queries.append(
+            {
+                "query": query,
+                "tags": ["holding", str(holding.get("strategy_type") or "unknown")],
+                "impact": str(holding.get("code") or label),
+                "impact_label": label,
+            }
+        )
+
+    for item in portfolio.get("watchlist", []):
+        label = _holding_label(item)
+        query = _compact_terms(label, item.get("reason"), "走势 新闻")
+        queries.append(
+            {
+                "query": query,
+                "tags": ["watchlist"],
+                "impact": str(item.get("code") or label),
+                "impact_label": label,
+            }
+        )
+
+    if not queries:
+        queries.append(
+            {
+                "query": "全球市场 宏观 利率 汇率 财经新闻",
+                "tags": ["macro"],
+                "impact": "portfolio",
+                "impact_label": "组合",
+            }
+        )
+    return queries
+
+
+def _impact_label(article):
+    return str(article.get("impact_label") or article.get("impact") or "组合")
 
 
 def search_tavily(query, days=3, max_results=5, tracker=None):
@@ -140,7 +173,8 @@ def fetch_industry_intel(tracker=None):
     all_articles = []
     seen_titles = set()
 
-    for sq in SEARCH_QUERIES:
+    portfolio = _load_portfolio()
+    for sq in build_search_queries(portfolio):
         results = search_tavily(sq["query"], days=3, max_results=5, tracker=tracker)
         for r in results:
             title = sanitize_external_text(r.get("title", ""), max_length=160)
@@ -164,6 +198,7 @@ def fetch_industry_intel(tracker=None):
                 "url": url,
                 "tags": sq["tags"],
                 "impact": sq["impact"],
+                "impact_label": sq["impact_label"],
                 "signal": signal_emoji,
                 "signal_level": signal_level,
             })
@@ -195,7 +230,7 @@ def format_intel_report(articles):
         lines.append("## 🔴 重大信号（直接影响持仓）")
         lines.append("")
         for a in red:
-            funds = "QDII" if a["impact"] == "016452" else "AI基金" if a["impact"] == "011840" else "组合"
+            funds = _impact_label(a)
             lines.append(f"**[{funds}] {a['title']}**")
             lines.append(f"  {a['signal_level']} | {a['content'][:200]}")
             if a["url"]:
@@ -206,7 +241,7 @@ def format_intel_report(articles):
         lines.append("## 🟡 趋势变化（持续观察）")
         lines.append("")
         for a in yellow[:5]:  # 最多5条
-            funds = "QDII" if a["impact"] == "016452" else "AI基金" if a["impact"] == "011840" else "组合"
+            funds = _impact_label(a)
             lines.append(f"**[{funds}] {a['title']}**")
             lines.append(f"  {a['signal_level']} | {a['content'][:150]}")
             lines.append("")
@@ -215,7 +250,7 @@ def format_intel_report(articles):
         lines.append("## 🟢 利好信号")
         lines.append("")
         for a in green[:3]:
-            funds = "QDII" if a["impact"] == "016452" else "AI基金" if a["impact"] == "011840" else "组合"
+            funds = _impact_label(a)
             lines.append(f"- [{funds}] {a['title']}")
         lines.append("")
 
@@ -231,24 +266,20 @@ def format_intel_report(articles):
     # 持仓影响汇总
     lines.append("## 📊 持仓影响速判")
     lines.append("")
-    qdii_red = len([a for a in red if a["impact"] == "016452"])
-    qdii_yellow = len([a for a in yellow if a["impact"] == "016452"])
-    ai_red = len([a for a in red if a["impact"] == "011840"])
-    ai_yellow = len([a for a in yellow if a["impact"] == "011840"])
-
-    if qdii_red > 0:
-        lines.append(f"- 🔴 **QDII**: {qdii_red}条重大信号，建议关注今日简报中的因子归因变化")
-    elif qdii_yellow > 0:
-        lines.append(f"- 🟡 **QDII**: {qdii_yellow}条趋势变化信号，持续观察")
+    impacted_labels = sorted({_impact_label(a) for a in red + yellow + green})
+    if impacted_labels:
+        for label in impacted_labels:
+            red_count = len([a for a in red if _impact_label(a) == label])
+            yellow_count = len([a for a in yellow if _impact_label(a) == label])
+            green_count = len([a for a in green if _impact_label(a) == label])
+            if red_count:
+                lines.append(f"- 🔴 **{label}**: {red_count}条重大信号，需在报告中单独标注来源与影响路径")
+            elif yellow_count:
+                lines.append(f"- 🟡 **{label}**: {yellow_count}条趋势变化信号，持续观察")
+            elif green_count:
+                lines.append(f"- 🟢 **{label}**: {green_count}条利好信号，作为状态参考")
     else:
-        lines.append(f"- ✅ **QDII**: 今日无重大信号")
-
-    if ai_red > 0:
-        lines.append(f"- 🔴 **AI基金**: {ai_red}条重大信号，建议关注板块资金流")
-    elif ai_yellow > 0:
-        lines.append(f"- 🟡 **AI基金**: {ai_yellow}条趋势变化信号，持续观察")
-    else:
-        lines.append(f"- ✅ **AI基金**: 今日无重大信号")
+        lines.append("- ✅ 当前 portfolio 关联资产无重大信号")
 
     lines.append("")
     lines.append(f"---")

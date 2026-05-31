@@ -113,6 +113,7 @@ python3 scripts/mock_data_quality_test.py
 python3 scripts/mock_dependency_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_status_test.py
+python3 scripts/mock_industry_intel_dynamic_test.py
 python3 scripts/mock_news_status_test.py
 python3 scripts/mock_report_index_test.py
 python3 scripts/mock_review_history_test.py
@@ -197,6 +198,7 @@ Delivery配置（所有cron通用）：
 - [x] L3 数据质量：宏观/ETF/新闻数据源质量分层和失败可见化
 - [x] L3 历史复盘摘要：报告连续性、重复失败模块、策略纪律聚合统计
 - [x] 安全基线：tracked 文件敏感信息扫描、memory/Skill 脱敏模板化
+- [x] 行业情报本地化：从 portfolio 动态生成资讯查询和影响标签
 - [ ] L4 多 Agent 研究角色
 - [ ] L5 半自动决策辅助：必须用户确认，不允许自动交易
 

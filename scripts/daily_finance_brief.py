@@ -525,11 +525,11 @@ def main(tracker=None):
         greens = [a for a in intel if a["signal"] == "\U0001f7e2"][:2]
         if signals:
             for a in signals[:5]:
-                funds = "QDII" if a["impact"] == "016452" else "AI"
+                funds = a.get("impact_label") or a.get("impact", "组合")
                 lines.append(f"- {a['signal']} [{funds}] {a['title'][:60]}")
         if greens:
             for a in greens:
-                funds = "QDII" if a["impact"] == "016452" else "AI"
+                funds = a.get("impact_label") or a.get("impact", "组合")
                 lines.append(f"- \U0001f7e2 [{funds}] {a['title'][:60]}")
         if not signals and not greens:
             lines.append("- 今日无重大行业信号")
