@@ -41,11 +41,13 @@ def check_foundation_files():
         "docs/SECURITY_AND_BOUNDARIES.md",
         "docs/ROADMAP.md",
         "scripts/common/config_loader.py",
+        "scripts/common/data_runtime.py",
         "scripts/common/dependencies.py",
         "scripts/common/reporting.py",
         "scripts/validate_portfolio.py",
         "scripts/mock_dependency_test.py",
         "scripts/mock_reporting_test.py",
+        "scripts/mock_runtime_test.py",
     ]
     for path in required:
         if (ROOT / path).exists():

@@ -110,6 +110,8 @@
 python3 scripts/smoke_test.py
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 python3 scripts/mock_dependency_test.py
+python3 scripts/mock_runtime_test.py
+python3 scripts/mock_reporting_test.py
 ```
 
 运行日报/周报前需要用户手动安装依赖：
@@ -126,6 +128,7 @@ python3 -m pip install -r requirements.txt
 - `reports/weekly/`
 - `reports/index.jsonl`
 - `logs/finance-agent.jsonl`
+- `cache/`
 
 ## 原 Cron 任务配置
 

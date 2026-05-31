@@ -6,6 +6,8 @@
   "weekly_report_dir": "reports/weekly",
   "report_index_path": "reports/index.jsonl",
   "cache_dir": "cache",
+  "use_cache": true,
+  "cache_ttl_hours": 1,
   "log_dir": "logs",
   "enable_news": false,
   "tavily_api_key_env": "TAVILY_API_KEY",

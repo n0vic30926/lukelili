@@ -57,8 +57,24 @@ def format_run_summary(run_summary):
                 "- modules: "
                 f"success={value.get('success', 0)} "
                 f"failed={value.get('failed', 0)} "
-                f"skipped={value.get('skipped', 0)}"
+                f"skipped={value.get('skipped', 0)} "
+                f"cache_hit={value.get('cache_hit', 0)}"
             )
+        elif isinstance(value, list) and key == "data_modules":
+            for item in value:
+                parts = [
+                    f"data_module: {item.get('module', 'unknown')}",
+                    f"status={item.get('status', 'unknown')}",
+                ]
+                if item.get("source"):
+                    parts.append(f"source={item['source']}")
+                if item.get("error_type"):
+                    parts.append(f"error_type={item['error_type']}")
+                if item.get("reason"):
+                    parts.append(f"reason={item['reason']}")
+                if item.get("detail"):
+                    parts.append(f"detail={item['detail']}")
+                lines.append("- " + " | ".join(parts))
         elif isinstance(value, dict):
             rendered = ", ".join(f"{k}={v}" for k, v in sorted(value.items()))
             lines.append(f"- {key}: {rendered}")
@@ -98,4 +114,3 @@ def write_report(report_type, content, settings=None, run_summary=None, created_
         "index_path": str(_report_index_path(settings)),
         "log_path": str(_log_path(settings)),
     }
-

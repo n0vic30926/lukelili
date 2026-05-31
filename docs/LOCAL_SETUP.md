@@ -37,6 +37,8 @@ python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 ```bash
 python3 scripts/smoke_test.py
 python3 scripts/mock_dependency_test.py
+python3 scripts/mock_runtime_test.py
+python3 scripts/mock_reporting_test.py
 ```
 
 The smoke test checks local guardrails, config examples, schema, fictional example data, OpenClaw path removal, and Tavily key isolation. It does not install dependencies or call market data APIs.
@@ -55,6 +57,9 @@ Successful report runs write Markdown reports and structured JSONL records:
 - `reports/weekly/`
 - `reports/index.jsonl`
 - `logs/finance-agent.jsonl`
+- `cache/`
+
+Cache behavior is configured through `use_cache`, `cache_ttl_hours`, and `cache_dir` in local settings. Cache writes are best-effort and should not block report generation.
 
 ## 4. Optional News
 
