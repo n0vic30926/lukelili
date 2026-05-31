@@ -42,6 +42,7 @@ python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_status_test.py
 python3 scripts/mock_news_status_test.py
 python3 scripts/mock_report_index_test.py
+python3 scripts/mock_review_history_test.py
 python3 scripts/mock_runtime_test.py
 python3 scripts/mock_reporting_test.py
 python3 scripts/mock_weekly_status_test.py
@@ -76,6 +77,13 @@ Inspect archived report history without printing report bodies:
 
 ```bash
 python3 scripts/report_index.py
+```
+
+Review report continuity and decision-discipline aggregates without printing
+private holdings:
+
+```bash
+python3 scripts/review_history.py
 ```
 
 ## 4. Optional News

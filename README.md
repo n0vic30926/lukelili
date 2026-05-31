@@ -115,6 +115,7 @@ python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_status_test.py
 python3 scripts/mock_news_status_test.py
 python3 scripts/mock_report_index_test.py
+python3 scripts/mock_review_history_test.py
 python3 scripts/mock_runtime_test.py
 python3 scripts/mock_reporting_test.py
 python3 scripts/mock_weekly_status_test.py
@@ -143,6 +144,14 @@ python3 -m pip install -r requirements.txt
 ```bash
 python3 scripts/report_index.py
 ```
+
+查看报告连续性、重复失败模块和私有决策记录的策略类型摘要：
+
+```bash
+python3 scripts/review_history.py
+```
+
+`review_history.py` 只输出聚合信息，不打印持仓代码、名称、成本或份额。
 
 ## 原 Cron 任务配置
 
@@ -182,8 +191,9 @@ Delivery配置（所有cron通用）：
 ## 路线图
 
 - [x] L1/L2 本地基础：规则、配置隔离、示例数据、schema、smoke test
-- [ ] L3 报告稳定化：依赖检查、日志、缓存、归档、模块状态摘要
-- [ ] L3 数据质量：宏观/ETF/新闻数据源质量分层和失败可见化
+- [x] L3 报告稳定化：依赖检查、日志、缓存、归档、模块状态摘要
+- [x] L3 数据质量：宏观/ETF/新闻数据源质量分层和失败可见化
+- [x] L3 历史复盘摘要：报告连续性、重复失败模块、策略纪律聚合统计
 - [ ] L4 多 Agent 研究角色
 - [ ] L5 半自动决策辅助：必须用户确认，不允许自动交易
 
