@@ -306,10 +306,10 @@ def main(tracker=None):
         from valuation_anchor import nasdaq_valuation, ai_index_valuation
         lines.append("## \u2693 \u4f30\u503c\u951a\uff08\u98ce\u9669\u63d0\u793a\uff0c\u975e\u4ea4\u6613\u4fe1\u53f7\uff09")
         lines.append("")
-        nsdq = nasdaq_valuation()
+        nsdq = nasdaq_valuation(tracker=tracker)
         if 'error' not in nsdq:
             lines.append(f"- \u7eb3\u6307{nsdq['level']}\uff1a\u70b9\u4f4d{nsdq['latest']}\uff0c1\u5e74\u767e\u5206\u4f4d{nsdq['pct_1y']}%")
-        ai_v = ai_index_valuation()
+        ai_v = ai_index_valuation(tracker=tracker)
         if 'error' not in ai_v:
             lines.append(f"- AI\u6307\u6570{ai_v['level']}\uff1aPE {ai_v['latest_pe']}\uff0c\u767e\u5206\u4f4d{ai_v['pe_pct']}%")
         lines.append("")
@@ -375,7 +375,7 @@ def main(tracker=None):
     lines.append("## 🔬 QDII三因子归因（近30日）")
     lines.append("")
     try:
-        attr = qdii_attribution(days=30)
+        attr = qdii_attribution(days=30, tracker=tracker)
         if 'error' not in attr:
             lines.append(f"- 基金收益: {attr['fund_ret']:+.2f}%")
             lines.append(f"- 纳指贡献: {attr['nasdaq_contrib']:+.2f}%")
@@ -395,7 +395,7 @@ def main(tracker=None):
     lines.append("## 🔬 AI基金三因子归因（近30日）")
     lines.append("")
     try:
-        ai_attr = ai_fund_attribution(days=30)
+        ai_attr = ai_fund_attribution(days=30, tracker=tracker)
         if 'error' not in ai_attr:
             lines.append(f"- 基金收益: {ai_attr['fund_ret']:+.2f}%")
             lines.append(f"- 中证AI指数贡献: {ai_attr['index_contrib']:+.2f}%")
@@ -415,7 +415,7 @@ def main(tracker=None):
     lines.append("## 🛡️ 组合风险扫描")
     lines.append("")
     try:
-        risk_scan = portfolio_risk_scan()
+        risk_scan = portfolio_risk_scan(tracker=tracker)
         if 'error' not in risk_scan:
             for h in portfolio['holdings']:
                 code = h['code']

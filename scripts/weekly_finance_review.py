@@ -161,18 +161,18 @@ def industry_rotation(tracker=None):
         return None
 
 
-def qdii_factor_weekly():
+def qdii_factor_weekly(tracker=None):
     """模块3: 本周QDII因子变化"""
     sys.path.insert(0, os.path.dirname(__file__))
     from qdii_three_factor import qdii_attribution
-    return qdii_attribution(days=7)
+    return qdii_attribution(days=7, tracker=tracker)
 
 
-def ai_fund_factor_weekly():
+def ai_fund_factor_weekly(tracker=None):
     """模块3b: 本周AI基金因子变化"""
     sys.path.insert(0, os.path.dirname(__file__))
     from qdii_three_factor import ai_fund_attribution
-    return ai_fund_attribution(days=7)
+    return ai_fund_attribution(days=7, tracker=tracker)
 
 
 def decision_template(weekly_rets, industry_data, qdii_factor, ai_factor):
@@ -327,7 +327,7 @@ def format_report(tracker=None):
         lines.append("")
 
     # 模块3: QDII因子
-    qf = qdii_factor_weekly()
+    qf = qdii_factor_weekly(tracker=tracker)
     if qf and 'error' not in qf:
         lines.append("## 🔬 QDII因子周变化")
         lines.append("")
@@ -338,7 +338,7 @@ def format_report(tracker=None):
         lines.append("")
 
     # 模块3b: AI基金因子
-    af = ai_fund_factor_weekly()
+    af = ai_fund_factor_weekly(tracker=tracker)
     if af and 'error' not in af:
         lines.append("## 🔬 AI基金因子周变化")
         lines.append("")

@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 """QDII三因子归因：基金收益 = 纳指贡献 + 汇率贡献 + 残差(跟踪误差)
 AI基金三因子归因：基金收益 = 指数贡献 + 行业轮动贡献 + 残差(alpha)"""
-import akshare as ak
-import pandas as pd
-import numpy as np
 import os
 import sys
 from datetime import datetime, timedelta
@@ -12,8 +9,44 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from common.config_loader import get_portfolio_path
 
-def qdii_attribution(fund_code="016452", days=30):
+try:
+    import akshare as ak
+except ImportError:
+    ak = None
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
+
+
+def _missing_dependency(module, tracker=None):
+    error = RuntimeError("missing_dependency: akshare")
+    if tracker:
+        tracker.failure(module, source="AkShare", error=error)
+    return {"error": "missing_dependency: akshare"}
+
+
+def _record_success(module, tracker=None, detail=""):
+    if tracker:
+        tracker.success(module, source="AkShare", detail=detail)
+
+
+def _record_failure(module, tracker=None, error=None):
+    if tracker:
+        tracker.failure(module, source="AkShare", error=error)
+
+
+def qdii_attribution(fund_code="016452", days=30, tracker=None):
     """计算QDII基金的三因子归因"""
+    if ak is None:
+        return _missing_dependency("qdii_attribution", tracker)
+
     # 1. 基金净值序列
     df_fund = ak.fund_open_fund_info_em(symbol=fund_code, indicator="单位净值走势")
     df_fund['净值日期'] = pd.to_datetime(df_fund['净值日期'])
@@ -31,6 +64,7 @@ def qdii_attribution(fund_code="016452", days=30):
     mask = (df_nasdaq['date'] >= date_start - timedelta(days=3)) & (df_nasdaq['date'] <= date_end + timedelta(days=1))
     df_nasdaq_period = df_nasdaq[mask].tail(days + 5).head(days)
     if len(df_nasdaq_period) < 2:
+        _record_failure("qdii_attribution", tracker, RuntimeError("nasdaq_data_insufficient"))
         return {"error": "纳指数据不足"}
     nasdaq_start = float(df_nasdaq_period.iloc[0]['close'])
     nasdaq_end = float(df_nasdaq_period.iloc[-1]['close'])
@@ -59,7 +93,7 @@ def qdii_attribution(fund_code="016452", days=30):
     residual = fund_ret - nasdaq_contrib - fx_contrib
     total_explained = nasdaq_contrib + fx_contrib
 
-    return {
+    result = {
         "period": f"{date_start.strftime('%m/%d')}→{date_end.strftime('%m/%d')}",
         "days": days,
         "fund_ret": round(fund_ret, 2),
@@ -72,10 +106,15 @@ def qdii_attribution(fund_code="016452", days=30):
         "fx_start": round(fx_start, 4),
         "fx_end": round(fx_end, 4),
     }
+    _record_success("qdii_attribution", tracker, fund_code)
+    return result
 
 
-def portfolio_risk_scan():
+def portfolio_risk_scan(tracker=None):
     """组合风险扫描：波动率+相关性+因子暴露"""
+    if ak is None:
+        return _missing_dependency("portfolio_risk_scan", tracker)
+
     import json
     portfolio_path = str(get_portfolio_path())
     with open(portfolio_path) as f:
@@ -96,6 +135,7 @@ def portfolio_risk_scan():
     common_dates = sorted(common_dates)
 
     if len(common_dates) < 5:
+        _record_failure("portfolio_risk_scan", tracker, RuntimeError("overlap_days_insufficient"))
         return {"error": "重叠交易日不足"}
 
     results = {}
@@ -131,15 +171,19 @@ def portfolio_risk_scan():
         "分散效果": "弱（表面A股+美股，底层高度同质）",
     }
 
+    _record_success("portfolio_risk_scan", tracker, f"{len(holdings)} holdings")
     return results
 
 
-def ai_fund_attribution(fund_code="011840", days=30):
+def ai_fund_attribution(fund_code="011840", days=30, tracker=None):
     """AI基金三因子归因：指数贡献 + 行业轮动贡献 + 残差
     因子1: 中证AI指数(930713)贡献 — 基准beta
     因子2: 行业轮动 — 基金重仓行业vs整体AI行业的资金流差异
     因子3: 残差 — 个股选择alpha + 跟踪误差
     """
+    if ak is None:
+        return _missing_dependency("ai_fund_attribution", tracker)
+
     # 1. 基金净值序列
     df_fund = ak.fund_open_fund_info_em(symbol=fund_code, indicator="单位净值走势")
     df_fund['净值日期'] = pd.to_datetime(df_fund['净值日期'])
@@ -157,6 +201,7 @@ def ai_fund_attribution(fund_code="011840", days=30):
     df_index['日期'] = pd.to_datetime(df_index['日期'])
     df_index = df_index.sort_values('日期')
     if len(df_index) < 2:
+        _record_failure("ai_fund_attribution", tracker, RuntimeError("ai_index_data_insufficient"))
         return {"error": "中证AI指数数据不足"}
     idx_start = float(df_index.iloc[0]['收盘'])
     idx_end = float(df_index.iloc[-1]['收盘'])
@@ -189,7 +234,7 @@ def ai_fund_attribution(fund_code="011840", days=30):
     residual = fund_ret - index_contrib - rotation_contrib
     total_explained = index_contrib + rotation_contrib
 
-    return {
+    result = {
         "period": f"{date_start.strftime('%m/%d')}→{date_end.strftime('%m/%d')}",
         "days": days,
         "fund_ret": round(fund_ret, 2),
@@ -202,6 +247,8 @@ def ai_fund_attribution(fund_code="011840", days=30):
         "index_start": round(idx_start, 2),
         "index_end": round(idx_end, 2),
     }
+    _record_success("ai_fund_attribution", tracker, fund_code)
+    return result
 
 
 if __name__ == "__main__":

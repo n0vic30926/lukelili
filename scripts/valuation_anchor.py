@@ -5,13 +5,34 @@
 - 中证AI指数：PE滚动市盈率百分位（2024至今）
 - 定投仓位：只输出"贵不贵"，不输出"该不该买"
 """
-import akshare as ak
-import pandas as pd
-import numpy as np
+try:
+    import akshare as ak
+except ImportError:
+    ak = None
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 
-def nasdaq_valuation():
+def _missing_dependency(module, tracker=None):
+    error = RuntimeError("missing_dependency: akshare")
+    if tracker:
+        tracker.failure(module, source="AkShare", error=error)
+    return {"error": "missing_dependency: akshare"}
+
+
+def nasdaq_valuation(tracker=None):
     """纳指100估值锚：点位历史百分位"""
+    if ak is None:
+        return _missing_dependency("nasdaq_valuation", tracker)
+
     try:
         df = ak.index_us_stock_sina(symbol=".IXIC")
         df['close'] = pd.to_numeric(df['close'], errors='coerce')
@@ -42,7 +63,7 @@ def nasdaq_valuation():
         else:
             level = "偏低"
 
-        return {
+        result = {
             'index': '纳斯达克综合',
             'latest': round(latest, 1),
             'pct_1y': pct_1y,
@@ -51,12 +72,20 @@ def nasdaq_valuation():
             'level': level,
             'metric': '点位百分位',
         }
+        if tracker:
+            tracker.success("nasdaq_valuation", source="AkShare", detail=".IXIC")
+        return result
     except Exception as e:
+        if tracker:
+            tracker.failure("nasdaq_valuation", source="AkShare", error=e)
         return {'error': str(e)}
 
 
-def ai_index_valuation():
+def ai_index_valuation(tracker=None):
     """中证AI指数估值锚：PE滚动市盈率百分位"""
+    if ak is None:
+        return _missing_dependency("ai_index_valuation", tracker)
+
     try:
         df = ak.stock_zh_index_hist_csindex(symbol='930713', start_date='20240101', end_date='20991231')
         pe_col = '滚动市盈率'
@@ -80,7 +109,7 @@ def ai_index_valuation():
         else:
             level = "偏低"
 
-        return {
+        result = {
             'index': '中证AI',
             'latest_pe': latest_pe,
             'pe_pct': pe_pct,
@@ -88,7 +117,12 @@ def ai_index_valuation():
             'level': level,
             'metric': 'PE百分位(2024至今)',
         }
+        if tracker:
+            tracker.success("ai_index_valuation", source="AkShare", detail="930713")
+        return result
     except Exception as e:
+        if tracker:
+            tracker.failure("ai_index_valuation", source="AkShare", error=e)
         return {'error': str(e)}
 
 
