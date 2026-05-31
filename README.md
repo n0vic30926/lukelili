@@ -35,9 +35,9 @@ Finance Agent 不用于：
 - `scripts/mock_runtime_test.py`：离线测试缓存、运行状态和数据质量 helper。
 - `scripts/mock_report_test.py`：离线生成日报/周报 mock 报告，验证成功、部分失败、新闻跳过和示例持仓分支。
 - `scripts/mock_portfolio_validation_test.py`：离线测试 portfolio schema 中 ETF 历史字段的校验。
-- `scripts/mock_adapter_audit_test.py`：离线测试数据 adapter 配置审计，不调用行情接口。
+- `scripts/mock_adapter_audit_test.py`：离线测试数据 adapter 配置审计和显式开启的 schema 审计。
 - `scripts/mock_decision_tracker_test.py`：离线测试用户确认动作、确认后结果复盘、检查项证据和报告匹配标记字段，不触碰真实持仓。
-- `scripts/audit_data_adapters.py`：审计 AkShare 候选函数和宏观指标配置，只检查本地符号存在性。
+- `scripts/audit_data_adapters.py`：审计 AkShare 候选函数和宏观指标配置；默认只检查本地符号存在性，显式开启时检查宏观输出列。
 - `scripts/report_index.py`：查看本地报告归档索引。
 - `scripts/review_history.py`：聚合报告索引、报告连续性、重复失败模块、决策记录、用户确认动作、确认后结果复盘、检查项证据和跨报告内容证据链，做纪律复盘摘要与策略评分卡。
 
@@ -111,6 +111,14 @@ python3 scripts/audit_data_adapters.py
 ```
 
 该命令只检查配置字段和本地函数符号存在性，不联网、不调用 AkShare 行情接口。
+
+显式检查宏观 adapter 输出列：
+
+```bash
+python3 scripts/audit_data_adapters.py --check-output-schema
+```
+
+该模式会调用可用的宏观 AkShare 函数，用于验证本地安装版本的返回列是否匹配配置中的 `date_columns` 和 `value_columns`。
 
 ## 新闻模块
 

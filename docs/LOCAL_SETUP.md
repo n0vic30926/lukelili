@@ -130,6 +130,14 @@ Audit configured data adapters without calling external data APIs:
 python3 scripts/audit_data_adapters.py
 ```
 
+Explicitly validate macro adapter output columns against the installed AkShare version:
+
+```bash
+python3 scripts/audit_data_adapters.py --check-output-schema
+```
+
+The default audit does not call market data functions. The schema mode is opt-in and checks whether returned columns match each macro indicator's configured `date_columns` and `value_columns`.
+
 Decision records can include `user_actions` for user-confirmed, pending, or rejected actions. Confirmed actions can also include `outcome_status`, `outcome_quality`, a `checklist` such as `discipline`, `risk_boundary`, and `source_evidence`, plus non-sensitive `action_id` or `report_evidence_terms` markers for later report-content matching. Keep real records under ignored private paths such as `data/private/decision_track/`; the review command only prints aggregate report continuity, repeated module failures, confirmation, outcome, checklist, later-report evidence, and report-content match status.
 
 ## 6. Never Commit

@@ -97,7 +97,7 @@ These artifacts may contain report text or market data. Avoid pasting them into 
 
 Missing dependencies are not installed automatically. The user must explicitly run `python3 -m pip install -r requirements.txt`.
 
-Data adapter audits must remain offline by default: they may inspect local configuration and imported module symbols, but must not call market data functions, broker interfaces, or remote APIs.
+Data adapter audits must remain offline by default: they may inspect local configuration and imported module symbols, but must not call market data functions, broker interfaces, or remote APIs unless the user explicitly runs an opt-in schema check such as `scripts/audit_data_adapters.py --check-output-schema`.
 
 Macro and Fed calendars are local configuration aids. Reports may show configured dates and gaps, but must not invent official release dates or policy outcomes.
 
