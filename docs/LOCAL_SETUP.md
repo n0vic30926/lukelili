@@ -41,6 +41,7 @@ python3 scripts/mock_dependency_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_status_test.py
 python3 scripts/mock_news_status_test.py
+python3 scripts/mock_report_index_test.py
 python3 scripts/mock_runtime_test.py
 python3 scripts/mock_reporting_test.py
 python3 scripts/mock_weekly_status_test.py
@@ -70,6 +71,12 @@ Run summaries include data quality labels:
 
 - `source_tier`: local user data, community data, news/search data, example data, or unknown.
 - `freshness`: fresh, stale, or unknown.
+
+Inspect archived report history without printing report bodies:
+
+```bash
+python3 scripts/report_index.py
+```
 
 ## 4. Optional News
 

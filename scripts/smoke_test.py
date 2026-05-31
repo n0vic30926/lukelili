@@ -45,6 +45,7 @@ def check_foundation_files():
         "scripts/common/data_runtime.py",
         "scripts/common/dependencies.py",
         "scripts/common/reporting.py",
+        "scripts/report_index.py",
         "scripts/validate_portfolio.py",
         "scripts/mock_data_quality_test.py",
         "scripts/mock_dependency_test.py",
@@ -52,6 +53,7 @@ def check_foundation_files():
         "scripts/mock_factor_status_test.py",
         "scripts/mock_news_status_test.py",
         "scripts/mock_reporting_test.py",
+        "scripts/mock_report_index_test.py",
         "scripts/mock_runtime_test.py",
         "scripts/mock_weekly_status_test.py",
     ]

@@ -114,6 +114,7 @@ python3 scripts/mock_dependency_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_status_test.py
 python3 scripts/mock_news_status_test.py
+python3 scripts/mock_report_index_test.py
 python3 scripts/mock_runtime_test.py
 python3 scripts/mock_reporting_test.py
 python3 scripts/mock_weekly_status_test.py
@@ -136,6 +137,12 @@ python3 -m pip install -r requirements.txt
 - `cache/`
 
 报告运行摘要会展示模块成功/失败/跳过数量、来源层级和数据新鲜度标签。
+
+查看报告归档索引：
+
+```bash
+python3 scripts/report_index.py
+```
 
 ## 原 Cron 任务配置
 
