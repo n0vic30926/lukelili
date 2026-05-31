@@ -120,6 +120,12 @@ Review decision and report history:
 python3 scripts/review_history.py
 ```
 
+Audit configured data adapters without calling external data APIs:
+
+```bash
+python3 scripts/audit_data_adapters.py
+```
+
 Decision records can include `user_actions` for user-confirmed, pending, or rejected actions. Confirmed actions can also include `outcome_status`, `outcome_quality`, a `checklist` such as `discipline`, `risk_boundary`, and `source_evidence`, plus non-sensitive `action_id` or `report_evidence_terms` markers for later report-content matching. Keep real records under ignored private paths such as `data/private/decision_track/`; the review command only prints aggregate report continuity, repeated module failures, confirmation, outcome, checklist, later-report evidence, and report-content match status.
 
 ## 6. Never Commit

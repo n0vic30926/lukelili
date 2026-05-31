@@ -97,6 +97,8 @@ These artifacts may contain report text or market data. Avoid pasting them into 
 
 Missing dependencies are not installed automatically. The user must explicitly run `python3 -m pip install -r requirements.txt`.
 
+Data adapter audits must remain offline by default: they may inspect local configuration and imported module symbols, but must not call market data functions, broker interfaces, or remote APIs.
+
 Historical review may scan local archived report text for non-sensitive action markers such as `action_id` or `report_evidence_terms`. It may also aggregate structured runtime events to detect repeated module failures. It must only print aggregate match and module status, not asset codes, matched terms, report excerpts, error messages, amounts, costs, shares, or private rationale text.
 
 ## Source Quality

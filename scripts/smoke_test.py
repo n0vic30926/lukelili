@@ -15,6 +15,7 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 from common.config_loader import get_portfolio_path, get_report_dirs, load_settings
 from common.data_runtime import missing_dependencies
 from common.data_quality import summarize_quality
+from audit_data_adapters import audit_settings
 from validate_portfolio import validate_portfolio_file
 
 
@@ -56,6 +57,8 @@ def main():
         "scripts/common/config_loader.py",
         "scripts/mock_report_test.py",
         "scripts/mock_decision_tracker_test.py",
+        "scripts/mock_adapter_audit_test.py",
+        "scripts/audit_data_adapters.py",
         "scripts/review_history.py",
     ]
     for rel in required_files:
@@ -75,6 +78,11 @@ def main():
         print(f"WARN missing optional runtime dependencies: {', '.join(missing)}")
         print("WARN install manually with: python3 -m pip install -r requirements.txt")
     failures += not check(True, "dependency check is non-fatal")
+    adapter_audit = audit_settings(settings, dependency_status="not_loaded")
+    macro_config_issues = [
+        item for item in adapter_audit["macro_adapters"] if item["status"] == "config_issue"
+    ]
+    failures += not check(not macro_config_issues, "macro adapter config has required fields")
 
     portfolio_path, using_example = get_portfolio_path(settings)
     failures += not check(portfolio_path.exists(), "portfolio path resolves")

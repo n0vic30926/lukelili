@@ -34,7 +34,9 @@ Finance Agent 不用于：
 - `scripts/smoke_test.py`：本地基础设施检查。
 - `scripts/mock_runtime_test.py`：离线测试缓存、运行状态和数据质量 helper。
 - `scripts/mock_report_test.py`：离线生成日报/周报 mock 报告，验证成功、部分失败、新闻跳过和示例持仓分支。
+- `scripts/mock_adapter_audit_test.py`：离线测试数据 adapter 配置审计，不调用行情接口。
 - `scripts/mock_decision_tracker_test.py`：离线测试用户确认动作、确认后结果复盘、检查项证据和报告匹配标记字段，不触碰真实持仓。
+- `scripts/audit_data_adapters.py`：审计 AkShare 候选函数和宏观指标配置，只检查本地符号存在性。
 - `scripts/report_index.py`：查看本地报告归档索引。
 - `scripts/review_history.py`：聚合报告索引、报告连续性、重复失败模块、决策记录、用户确认动作、确认后结果复盘、检查项证据和跨报告内容证据链，做纪律复盘摘要与策略评分卡。
 
@@ -60,11 +62,12 @@ data/private/portfolio.local.json
 python3 scripts/smoke_test.py
 python3 scripts/mock_runtime_test.py
 python3 scripts/mock_report_test.py
+python3 scripts/mock_adapter_audit_test.py
 python3 scripts/mock_decision_tracker_test.py
 python3 scripts/mock_review_test.py
 ```
 
-该命令检查项目规则、配置示例、schema、示例持仓、配置加载器、敏感信息隔离、OpenClaw 路径隔离和运行依赖。缺少 `akshare` 等依赖时会给出 WARN，但不会自动安装。
+该命令检查项目规则、配置示例、schema、示例持仓、配置加载器、数据 adapter 配置、敏感信息隔离、OpenClaw 路径隔离和运行依赖。缺少 `akshare` 等依赖时会给出 WARN，但不会自动安装。
 
 ## 运行日报/周报
 
@@ -98,6 +101,14 @@ python3 scripts/review_history.py
 ```
 
 复盘只输出聚合信息、报告连续性、模块失败分布、策略级检查、用户确认状态、确认后结果状态、检查项状态、后续报告证据和报告内容命中状态，不打印成本、份额、资产代码、金额、错误消息、理由、匹配词、报告原文或结果说明全文。
+
+离线审计数据 adapter：
+
+```bash
+python3 scripts/audit_data_adapters.py
+```
+
+该命令只检查配置字段和本地函数符号存在性，不联网、不调用 AkShare 行情接口。
 
 ## 新闻模块
 
