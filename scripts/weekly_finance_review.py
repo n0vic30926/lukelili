@@ -53,18 +53,16 @@ def load_portfolio():
 def weekly_returns(tracker=None):
     """模块1: 每只持仓的本周收益"""
     portfolio = load_portfolio()
-    today = datetime.now()
-    # 本周一
-    monday = today - timedelta(days=today.weekday())
     results = []
     try:
         for h in portfolio['holdings']:
             df = ak.fund_open_fund_info_em(symbol=h['code'], indicator="单位净值走势")
             df['净值日期'] = pd.to_datetime(df['净值日期'])
             df = df.drop_duplicates(subset='净值日期').sort_values('净值日期')
-            # 找上周五和本周五(或最新)
-            last_friday = monday - timedelta(days=3)
-            mask = df['净值日期'] >= last_friday
+            # Use the latest available NAV date, not wall-clock week boundaries.
+            latest_date = df['净值日期'].max()
+            window_start = latest_date - timedelta(days=7)
+            mask = df['净值日期'] >= window_start
             df_week = df[mask].tail(10)
             if len(df_week) < 2:
                 continue

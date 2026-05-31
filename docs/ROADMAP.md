@@ -36,7 +36,11 @@ Status: original report scripts exist and now read local config for portfolio/ne
 
 Goal: split macro, ETF, individual security, industry, risk, and review roles.
 
-Do not start until L3 report reliability is stable.
+Status: a minimal local dispatcher now maps user intent to Macro, Industry,
+ETF, Risk, and Review role contracts with explicit inputs, outputs, and
+decision-support-only boundaries. Next step is connecting each role to the
+existing local tools and merging role outputs into one evidence-ranked research
+report.
 
 ## L5: Semi-Automated Decision Support
 

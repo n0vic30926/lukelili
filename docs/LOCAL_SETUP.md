@@ -49,6 +49,7 @@ python3 scripts/mock_factor_routing_test.py
 python3 scripts/mock_factor_status_test.py
 python3 scripts/mock_industry_intel_dynamic_test.py
 python3 scripts/mock_news_status_test.py
+python3 scripts/mock_research_dispatch_test.py
 python3 scripts/mock_report_index_test.py
 python3 scripts/mock_review_history_test.py
 python3 scripts/mock_runtime_test.py
@@ -57,6 +58,15 @@ python3 scripts/mock_security_scan_test.py
 python3 scripts/mock_weekly_status_test.py
 python3 scripts/security_scan.py
 ```
+
+Create a local L4 research dispatch plan:
+
+```bash
+python3 scripts/research_dispatch.py "宏观 利率 ETF 组合风险 复盘"
+```
+
+The dispatch command only creates a role/task contract. It does not run broker
+actions or convert research into user-confirmed trades.
 
 The smoke test checks local guardrails, config examples, schema, fictional example data, OpenClaw path removal, and Tavily key isolation. It does not install dependencies or call market data APIs.
 
