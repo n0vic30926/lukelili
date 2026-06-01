@@ -112,6 +112,7 @@ python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 python3 scripts/mock_data_quality_test.py
 python3 scripts/mock_decision_support_test.py
 python3 scripts/mock_dependency_test.py
+python3 scripts/mock_evidence_ranking_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_routing_test.py
 python3 scripts/mock_factor_status_test.py
@@ -228,6 +229,7 @@ Delivery配置（所有cron通用）：
 - [x] 因子归因本地化：从 portfolio `factor_profile` 动态路由 QDII/AI 归因
 - [x] L4 最小研究调度：Macro / Industry / ETF / Risk / Review 角色契约
 - [x] L4 只读研究执行：本地角色 runner 与聚合研究报告
+- [x] 证据可靠性排序：source_tier / freshness / score 进入研究与决策输出
 - [ ] L4 多 Agent 研究角色：接入更完整的真实数据工具与证据排序
 - [x] L5 决策辅助安全层：候选动作、风险、确认清单，不允许自动交易
 - [ ] L5 半自动决策辅助：接入更完整数据后的人工确认工作流

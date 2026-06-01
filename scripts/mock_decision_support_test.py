@@ -42,7 +42,10 @@ def run_decision_support_test():
                 "role": "risk",
                 "status": "ok",
                 "observations": ["drawdown rule present", "concentration needs review"],
-                "evidence": ["portfolio.risk_rules"],
+                "evidence": [
+                    {"label": "external rumor", "source_tier": "news_search", "freshness": "unknown", "score": 15},
+                    {"label": "portfolio.risk_rules", "source_tier": "local_user_data", "freshness": "fresh", "score": 70},
+                ],
                 "limitations": ["no live market data"],
             }
         ],
@@ -67,6 +70,9 @@ def run_decision_support_test():
     _assert_contains(output, "candidate_action=observe")
     _assert_contains(output, "candidate_action=review_exit_rules")
     _assert_contains(output, "candidate_action=research_only")
+    _assert_contains(output, "## Evidence Reliability")
+    _assert_contains(output, "portfolio.risk_rules | source_tier=local_user_data | freshness=fresh | score=")
+    _assert_contains(output, "external rumor | source_tier=news_search | freshness=unknown | score=")
     _assert_not_contains(output, "PRIVATE_A")
     _assert_not_contains(output, "Private Holding")
     _assert_not_contains(output, "下单")

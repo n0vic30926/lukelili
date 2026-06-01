@@ -39,8 +39,9 @@ Goal: split macro, ETF, individual security, industry, risk, and review roles.
 Status: a minimal local dispatcher now maps user intent to Macro, Industry,
 ETF, Risk, and Review role contracts with explicit inputs, outputs, and
 decision-support-only boundaries. It can also execute local read-only role
-runners and merge observations into one research report. Next step is expanding
-each role's tool coverage and ranking evidence by freshness and reliability.
+runners and merge observations into one research report. Evidence is ranked and
+displayed with source tier, freshness, and reliability score. Next step is
+expanding each role's tool coverage.
 
 ## L5: Semi-Automated Decision Support
 

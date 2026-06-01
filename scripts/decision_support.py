@@ -9,6 +9,7 @@ import json
 import sys
 
 from common.config_loader import get_portfolio_path
+from common.evidence import rank_evidence
 from research_dispatch import build_research_plan, execute_research_plan
 
 
@@ -36,6 +37,13 @@ def _research_observations(research_result):
         for observation in role_result.get("observations", [])[:2]:
             observations.append(f"{role}: {observation}")
     return observations[:8]
+
+
+def _research_evidence(research_result):
+    evidence = []
+    for role_result in research_result.get("role_results", []):
+        evidence.extend(role_result.get("evidence", []))
+    return rank_evidence(evidence)[:8]
 
 
 def _candidate_for_holding(index, holding, research_notes):
@@ -69,6 +77,7 @@ def _candidate_for_holding(index, holding, research_notes):
 def build_decision_packet(portfolio, research_result=None):
     research_result = research_result or {}
     research_notes = _research_observations(research_result)
+    evidence = _research_evidence(research_result)
     candidates = [
         _candidate_for_holding(index, holding, research_notes)
         for index, holding in enumerate(portfolio.get("holdings", []))
@@ -79,6 +88,7 @@ def build_decision_packet(portfolio, research_result=None):
         "requires_user_confirmation": True,
         "strategy_counts": _strategy_counts(portfolio),
         "research_observations": research_notes,
+        "evidence": evidence,
         "candidates": candidates,
         "prohibited_actions": [
             "broker_connection",
@@ -103,6 +113,16 @@ def format_decision_packet(packet):
         lines.append("## Research Observations")
         for observation in packet["research_observations"]:
             lines.append(f"- {observation}")
+        lines.append("")
+
+    if packet["evidence"]:
+        lines.append("## Evidence Reliability")
+        for item in packet["evidence"]:
+            lines.append(
+                "- "
+                f"{item['label']} | source_tier={item['source_tier']} "
+                f"| freshness={item['freshness']} | score={item['score']}"
+            )
         lines.append("")
 
     lines.append("## Candidates")

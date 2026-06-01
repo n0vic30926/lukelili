@@ -9,6 +9,7 @@ import json
 import sys
 
 from common.config_loader import get_decision_track_dir, get_portfolio_path, load_settings, resolve_path
+from common.evidence import rank_evidence
 
 
 ROLE_DEFINITIONS = {
@@ -130,7 +131,9 @@ def _portfolio_runner(task, portfolio):
             f"strategies={','.join(summary['strategy_types']) or 'none'}",
             f"factor_profiles={','.join(summary['factor_profiles']) or 'none'}",
         ],
-        "evidence": ["portfolio summary"],
+        "evidence": [
+            {"label": "portfolio summary", "source_tier": "local_user_data", "freshness": "fresh"}
+        ],
         "limitations": ["no live market data fetched"],
     }
 
@@ -143,7 +146,10 @@ def _macro_runner(task, portfolio):
             f"macro review should map rates, FX, and liquidity to {summary['holding_count']} holding(s)",
             f"factor profiles: {','.join(summary['factor_profiles']) or 'none'}",
         ],
-        "evidence": ["portfolio.factor_profile", "portfolio.watchlist"],
+        "evidence": [
+            {"label": "portfolio.factor_profile", "source_tier": "local_user_data", "freshness": "fresh"},
+            {"label": "portfolio.watchlist", "source_tier": "local_user_data", "freshness": "fresh"},
+        ],
         "limitations": ["macro live data not fetched by dispatcher"],
     }
 
@@ -156,14 +162,18 @@ def _industry_runner(task, portfolio):
         return {
             "status": "ok",
             "observations": [f"portfolio-driven news queries={len(queries)}"],
-            "evidence": ["industry_intel.build_search_queries"],
+            "evidence": [
+                {"label": "industry_intel.build_search_queries", "source_tier": "local_user_data", "freshness": "fresh"}
+            ],
             "limitations": ["news fetching is controlled by enable_news and Tavily key"],
         }
     except Exception as exc:
         return {
             "status": "failed",
             "observations": [],
-            "evidence": ["industry_intel.build_search_queries"],
+            "evidence": [
+                {"label": "industry_intel.build_search_queries", "source_tier": "local_user_data", "freshness": "unknown"}
+            ],
             "limitations": [type(exc).__name__],
         }
 
@@ -192,14 +202,20 @@ def _review_runner(task, portfolio):
         return {
             "status": "ok",
             "observations": observations,
-            "evidence": ["reports/index.jsonl", "data/private/decision_track"],
+            "evidence": [
+                {"label": "reports/index.jsonl", "source_tier": "local_user_data", "freshness": "unknown"},
+                {"label": "data/private/decision_track", "source_tier": "local_user_data", "freshness": "unknown"},
+            ],
             "limitations": ["private decision details are summarized only"],
         }
     except Exception as exc:
         return {
             "status": "failed",
             "observations": [],
-            "evidence": ["reports/index.jsonl", "data/private/decision_track"],
+            "evidence": [
+                {"label": "reports/index.jsonl", "source_tier": "local_user_data", "freshness": "unknown"},
+                {"label": "data/private/decision_track", "source_tier": "local_user_data", "freshness": "unknown"},
+            ],
             "limitations": [type(exc).__name__],
         }
 
@@ -226,7 +242,7 @@ def execute_research_plan(plan, portfolio, runners=None):
             result = {
                 "status": "failed",
                 "observations": [],
-                "evidence": [role],
+                "evidence": [{"label": role, "source_tier": "unknown", "freshness": "unknown"}],
                 "limitations": [type(exc).__name__],
             }
         role_results.append(
@@ -235,7 +251,7 @@ def execute_research_plan(plan, portfolio, runners=None):
                 "scope": task["scope"],
                 "status": str(result.get("status") or "unknown"),
                 "observations": _safe_list(result.get("observations")),
-                "evidence": _safe_list(result.get("evidence")),
+                "evidence": rank_evidence(result.get("evidence")),
                 "limitations": _safe_list(result.get("limitations")),
                 "boundary": task.get("boundary", "decision_support_only"),
             }
@@ -271,7 +287,11 @@ def format_research_report(result):
         if role_result["evidence"]:
             lines.append("- evidence:")
             for item in role_result["evidence"]:
-                lines.append(f"  - {item}")
+                lines.append(
+                    "  - "
+                    f"{item['label']} | source_tier={item['source_tier']} "
+                    f"| freshness={item['freshness']} | score={item['score']}"
+                )
         if role_result["limitations"]:
             lines.append("- limitations:")
             for item in role_result["limitations"]:

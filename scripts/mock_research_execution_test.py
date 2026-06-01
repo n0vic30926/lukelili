@@ -33,7 +33,10 @@ def run_research_execution_test():
         return {
             "status": "ok",
             "observations": ["risk rules present", "one holding in portfolio"],
-            "evidence": ["portfolio.risk_rules", "portfolio.holdings"],
+            "evidence": [
+                {"label": "external rumor", "source_tier": "news_search", "freshness": "unknown"},
+                {"label": "portfolio.risk_rules", "source_tier": "local_user_data", "freshness": "fresh"},
+            ],
             "limitations": ["no live market data"],
         }
 
@@ -69,6 +72,8 @@ def run_research_execution_test():
     _assert_contains(output, "- status: skipped")
     _assert_contains(output, "## risk")
     _assert_contains(output, "- risk rules present")
+    _assert_contains(output, "portfolio.risk_rules | source_tier=local_user_data | freshness=fresh | score=")
+    _assert_contains(output, "external rumor | source_tier=news_search | freshness=unknown | score=")
     _assert_contains(output, "## review")
     _assert_contains(output, "- report continuity checked")
     _assert_contains(output, "- Requires user confirmation: yes")

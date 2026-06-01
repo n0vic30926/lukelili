@@ -45,6 +45,7 @@ python3 scripts/smoke_test.py
 python3 scripts/mock_data_quality_test.py
 python3 scripts/mock_decision_support_test.py
 python3 scripts/mock_dependency_test.py
+python3 scripts/mock_evidence_ranking_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_routing_test.py
 python3 scripts/mock_factor_status_test.py
