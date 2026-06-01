@@ -7,7 +7,15 @@
     "updated": {"type": "string"},
     "user_profile": {"type": "object"},
     "cash": {"type": "object"},
-    "risk_rules": {"type": "object"},
+    "risk_rules": {
+      "type": "object",
+      "required": ["single_loss_pct", "daily_loss_pct", "max_single_position_pct"],
+      "properties": {
+        "single_loss_pct": {"type": ["number", "integer"], "exclusiveMinimum": 0},
+        "daily_loss_pct": {"type": ["number", "integer"], "exclusiveMinimum": 0},
+        "max_single_position_pct": {"type": ["number", "integer"], "exclusiveMinimum": 0, "maximum": 100}
+      }
+    },
     "holdings": {
       "type": "array",
       "items": {
@@ -24,9 +32,23 @@
               "benchmark": {"type": "string"}
             }
           },
-          "cost_basis": {"type": ["number", "integer"]},
-          "shares": {"type": ["number", "integer"]},
-          "buy_records": {"type": "array"}
+          "cost_basis": {"type": ["number", "integer"], "exclusiveMinimum": 0},
+          "shares": {"type": ["number", "integer"], "exclusiveMinimum": 0},
+          "buy_records": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["date", "amount"],
+              "properties": {
+                "date": {"type": "string"},
+                "confirm_date": {"type": "string"},
+                "status": {"type": "string"},
+                "amount": {"type": ["number", "integer"], "exclusiveMinimum": 0},
+                "nav": {"type": ["number", "integer"], "exclusiveMinimum": 0},
+                "shares": {"type": ["number", "integer"], "exclusiveMinimum": 0}
+              }
+            }
+          }
         }
       }
     },

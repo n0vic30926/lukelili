@@ -96,7 +96,7 @@
 
 - `AGENTS.md`：项目级投资与工程边界；
 - `.env.example` / `config/settings.example.json`：本地密钥和路径配置示例；
-- `schemas/portfolio.schema.json`：最小 portfolio schema；
+- `schemas/portfolio.schema.json`：portfolio schema，包含风险规则、持仓数值和买入记录约束；
 - `data/examples/portfolio.example.json`：虚构示例持仓；
 - `scripts/common/config_loader.py`：统一读取本地配置；
 - `scripts/validate_portfolio.py`：标准库 portfolio 校验；
@@ -114,6 +114,7 @@ python3 scripts/mock_decision_support_test.py
 python3 scripts/mock_dependency_test.py
 python3 scripts/mock_evidence_ranking_test.py
 python3 scripts/mock_output_contract_test.py
+python3 scripts/mock_portfolio_validation_test.py
 python3 scripts/mock_report_output_contract_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_routing_test.py

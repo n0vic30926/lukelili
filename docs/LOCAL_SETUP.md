@@ -32,6 +32,9 @@ Validate a portfolio file:
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 ```
 
+The validator checks required risk rules, positive cost/share values, and
+buy-record fields. Pending buy records may omit confirmed NAV and shares.
+
 Optional `factor_profile` values route attribution modules:
 
 - `qdii_us_equity`: fund return, US tech benchmark, and USD/CNY contribution.
@@ -47,6 +50,7 @@ python3 scripts/mock_decision_support_test.py
 python3 scripts/mock_dependency_test.py
 python3 scripts/mock_evidence_ranking_test.py
 python3 scripts/mock_output_contract_test.py
+python3 scripts/mock_portfolio_validation_test.py
 python3 scripts/mock_report_output_contract_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_routing_test.py

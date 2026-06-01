@@ -27,7 +27,10 @@ sections so older free-form advice language is classified at the source.
 
 Goal: read local holdings, cost basis, cash, strategy type, and risk rules.
 
-Status: local path/config/schema foundation in place. Next step is expanding validation and moving real holdings into `data/private/portfolio.local.json` manually.
+Status: local path/config/schema foundation in place. Portfolio validation now
+checks required risk rules, positive cost/share values, and buy-record fields
+without printing private asset details. Next step is moving real holdings into
+`data/private/portfolio.local.json` manually and adding richer exposure checks.
 
 ## L3: Daily And Weekly Reports
 
