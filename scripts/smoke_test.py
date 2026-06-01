@@ -55,6 +55,7 @@ def check_foundation_files():
         "scripts/research_dispatch.py",
         "scripts/review_history.py",
         "scripts/security_scan.py",
+        "scripts/security_research.py",
         "scripts/validate_portfolio.py",
         "scripts/mock_data_quality_test.py",
         "scripts/mock_data_sources_test.py",
@@ -76,6 +77,7 @@ def check_foundation_files():
         "scripts/mock_review_history_test.py",
         "scripts/mock_runtime_test.py",
         "scripts/mock_security_scan_test.py",
+        "scripts/mock_security_research_test.py",
         "scripts/mock_weekly_status_test.py",
     ]
     for path in required:

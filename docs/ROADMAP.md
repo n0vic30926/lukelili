@@ -48,9 +48,10 @@ outputs, and decision-support-only boundaries. It can also execute local
 read-only role runners and merge observations into one research report. Evidence
 is ranked and displayed with source tier, freshness, and reliability score. Role
 reports now also show required data sources and availability status without
-printing keys or private holdings. Next step is expanding each role's tool
-coverage with real financial statements, announcements, valuation, and liquidity
-data.
+printing keys or private holdings. The Individual Security role has a first
+read-only AkShare adapter for financial statements, announcements, and valuation
+metrics with dependency-aware fallback. Next step is adding equivalent ETF
+premium/liquidity tools and richer interpretation.
 
 ## L5: Semi-Automated Decision Support
 

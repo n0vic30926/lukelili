@@ -199,20 +199,49 @@ def _industry_runner(task, portfolio):
 def _security_runner(task, portfolio):
     holdings = portfolio.get("holdings", [])
     watchlist = portfolio.get("watchlist", [])
-    direct_security_count = sum(1 for holding in holdings if _is_direct_security(holding))
+    direct_holdings = [holding for holding in holdings if _is_direct_security(holding)]
+    direct_security_count = len(direct_holdings)
     watch_security_count = sum(1 for item in watchlist if _is_direct_security(item))
+    observations = [
+        f"direct_security_holdings={direct_security_count}",
+        f"watchlist_security_items={watch_security_count}",
+        "fundamentals, valuation, filings, liquidity require external data",
+    ]
+    evidence = [
+        {"label": "portfolio.holdings", "source_tier": "local_user_data", "freshness": "fresh"},
+        {"label": "portfolio.watchlist", "source_tier": "local_user_data", "freshness": "fresh"},
+    ]
+    data_sources = [
+        {
+            "name": "portfolio_context",
+            "source": "local",
+            "status": "available",
+            "source_tier": "local_user_data",
+        }
+    ]
+    limitations = []
+
+    if direct_holdings:
+        try:
+            from security_research import fetch_security_research
+
+            research = fetch_security_research(str(direct_holdings[0].get("code") or ""))
+            observations.extend(_safe_list(research.get("observations"), limit=5))
+            evidence.extend(research.get("evidence") or [])
+            data_sources.extend(research.get("data_sources") or [])
+            limitations.extend(_safe_list(research.get("limitations"), limit=5))
+            observations.append(f"security_data_status={research.get('status', 'unknown')}")
+        except Exception as exc:
+            limitations.append(type(exc).__name__)
+    else:
+        limitations.append("no direct security holding to query")
+
     return {
         "status": "ok",
-        "observations": [
-            f"direct_security_holdings={direct_security_count}",
-            f"watchlist_security_items={watch_security_count}",
-            "fundamentals, valuation, filings, liquidity require external data",
-        ],
-        "evidence": [
-            {"label": "portfolio.holdings", "source_tier": "local_user_data", "freshness": "fresh"},
-            {"label": "portfolio.watchlist", "source_tier": "local_user_data", "freshness": "fresh"},
-        ],
-        "limitations": ["no live financial statements or announcements fetched by dispatcher"],
+        "observations": observations,
+        "evidence": evidence,
+        "data_sources": data_sources,
+        "limitations": limitations,
     }
 
 
