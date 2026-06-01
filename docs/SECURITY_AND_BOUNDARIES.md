@@ -47,6 +47,10 @@ Research and decision-support evidence should be ranked by source tier and
 freshness. Local user data outranks community data, and external news/search
 evidence must remain visibly lower-confidence unless corroborated.
 
+Research role data-source summaries should show only availability states such as
+available, missing_dependency, or missing_key. They must not print API keys,
+account IDs, or private holding identifiers.
+
 Decision-support packets should surface whether hard risk rules are present.
 Missing rules are warnings for user review, not permission to infer trades or
 place orders.

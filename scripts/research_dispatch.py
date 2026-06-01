@@ -9,6 +9,7 @@ import json
 import sys
 
 from common.config_loader import get_decision_track_dir, get_portfolio_path, load_settings, resolve_path
+from common.data_sources import role_data_requirements, summarize_role_data_requirements
 from common.evidence import rank_evidence
 
 
@@ -99,6 +100,7 @@ def build_research_plan(query, portfolio):
                 "scope": definition["scope"],
                 "inputs": definition["inputs"],
                 "outputs": definition["outputs"],
+                "data_requirements": [item["name"] for item in role_data_requirements(role)],
                 "boundary": "decision_support_only",
             }
         )
@@ -128,6 +130,8 @@ def format_research_plan(plan):
         lines.append(f"- {task['role']}: {task['scope']}")
         lines.append(f"  inputs={','.join(task['inputs'])}")
         lines.append(f"  outputs={','.join(task['outputs'])}")
+        if task.get("data_requirements"):
+            lines.append(f"  data_requirements={','.join(task['data_requirements'])}")
     return "\n".join(lines)
 
 
@@ -287,6 +291,7 @@ def execute_research_plan(plan, portfolio, runners=None):
                 "status": str(result.get("status") or "unknown"),
                 "observations": _safe_list(result.get("observations")),
                 "evidence": rank_evidence(result.get("evidence")),
+                "data_sources": result.get("data_sources") or summarize_role_data_requirements(role),
                 "limitations": _safe_list(result.get("limitations")),
                 "boundary": task.get("boundary", "decision_support_only"),
             }
@@ -326,6 +331,14 @@ def format_research_report(result):
                     "  - "
                     f"{item['label']} | source_tier={item['source_tier']} "
                     f"| freshness={item['freshness']} | score={item['score']}"
+                )
+        if role_result.get("data_sources"):
+            lines.append("- data sources:")
+            for item in role_result["data_sources"]:
+                lines.append(
+                    "  - "
+                    f"{item['name']} | source={item['source']} | status={item['status']} "
+                    f"| source_tier={item['source_tier']}"
                 )
         if role_result["limitations"]:
             lines.append("- limitations:")
