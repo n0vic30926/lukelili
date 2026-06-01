@@ -18,10 +18,10 @@ This worktree now has a local L1/L2 foundation:
 
 Goal: Codex can read investment rules, safety boundaries, and output constraints.
 
-Status: foundation in place. Decision-support output now includes an explicit
-Facts / Data-Derived Inferences / Model Judgment / User Confirmation Required
-classification. Next step is applying the same contract across daily and weekly
-report templates.
+Status: foundation in place. Decision-support, daily, and weekly outputs now
+include an explicit Facts / Data-Derived Inferences / Model Judgment / User
+Confirmation Required classification. Next step is tightening individual report
+sections so older free-form advice language is classified at the source.
 
 ## L2: Local Portfolio Analysis Assistant
 

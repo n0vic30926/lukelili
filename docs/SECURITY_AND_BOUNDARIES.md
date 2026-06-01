@@ -35,8 +35,8 @@ Finance Agent may provide:
 
 Finance Agent must not convert those into order placement or final user consent.
 
-Decision-support outputs should explicitly separate facts, data-derived
-inferences, model judgment, and user confirmation requirements.
+Decision-support outputs and scheduled reports should explicitly separate facts,
+data-derived inferences, model judgment, and user confirmation requirements.
 
 Decision-support packets must keep `execution_allowed=false`, describe only
 candidate actions, and require explicit user confirmation before any real-world

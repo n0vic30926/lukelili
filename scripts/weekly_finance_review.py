@@ -11,6 +11,7 @@ sys.path.insert(0, SCRIPT_DIR)
 from common.dependencies import REPORT_DEPENDENCIES, exit_if_missing
 from common.config_loader import get_portfolio_path, load_settings, resolve_path
 from common.data_runtime import DataStatusTracker
+from common.output_contract import build_report_output_sections, with_output_contract
 from common.reporting import write_report
 
 try:
@@ -385,5 +386,10 @@ if __name__ == "__main__":
 
     tracker = DataStatusTracker()
     report = format_report(tracker=tracker)
-    archived = write_report("weekly", report, run_summary=build_run_summary(tracker))
+    run_summary = build_run_summary(tracker)
+    report = with_output_contract(
+        report,
+        build_report_output_sections("weekly", load_portfolio(), run_summary),
+    )
+    archived = write_report("weekly", report, run_summary=run_summary)
     print(archived["content"])

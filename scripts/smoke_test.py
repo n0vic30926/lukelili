@@ -65,6 +65,7 @@ def check_foundation_files():
         "scripts/mock_industry_intel_dynamic_test.py",
         "scripts/mock_news_status_test.py",
         "scripts/mock_output_contract_test.py",
+        "scripts/mock_report_output_contract_test.py",
         "scripts/mock_research_execution_test.py",
         "scripts/mock_research_dispatch_test.py",
         "scripts/mock_reporting_test.py",
