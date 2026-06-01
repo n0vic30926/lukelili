@@ -245,6 +245,57 @@ def _security_runner(task, portfolio):
     }
 
 
+def _etf_runner(task, portfolio):
+    summary = _portfolio_summary(portfolio)
+    holdings = portfolio.get("holdings", [])
+    watchlist = portfolio.get("watchlist", [])
+    codes = []
+    for holding in holdings:
+        if holding.get("proxy_etf"):
+            codes.append(holding["proxy_etf"])
+    for item in watchlist:
+        item_type = str(item.get("type") or item.get("asset_type") or "").lower()
+        if "etf" in item_type and item.get("code"):
+            codes.append(item["code"])
+
+    observations = [
+        f"holdings={summary['holding_count']}",
+        f"watchlist={summary['watchlist_count']}",
+        f"proxy_etf_codes={len(codes)}",
+    ]
+    evidence = [
+        {"label": "portfolio proxy_etf", "source_tier": "local_user_data", "freshness": "fresh"}
+    ]
+    data_sources = [
+        {
+            "name": "portfolio_context",
+            "source": "local",
+            "status": "available",
+            "source_tier": "local_user_data",
+        }
+    ]
+    limitations = []
+    try:
+        from etf_research import fetch_etf_research
+
+        research = fetch_etf_research(codes)
+        observations.extend(_safe_list(research.get("observations"), limit=5))
+        evidence.extend(research.get("evidence") or [])
+        data_sources.extend(research.get("data_sources") or [])
+        limitations.extend(_safe_list(research.get("limitations"), limit=5))
+        observations.append(f"etf_data_status={research.get('status', 'unknown')}")
+    except Exception as exc:
+        limitations.append(type(exc).__name__)
+
+    return {
+        "status": "ok",
+        "observations": observations,
+        "evidence": evidence,
+        "data_sources": data_sources,
+        "limitations": limitations,
+    }
+
+
 def _review_runner(task, portfolio):
     try:
         from report_index import load_report_index
@@ -291,7 +342,7 @@ DEFAULT_RUNNERS = {
     "macro": _macro_runner,
     "industry": _industry_runner,
     "security": _security_runner,
-    "etf": _portfolio_runner,
+    "etf": _etf_runner,
     "risk": _portfolio_runner,
     "review": _review_runner,
 }

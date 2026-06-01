@@ -50,6 +50,7 @@ python3 scripts/mock_data_sources_test.py
 python3 scripts/mock_decision_support_test.py
 python3 scripts/mock_dependency_test.py
 python3 scripts/mock_evidence_ranking_test.py
+python3 scripts/mock_etf_research_test.py
 python3 scripts/mock_output_contract_test.py
 python3 scripts/mock_portfolio_validation_test.py
 python3 scripts/mock_report_output_contract_test.py

@@ -50,8 +50,9 @@ is ranked and displayed with source tier, freshness, and reliability score. Role
 reports now also show required data sources and availability status without
 printing keys or private holdings. The Individual Security role has a first
 read-only AkShare adapter for financial statements, announcements, and valuation
-metrics with dependency-aware fallback. Next step is adding equivalent ETF
-premium/liquidity tools and richer interpretation.
+metrics with dependency-aware fallback. The ETF role has a first read-only
+adapter for ETF quotes, liquidity, and premium/discount checks. Next step is
+adding richer interpretation and macro data tools.
 
 ## L5: Semi-Automated Decision Support
 
