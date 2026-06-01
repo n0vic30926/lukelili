@@ -21,6 +21,12 @@ ACTION_BY_STRATEGY = {
     "watch": "research_only",
 }
 
+REQUIRED_RISK_RULES = (
+    "single_loss_pct",
+    "daily_loss_pct",
+    "max_single_position_pct",
+)
+
 
 def _strategy_counts(portfolio):
     counts = {}
@@ -46,7 +52,24 @@ def _research_evidence(research_result):
     return rank_evidence(evidence)[:8]
 
 
-def _candidate_for_holding(index, holding, research_notes):
+def _risk_rule_checks(portfolio):
+    rules = portfolio.get("risk_rules") or {}
+    checks = []
+    for rule_name in REQUIRED_RISK_RULES:
+        value = rules.get(rule_name)
+        if value in (None, ""):
+            checks.append({"rule": rule_name, "status": "missing"})
+        else:
+            checks.append({"rule": rule_name, "value": value, "status": "present"})
+    return checks
+
+
+def _missing_risk_rules(risk_rule_checks):
+    return [item["rule"] for item in risk_rule_checks if item["status"] == "missing"]
+
+
+def _candidate_for_holding(index, holding, research_notes, missing_risk_rules=None):
+    missing_risk_rules = missing_risk_rules or []
     strategy = str(holding.get("strategy_type") or "unknown")
     action = ACTION_BY_STRATEGY.get(strategy, "observe")
     rationale = [
@@ -59,6 +82,8 @@ def _candidate_for_holding(index, holding, research_notes):
         "data may be stale or incomplete",
         "model judgment is not user consent",
     ]
+    if missing_risk_rules:
+        risks.append("missing hard risk rules: " + ",".join(missing_risk_rules))
     confirmations = [
         "user confirms strategy still applies",
         "user confirms latest data source freshness",
@@ -78,8 +103,10 @@ def build_decision_packet(portfolio, research_result=None):
     research_result = research_result or {}
     research_notes = _research_observations(research_result)
     evidence = _research_evidence(research_result)
+    risk_rule_checks = _risk_rule_checks(portfolio)
+    missing_risk_rules = _missing_risk_rules(risk_rule_checks)
     candidates = [
-        _candidate_for_holding(index, holding, research_notes)
+        _candidate_for_holding(index, holding, research_notes, missing_risk_rules)
         for index, holding in enumerate(portfolio.get("holdings", []))
     ]
     return {
@@ -89,6 +116,7 @@ def build_decision_packet(portfolio, research_result=None):
         "strategy_counts": _strategy_counts(portfolio),
         "research_observations": research_notes,
         "evidence": evidence,
+        "risk_rule_checks": risk_rule_checks,
         "candidates": candidates,
         "prohibited_actions": [
             "broker_connection",
@@ -123,6 +151,15 @@ def format_decision_packet(packet):
                 f"{item['label']} | source_tier={item['source_tier']} "
                 f"| freshness={item['freshness']} | score={item['score']}"
             )
+        lines.append("")
+
+    if packet["risk_rule_checks"]:
+        lines.append("## Risk Rule Checks")
+        for item in packet["risk_rule_checks"]:
+            if item["status"] == "present":
+                lines.append(f"- {item['rule']}={item['value']} status=present")
+            else:
+                lines.append(f"- {item['rule']} status=missing")
         lines.append("")
 
     lines.append("## Candidates")

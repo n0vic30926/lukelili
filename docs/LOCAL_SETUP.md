@@ -84,9 +84,9 @@ Create a decision-support packet:
 python3 scripts/decision_support.py "组合风险 复盘 决策辅助"
 ```
 
-The decision-support packet contains candidate actions, evidence, risks, and
-confirmation checks. It is not executable and must not be treated as user
-consent.
+The decision-support packet contains candidate actions, ranked evidence, hard
+risk rule checks, risks, and confirmation checks. It is not executable and must
+not be treated as user consent.
 
 The smoke test checks local guardrails, config examples, schema, fictional example data, OpenClaw path removal, and Tavily key isolation. It does not install dependencies or call market data APIs.
 
