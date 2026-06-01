@@ -37,11 +37,12 @@ Status: original report scripts exist and now read local config for portfolio/ne
 Goal: split macro, ETF, individual security, industry, risk, and review roles.
 
 Status: a minimal local dispatcher now maps user intent to Macro, Industry,
-ETF, Risk, and Review role contracts with explicit inputs, outputs, and
-decision-support-only boundaries. It can also execute local read-only role
-runners and merge observations into one research report. Evidence is ranked and
-displayed with source tier, freshness, and reliability score. Next step is
-expanding each role's tool coverage.
+Individual Security, ETF, Risk, and Review role contracts with explicit inputs,
+outputs, and decision-support-only boundaries. It can also execute local
+read-only role runners and merge observations into one research report. Evidence
+is ranked and displayed with source tier, freshness, and reliability score. Next
+step is expanding each role's tool coverage with real financial statements,
+announcements, valuation, and liquidity data.
 
 ## L5: Semi-Automated Decision Support
 

@@ -20,14 +20,15 @@ def run_research_execution_test():
             {
                 "code": "PRIVATE_A",
                 "name": "Private Holding A",
+                "type": "stock",
                 "strategy_type": "dca",
                 "factor_profile": {"type": "qdii_us_equity"},
             }
         ],
-        "watchlist": [],
+        "watchlist": [{"code": "PRIVATE_W", "name": "Private Watch"}],
         "risk_rules": {"single_loss_pct": 2, "daily_loss_pct": 6},
     }
-    plan = build_research_plan("组合风险 历史复盘 行业", portfolio)
+    plan = build_research_plan("个股 财报 组合风险 历史复盘 行业", portfolio)
 
     def fake_risk(task, portfolio_data):
         return {
@@ -61,7 +62,7 @@ def run_research_execution_test():
         portfolio,
         runners={"risk": fake_risk, "review": fake_review, "industry": fake_industry},
     )
-    if [item["role"] for item in result["role_results"]] != ["industry", "risk", "review"]:
+    if [item["role"] for item in result["role_results"]] != ["industry", "security", "risk", "review"]:
         raise AssertionError(f"Unexpected role order: {result}")
     if result["requires_user_confirmation"] is not True:
         raise AssertionError(f"Research result must require user confirmation: {result}")
@@ -70,6 +71,10 @@ def run_research_execution_test():
     _assert_contains(output, "# Research Execution Report")
     _assert_contains(output, "## industry")
     _assert_contains(output, "- status: skipped")
+    _assert_contains(output, "## security")
+    _assert_contains(output, "direct_security_holdings=1")
+    _assert_contains(output, "fundamentals, valuation, filings, liquidity require external data")
+    _assert_contains(output, "portfolio.holdings | source_tier=local_user_data | freshness=fresh | score=")
     _assert_contains(output, "## risk")
     _assert_contains(output, "- risk rules present")
     _assert_contains(output, "portfolio.risk_rules | source_tier=local_user_data | freshness=fresh | score=")
@@ -78,7 +83,9 @@ def run_research_execution_test():
     _assert_contains(output, "- report continuity checked")
     _assert_contains(output, "- Requires user confirmation: yes")
     _assert_not_contains(output, "PRIVATE_A")
+    _assert_not_contains(output, "PRIVATE_W")
     _assert_not_contains(output, "Private Holding A")
+    _assert_not_contains(output, "Private Watch")
     _assert_not_contains(output, "买入")
     _assert_not_contains(output, "卖出")
     _assert_not_contains(output, "自动交易")

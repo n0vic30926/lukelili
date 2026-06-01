@@ -29,15 +29,21 @@ def run_research_dispatch_test():
                 "strategy_type": "trial",
                 "factor_profile": {"type": "a_share_ai"},
             },
+            {
+                "code": "STOCK_A",
+                "name": "Example Security",
+                "type": "stock",
+                "strategy_type": "watch",
+            },
         ],
         "watchlist": [
             {"code": "WATCH_A", "name": "Example ETF", "reason": "ETF candidate"}
         ],
     }
 
-    plan = build_research_plan("帮我看宏观利率、ETF、组合风险和历史复盘", portfolio)
+    plan = build_research_plan("帮我看宏观利率、个股财报、ETF、组合风险和历史复盘", portfolio)
     roles = [item["role"] for item in plan["tasks"]]
-    if roles != ["macro", "etf", "risk", "review"]:
+    if roles != ["macro", "security", "etf", "risk", "review"]:
         raise AssertionError(f"Unexpected roles: {roles}")
     if any(item["boundary"] != "decision_support_only" for item in plan["tasks"]):
         raise AssertionError(f"Unexpected boundaries: {plan}")
@@ -47,6 +53,7 @@ def run_research_dispatch_test():
     output = format_research_plan(plan)
     _assert_contains(output, "# Research Dispatch Plan")
     _assert_contains(output, "- macro: macro rates, FX, inflation, liquidity")
+    _assert_contains(output, "- security: individual security fundamentals, valuation, filings")
     _assert_contains(output, "- etf: ETF structure, tracking, liquidity, fees")
     _assert_contains(output, "- risk: portfolio exposure, concentration, drawdown rules")
     _assert_contains(output, "- review: report continuity, repeated failures, discipline records")

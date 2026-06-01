@@ -65,13 +65,13 @@ python3 scripts/security_scan.py
 Create a local L4 research dispatch plan:
 
 ```bash
-python3 scripts/research_dispatch.py "宏观 利率 ETF 组合风险 复盘"
+python3 scripts/research_dispatch.py "宏观 利率 个股 财报 ETF 组合风险 复盘"
 ```
 
 Execute local read-only role runners and merge the observations:
 
 ```bash
-python3 scripts/research_dispatch.py --execute "宏观 利率 ETF 组合风险 复盘"
+python3 scripts/research_dispatch.py --execute "宏观 利率 个股 财报 ETF 组合风险 复盘"
 ```
 
 The dispatch command only creates a role/task contract or a merged research

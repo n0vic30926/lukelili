@@ -25,6 +25,12 @@ ROLE_DEFINITIONS = {
         "inputs": ["holdings", "watchlist", "industry_intel"],
         "outputs": ["theme_signals", "holding_impacts", "source_quality"],
     },
+    "security": {
+        "keywords": ["个股", "股票", "公司", "财报", "基本面", "估值", "security", "stock", "earnings"],
+        "scope": "individual security fundamentals, valuation, filings",
+        "inputs": ["holdings", "watchlist", "financials", "announcements"],
+        "outputs": ["security_context", "fundamental_questions", "missing_data"],
+    },
     "etf": {
         "keywords": ["etf", "指数基金", "qdii", "跟踪", "溢价", "费率", "流动性"],
         "scope": "ETF structure, tracking, liquidity, fees",
@@ -62,6 +68,14 @@ def _portfolio_summary(portfolio):
             }
         ),
     }
+
+
+def _is_direct_security(item):
+    asset_type = str(item.get("type") or item.get("asset_type") or "").lower()
+    market = str(item.get("market") or "").lower()
+    if any(token in asset_type for token in ["stock", "equity", "share"]):
+        return True
+    return market in {"a_share", "us_stock", "hk_stock"}
 
 
 def select_roles(query):
@@ -178,6 +192,26 @@ def _industry_runner(task, portfolio):
         }
 
 
+def _security_runner(task, portfolio):
+    holdings = portfolio.get("holdings", [])
+    watchlist = portfolio.get("watchlist", [])
+    direct_security_count = sum(1 for holding in holdings if _is_direct_security(holding))
+    watch_security_count = sum(1 for item in watchlist if _is_direct_security(item))
+    return {
+        "status": "ok",
+        "observations": [
+            f"direct_security_holdings={direct_security_count}",
+            f"watchlist_security_items={watch_security_count}",
+            "fundamentals, valuation, filings, liquidity require external data",
+        ],
+        "evidence": [
+            {"label": "portfolio.holdings", "source_tier": "local_user_data", "freshness": "fresh"},
+            {"label": "portfolio.watchlist", "source_tier": "local_user_data", "freshness": "fresh"},
+        ],
+        "limitations": ["no live financial statements or announcements fetched by dispatcher"],
+    }
+
+
 def _review_runner(task, portfolio):
     try:
         from report_index import load_report_index
@@ -223,6 +257,7 @@ def _review_runner(task, portfolio):
 DEFAULT_RUNNERS = {
     "macro": _macro_runner,
     "industry": _industry_runner,
+    "security": _security_runner,
     "etf": _portfolio_runner,
     "risk": _portfolio_runner,
     "review": _review_runner,

@@ -164,13 +164,13 @@ python3 scripts/review_history.py
 生成 L4 研究角色调度计划：
 
 ```bash
-python3 scripts/research_dispatch.py "宏观 利率 ETF 组合风险 复盘"
+python3 scripts/research_dispatch.py "宏观 利率 个股 财报 ETF 组合风险 复盘"
 ```
 
 执行本地只读角色并合并研究报告：
 
 ```bash
-python3 scripts/research_dispatch.py --execute "宏观 利率 ETF 组合风险 复盘"
+python3 scripts/research_dispatch.py --execute "宏观 利率 个股 财报 ETF 组合风险 复盘"
 ```
 
 `research_dispatch.py` 只输出研究任务契约或聚合研究报告，不连接券商、不下单、不替用户确认交易。
@@ -227,7 +227,7 @@ Delivery配置（所有cron通用）：
 - [x] 安全基线：tracked 文件敏感信息扫描、memory/Skill 脱敏模板化
 - [x] 行业情报本地化：从 portfolio 动态生成资讯查询和影响标签
 - [x] 因子归因本地化：从 portfolio `factor_profile` 动态路由 QDII/AI 归因
-- [x] L4 最小研究调度：Macro / Industry / ETF / Risk / Review 角色契约
+- [x] L4 最小研究调度：Macro / Industry / Security / ETF / Risk / Review 角色契约
 - [x] L4 只读研究执行：本地角色 runner 与聚合研究报告
 - [x] 证据可靠性排序：source_tier / freshness / score 进入研究与决策输出
 - [ ] L4 多 Agent 研究角色：接入更完整的真实数据工具与证据排序
