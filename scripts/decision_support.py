@@ -10,6 +10,7 @@ import sys
 
 from common.config_loader import get_portfolio_path
 from common.evidence import rank_evidence
+from common.output_contract import format_output_sections
 from research_dispatch import build_research_plan, execute_research_plan
 
 
@@ -127,6 +128,45 @@ def build_decision_packet(portfolio, research_result=None):
     }
 
 
+def _output_sections(packet):
+    facts = [
+        f"execution_allowed={str(packet['execution_allowed']).lower()}",
+        f"requires_user_confirmation={str(packet['requires_user_confirmation']).lower()}",
+    ]
+    if packet["strategy_counts"]:
+        counts = " ".join(f"{key}={value}" for key, value in packet["strategy_counts"].items())
+        facts.append(f"strategy_counts: {counts}")
+    for item in packet["risk_rule_checks"]:
+        if item["status"] == "present":
+            facts.append(f"risk_rule {item['rule']}={item['value']} status=present")
+        else:
+            facts.append(f"risk_rule {item['rule']} status=missing")
+
+    inferences = list(packet["research_observations"])
+    inferences.extend(
+        f"evidence {item['label']} score={item['score']}"
+        for item in packet["evidence"][:3]
+    )
+
+    judgments = [
+        f"{candidate['holding_ref']} candidate_action={candidate['candidate_action']}"
+        for candidate in packet["candidates"]
+    ]
+
+    confirmations = []
+    for candidate in packet["candidates"]:
+        for item in candidate["required_confirmations"]:
+            if item not in confirmations:
+                confirmations.append(item)
+
+    return {
+        "facts": facts,
+        "inferences": inferences,
+        "judgments": judgments,
+        "confirmations": confirmations,
+    }
+
+
 def format_decision_packet(packet):
     lines = ["# Decision Support Packet", ""]
     lines.append(f"- Mode: {packet['mode']}")
@@ -135,6 +175,8 @@ def format_decision_packet(packet):
     if packet["strategy_counts"]:
         counts = " ".join(f"{key}={value}" for key, value in packet["strategy_counts"].items())
         lines.append(f"- Strategy counts: {counts}")
+    lines.append("")
+    lines.append(format_output_sections(_output_sections(packet)))
     lines.append("")
 
     if packet["research_observations"]:

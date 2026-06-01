@@ -113,6 +113,7 @@ python3 scripts/mock_data_quality_test.py
 python3 scripts/mock_decision_support_test.py
 python3 scripts/mock_dependency_test.py
 python3 scripts/mock_evidence_ranking_test.py
+python3 scripts/mock_output_contract_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_routing_test.py
 python3 scripts/mock_factor_status_test.py
@@ -220,7 +221,7 @@ Delivery配置（所有cron通用）：
 
 ## 路线图
 
-- [x] L1/L2 本地基础：规则、配置隔离、示例数据、schema、smoke test
+- [x] L1/L2 本地基础：规则、配置隔离、示例数据、schema、smoke test、输出分层契约
 - [x] L3 报告稳定化：依赖检查、日志、缓存、归档、模块状态摘要
 - [x] L3 数据质量：宏观/ETF/新闻数据源质量分层和失败可见化
 - [x] L3 历史复盘摘要：报告连续性、重复失败模块、策略纪律聚合统计
