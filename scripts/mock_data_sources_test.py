@@ -32,6 +32,8 @@ def run_data_sources_test():
         for item in industry
     )
     _assert_contains(industry_rendered, "news_search source=Tavily status=missing_key tier=news_search")
+    _assert_contains(industry_rendered, "industry_rotation source=AkShare status=")
+    _assert_contains(industry_rendered, "concept_rotation source=AkShare status=")
     if "tvly" + "-" in industry_rendered:
         raise AssertionError("Data source summaries must not expose API key values")
 

@@ -15,6 +15,7 @@ ROLE_DATA_REQUIREMENTS = {
     "industry": [
         {"name": "portfolio_context", "source": "local"},
         {"name": "industry_rotation", "source": "AkShare"},
+        {"name": "concept_rotation", "source": "AkShare"},
         {"name": "news_search", "source": "Tavily"},
     ],
     "security": [

@@ -199,27 +199,38 @@ def _macro_runner(task, portfolio):
 
 
 def _industry_runner(task, portfolio):
+    observations = []
+    evidence = [
+        {"label": "industry_intel.build_search_queries", "source_tier": "local_user_data", "freshness": "fresh"}
+    ]
+    data_sources = [
+        {
+            "name": "portfolio_context",
+            "source": "local",
+            "status": "available",
+            "source_tier": "local_user_data",
+        }
+    ]
+    limitations = []
     try:
-        from industry_intel import build_search_queries
+        from industry_research import fetch_industry_research
 
-        queries = build_search_queries(portfolio)
-        return {
-            "status": "ok",
-            "observations": [f"portfolio-driven news queries={len(queries)}"],
-            "evidence": [
-                {"label": "industry_intel.build_search_queries", "source_tier": "local_user_data", "freshness": "fresh"}
-            ],
-            "limitations": ["news fetching is controlled by enable_news and Tavily key"],
-        }
+        research = fetch_industry_research(portfolio)
+        observations.extend(_safe_list(research.get("observations"), limit=5))
+        evidence.extend(research.get("evidence") or [])
+        data_sources = research.get("data_sources") or data_sources
+        limitations.extend(_safe_list(research.get("limitations"), limit=5))
+        observations.append(f"industry_data_status={research.get('status', 'unknown')}")
     except Exception as exc:
-        return {
-            "status": "failed",
-            "observations": [],
-            "evidence": [
-                {"label": "industry_intel.build_search_queries", "source_tier": "local_user_data", "freshness": "unknown"}
-            ],
-            "limitations": [type(exc).__name__],
-        }
+        limitations.append(type(exc).__name__)
+
+    return {
+        "status": "ok",
+        "observations": observations,
+        "evidence": evidence,
+        "data_sources": data_sources,
+        "limitations": limitations,
+    }
 
 
 def _security_runner(task, portfolio):

@@ -7,6 +7,11 @@ ROLE_SOURCE_NOTES = {
         "fx_rates": "FX translation impact path",
         "liquidity_indicators": "liquidity impact path",
     },
+    "industry": {
+        "industry_rotation": "industry fund-flow impact path",
+        "concept_rotation": "theme rotation impact path",
+        "news_search": "external news signal impact path",
+    },
     "security": {
         "financial_statements": "fundamental quality impact path",
         "announcements": "event and filing impact path",

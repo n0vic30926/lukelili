@@ -16,6 +16,20 @@ ROLE_SOURCE_QUESTIONS = {
             "unavailable": "Which liquidity_indicators source must refresh before judgment on liquidity-sensitive exposure?",
         },
     },
+    "industry": {
+        "industry_rotation": {
+            "available": "What industry fund-flow questions are supported by current industry_rotation?",
+            "unavailable": "Which industry_rotation source must refresh before judgment on industry rotation?",
+        },
+        "concept_rotation": {
+            "available": "What theme rotation questions are supported by current concept_rotation?",
+            "unavailable": "Which concept_rotation source must refresh before judgment on theme rotation?",
+        },
+        "news_search": {
+            "available": "What external news signals need manual source review before judgment?",
+            "unavailable": "Which news_search source or key must refresh before judgment on external news signals?",
+        },
+    },
     "security": {
         "financial_statements": {
             "available": "What fundamental quality questions are supported by current financial_statements?",

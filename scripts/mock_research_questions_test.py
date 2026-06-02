@@ -41,11 +41,24 @@ def run_research_questions_test():
     _assert_contains(security_text, "announcements")
     _assert_contains(security_text, "valuation context")
 
+    industry_questions = build_role_research_questions(
+        "industry",
+        [
+            {"name": "industry_rotation", "status": "available"},
+            {"name": "concept_rotation", "status": "empty"},
+            {"name": "news_search", "status": "missing_key"},
+        ],
+    )
+    industry_text = "\n".join(industry_questions)
+    _assert_contains(industry_text, "industry fund-flow")
+    _assert_contains(industry_text, "theme rotation")
+    _assert_contains(industry_text, "external news")
+
     unknown_questions = build_role_research_questions("unknown", [{"name": "x", "status": "available"}])
     if unknown_questions:
         raise AssertionError(f"Unexpected unknown-role questions: {unknown_questions}")
 
-    all_text = "\n".join(macro_questions + security_questions + unknown_questions)
+    all_text = "\n".join(macro_questions + security_questions + industry_questions + unknown_questions)
     _assert_not_contains(all_text, "买入")
     _assert_not_contains(all_text, "卖出")
     _assert_not_contains(all_text, "自动交易")

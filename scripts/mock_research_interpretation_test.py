@@ -42,11 +42,24 @@ def run_research_interpretation_test():
     _assert_contains(etf_text, "premium_discount unavailable")
     _assert_contains(etf_text, "liquidity_metrics available")
 
+    industry_notes = interpret_role_data_state(
+        "industry",
+        [
+            {"name": "industry_rotation", "status": "available"},
+            {"name": "concept_rotation", "status": "failed"},
+            {"name": "news_search", "status": "missing_key"},
+        ],
+    )
+    industry_text = "\n".join(industry_notes)
+    _assert_contains(industry_text, "industry_rotation available")
+    _assert_contains(industry_text, "concept_rotation unavailable")
+    _assert_contains(industry_text, "news_search unavailable")
+
     unknown_notes = interpret_role_data_state("unknown", [{"name": "x", "status": "available"}])
     if unknown_notes:
         raise AssertionError(f"Unexpected unknown-role notes: {unknown_notes}")
 
-    all_text = "\n".join(macro_notes + etf_notes + unknown_notes)
+    all_text = "\n".join(macro_notes + etf_notes + industry_notes + unknown_notes)
     _assert_not_contains(all_text, "买入")
     _assert_not_contains(all_text, "卖出")
     _assert_not_contains(all_text, "自动交易")

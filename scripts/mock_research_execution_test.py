@@ -55,6 +55,11 @@ def run_research_execution_test():
             "status": "skipped",
             "observations": ["news disabled"],
             "evidence": ["settings.enable_news=false"],
+            "data_sources": [
+                {"name": "industry_rotation", "source": "AkShare", "status": "missing_dependency", "source_tier": "community_data"},
+                {"name": "concept_rotation", "source": "AkShare", "status": "missing_dependency", "source_tier": "community_data"},
+                {"name": "news_search", "source": "Tavily", "status": "missing_key", "source_tier": "news_search"},
+            ],
             "limitations": ["no external news fetched"],
         }
 
@@ -80,6 +85,9 @@ def run_research_execution_test():
     _assert_contains(output, "rate-sensitive exposure")
     _assert_contains(output, "## industry")
     _assert_contains(output, "- status: skipped")
+    _assert_contains(output, "industry_rotation | source=AkShare | status=missing_dependency")
+    _assert_contains(output, "concept_rotation | source=AkShare | status=missing_dependency")
+    _assert_contains(output, "news_search | source=Tavily | status=missing_key")
     _assert_contains(output, "## security")
     _assert_contains(output, "- data sources:")
     _assert_contains(output, "portfolio_context | source=local | status=available | source_tier=local_user_data")
