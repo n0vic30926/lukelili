@@ -84,6 +84,7 @@ def run_history_review_test():
                 "check_count": 2,
                 "blocker_count": 1,
                 "blocker_types": ["missing_risk_rule"],
+                "review_action_counts": {"update_local_records": 1, "user_confirm": 2},
             },
         )
         decisions = load_decision_records(decision_dir)
@@ -98,6 +99,8 @@ def run_history_review_test():
             raise AssertionError(f"Unexpected confirmation records: {summary['confirmation_records']}")
         if summary["confirmation_blockers"]["missing_risk_rule"] != 1:
             raise AssertionError(f"Unexpected confirmation blockers: {summary['confirmation_blockers']}")
+        if summary["review_actions"] != {"update_local_records": 1, "user_confirm": 2}:
+            raise AssertionError(f"Unexpected review actions: {summary['review_actions']}")
 
         output = format_history_review(summary)
         _assert_contains(output, "# History Review Summary")
@@ -107,6 +110,7 @@ def run_history_review_test():
         _assert_contains(output, "- Strategy records: dca=1 trial=1")
         _assert_contains(output, "- Confirmation records: pending_user_confirmation=1")
         _assert_contains(output, "- Confirmation blockers: missing_risk_rule=1")
+        _assert_contains(output, "- Review actions: update_local_records=1 user_confirm=2")
         _assert_not_contains(output, "SECRET")
         _assert_not_contains(output, "999999")
         _assert_not_contains(output, "Private Fund")

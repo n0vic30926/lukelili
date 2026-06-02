@@ -268,7 +268,7 @@ Delivery配置（所有cron通用）：
 - [x] L5 人工确认工作流：pending confirmation state、阻断项、不可执行边界
 - [x] L5 确认记录与复盘：脱敏 confirmation JSONL 与 history review 汇总
 - [x] L5 确认状态审计：跨角色未确认数据源进入 manual confirmation blockers
-- [ ] L5 半自动决策辅助：接入更完整数据后的确认状态审计与人工复核流程
+- [x] L5 半自动决策辅助：确认状态审计与人工复核队列，不允许自动交易
 
 ---
 

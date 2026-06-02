@@ -23,8 +23,10 @@ def _confirmation_record(state, created_at=None, source="decision_support"):
         "execution_allowed": False,
         "check_count": int(state.get("check_count", 0) or 0),
         "blocker_count": int(state.get("blocker_count", 0) or 0),
+        "review_queue_count": int(state.get("review_queue_count", 0) or 0),
         "check_refs": [item.get("check_ref") for item in state.get("checks", []) if item.get("check_ref")],
         "blocker_types": [item.get("type", "unknown") for item in state.get("blockers", [])],
+        "review_action_counts": dict(state.get("review_action_counts") or {}),
         "prohibited_actions": list(state.get("prohibited_actions") or []),
     }
 
@@ -61,7 +63,12 @@ def load_confirmation_records(record_path=None):
                 "execution_allowed": bool(item.get("execution_allowed")),
                 "check_count": int(item.get("check_count", 0) or 0),
                 "blocker_count": int(item.get("blocker_count", 0) or 0),
+                "review_queue_count": int(item.get("review_queue_count", 0) or 0),
                 "blocker_types": [str(value) for value in item.get("blocker_types", [])],
+                "review_action_counts": {
+                    str(key): int(value or 0)
+                    for key, value in (item.get("review_action_counts") or {}).items()
+                },
             }
         )
     return records

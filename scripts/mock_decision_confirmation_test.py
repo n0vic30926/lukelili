@@ -68,6 +68,16 @@ def run_decision_confirmation_test():
         raise AssertionError(f"Unexpected check count: {state}")
     if state["blocker_count"] != 4:
         raise AssertionError(f"Unexpected blocker count: {state}")
+    if state["review_queue_count"] != 6:
+        raise AssertionError(f"Unexpected review queue count: {state}")
+    expected_actions = {
+        "refresh_data": 2,
+        "review_risk_rule": 1,
+        "update_local_records": 1,
+        "user_confirm": 2,
+    }
+    if state["review_action_counts"] != expected_actions:
+        raise AssertionError(f"Unexpected review actions: {state['review_action_counts']}")
     if state["checks"][0]["check_ref"] != "confirmation_1":
         raise AssertionError(f"Expected anonymized check ref: {state}")
 
@@ -75,11 +85,17 @@ def run_decision_confirmation_test():
     _assert_contains(output, "## Manual Confirmation Workflow")
     _assert_contains(output, "confirmation_status=pending_user_confirmation")
     _assert_contains(output, "execution_allowed=false")
+    _assert_contains(output, "review_queue=6")
+    _assert_contains(output, "review_actions: refresh_data=2 review_risk_rule=1 update_local_records=1 user_confirm=2")
     _assert_contains(output, "confirmation_1 status=pending")
     _assert_contains(output, "missing_risk_rule rule=max_single_position_pct")
     _assert_contains(output, "single_position_exceeds_rule holding_ref=holding_1")
     _assert_contains(output, "research_data_source_unconfirmed role=risk source=market_quotes status=missing_dependency")
     _assert_contains(output, "research_role_status_unconfirmed role=review status=skipped")
+    _assert_contains(output, "review_1 action=user_confirm status=pending")
+    _assert_contains(output, "review_3 action=update_local_records status=pending")
+    _assert_contains(output, "review_4 action=review_risk_rule status=pending")
+    _assert_contains(output, "review_5 action=refresh_data status=pending")
     _assert_not_contains(output, "PRIVATE")
     _assert_not_contains(output, "买入")
     _assert_not_contains(output, "卖出")

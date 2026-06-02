@@ -91,6 +91,10 @@ def load_decision_records(decision_dir):
                     "check_count": int(item.get("check_count", 0) or 0),
                     "blocker_count": int(item.get("blocker_count", 0) or 0),
                     "blocker_types": [str(value) for value in item.get("blocker_types", [])],
+                    "review_action_counts": {
+                        str(key): int(value or 0)
+                        for key, value in (item.get("review_action_counts") or {}).items()
+                    },
                 }
             )
     return records
@@ -102,6 +106,7 @@ def summarize_history(report_items, decision_records):
     strategy_counts = Counter()
     confirmation_records = Counter()
     confirmation_blockers = Counter()
+    review_actions = Counter()
 
     for item in report_items:
         run_summary = item.get("run_summary", {})
@@ -117,6 +122,7 @@ def summarize_history(report_items, decision_records):
         if record.get("record_type") == "confirmation_state":
             confirmation_records[str(record.get("confirmation_status") or "unknown")] += 1
             confirmation_blockers.update(record.get("blocker_types", []))
+            review_actions.update(record.get("review_action_counts", {}))
         else:
             strategy_counts.update(record.get("strategies", []))
 
@@ -138,6 +144,7 @@ def summarize_history(report_items, decision_records):
         "strategy_counts": dict(sorted(strategy_counts.items())),
         "confirmation_records": dict(sorted(confirmation_records.items())),
         "confirmation_blockers": dict(sorted(confirmation_blockers.items())),
+        "review_actions": dict(sorted(review_actions.items())),
     }
 
 
@@ -169,6 +176,7 @@ def format_history_review(summary):
     lines.append(f"- Strategy records: {_format_counts(summary['strategy_counts'])}")
     lines.append(f"- Confirmation records: {_format_counts(summary.get('confirmation_records', {}))}")
     lines.append(f"- Confirmation blockers: {_format_counts(summary.get('confirmation_blockers', {}))}")
+    lines.append(f"- Review actions: {_format_counts(summary.get('review_actions', {}))}")
     return "\n".join(lines)
 
 

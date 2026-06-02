@@ -84,9 +84,11 @@ local portfolio file, anonymized exposure checks, and a pending manual
 confirmation state with blockers. It sets `execution_allowed=false` and does not
 connect to broker endpoints. Cross-role research synthesis now feeds
 unavailable role/data-source states into the manual confirmation blockers.
-Confirmation states can be recorded as sanitized JSONL and summarized by history
-review as status/blocker aggregates. Remaining work is richer manual review
-flows around confirmation-state auditing.
+Manual confirmation now includes a bounded review queue that separates user
+confirmation, data refresh, local-record updates, and risk-rule review. These
+queue action counts can be recorded as sanitized JSONL and summarized by history
+review. Remaining work is recording manual review resolutions without turning
+them into execution consent.
 
 Explicitly out of scope:
 

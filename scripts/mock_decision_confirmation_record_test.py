@@ -63,6 +63,7 @@ def run_decision_confirmation_record_test():
         raw = lines[0]
         _assert_contains(raw, "pending_user_confirmation")
         _assert_contains(raw, "single_position_exceeds_rule")
+        _assert_contains(raw, "review_action_counts")
         _assert_not_contains(raw, "PRIVATE_A")
         _assert_not_contains(raw, "Private Holding A")
         _assert_not_contains(raw, "买入")
@@ -73,6 +74,14 @@ def run_decision_confirmation_record_test():
             raise AssertionError(f"Unexpected loaded records: {records}")
         if records[0]["check_count"] != 1 or records[0]["blocker_count"] != 3:
             raise AssertionError(f"Unexpected counts: {records}")
+        if records[0]["review_queue_count"] != 4:
+            raise AssertionError(f"Unexpected review queue count: {records}")
+        if records[0]["review_action_counts"] != {
+            "update_local_records": 2,
+            "user_confirm": 1,
+            "review_risk_rule": 1,
+        }:
+            raise AssertionError(f"Unexpected review action counts: {records}")
         rendered = json.dumps(records, ensure_ascii=False)
         _assert_not_contains(rendered, "PRIVATE_A")
         _assert_not_contains(rendered, "Private Holding A")
