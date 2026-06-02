@@ -14,7 +14,7 @@ sys.path.insert(0, SCRIPT_DIR)
 from common.dependencies import REPORT_DEPENDENCIES, exit_if_missing
 from common.config_loader import get_portfolio_path, load_settings, resolve_path
 from common.data_runtime import DataStatusTracker
-from common.output_contract import build_report_output_sections, with_output_contract
+from common.output_contract import build_report_output_sections, format_classified_report_section, with_output_contract
 from common.reporting import write_report
 
 try:
@@ -54,6 +54,20 @@ def build_run_summary(tracker=None):
 def load_portfolio():
     with open(PORTFOLIO_PATH) as f:
         return json.load(f)
+
+
+def format_advice_section(advice):
+    section = format_classified_report_section(
+        facts=["execution_allowed=false", "report_section=decision_support_only"],
+        inferences=["short-term and discipline signals require user review"],
+        judgments=list(advice or []),
+        confirmations=[
+            "user verifies data freshness before any portfolio change",
+            "user confirms strategy still applies",
+            "user confirms no broker action should be automated",
+        ],
+    )
+    return section.splitlines()
 
 
 # ── 数据获取函数 ──
@@ -488,8 +502,7 @@ def main(tracker=None):
     except Exception:
         pass  # 情报采集失败不影响核心建议
 
-    for a in advice:
-        lines.append(f"- {a}")
+    lines.extend(format_advice_section(advice))
     lines.append("")
 
     lines.append("---")

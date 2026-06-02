@@ -58,8 +58,10 @@ python3 scripts/mock_output_contract_test.py
 python3 scripts/mock_portfolio_exposure_test.py
 python3 scripts/mock_portfolio_validation_test.py
 python3 scripts/mock_report_branch_fixtures_test.py
+python3 scripts/mock_report_advice_classification_test.py
 python3 scripts/mock_report_output_contract_test.py
 python3 scripts/mock_report_source_interpretation_test.py
+python3 scripts/mock_report_section_contract_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_routing_test.py
 python3 scripts/mock_factor_status_test.py

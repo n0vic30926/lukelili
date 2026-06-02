@@ -27,6 +27,29 @@ def format_output_sections(sections):
     return "\n".join(lines).rstrip()
 
 
+def format_classified_report_section(title=None, facts=None, inferences=None, judgments=None, confirmations=None):
+    sections = {
+        "facts": facts or [],
+        "inferences": inferences or [],
+        "judgments": judgments or [],
+        "confirmations": confirmations or [],
+    }
+    lines = []
+    if title:
+        lines.append(str(title))
+        lines.append("")
+    for key, section_title in SECTION_ORDER:
+        lines.append(f"### {section_title}")
+        values = _items(sections.get(key))
+        if values:
+            for value in values:
+                lines.append(f"- {value}")
+        else:
+            lines.append("- none")
+        lines.append("")
+    return "\n".join(lines).rstrip()
+
+
 def build_report_output_sections(report_type, portfolio, run_summary):
     holdings = portfolio.get("holdings", [])
     watchlist = portfolio.get("watchlist", [])

@@ -11,7 +11,7 @@ sys.path.insert(0, SCRIPT_DIR)
 from common.dependencies import REPORT_DEPENDENCIES, exit_if_missing
 from common.config_loader import get_portfolio_path, load_settings, resolve_path
 from common.data_runtime import DataStatusTracker
-from common.output_contract import build_report_output_sections, with_output_contract
+from common.output_contract import build_report_output_sections, format_classified_report_section, with_output_contract
 from common.reporting import write_report
 
 try:
@@ -220,6 +220,20 @@ def decision_template(weekly_rets, industry_data, factor_results):
     return advice
 
 
+def format_weekly_advice_section(advice):
+    section = format_classified_report_section(
+        facts=["execution_allowed=false", "report_section=decision_support_only"],
+        inferences=["weekly return, factor, and industry signals require user review"],
+        judgments=list(advice or []),
+        confirmations=[
+            "user verifies data freshness before any portfolio change",
+            "user confirms strategy still applies",
+            "user confirms no broker action should be automated",
+        ],
+    )
+    return section.splitlines()
+
+
 def dca_curve(tracker=None):
     """模块5: 定投收益曲线——每笔确认日的累计成本 vs 累计市值"""
     portfolio = load_portfolio()
@@ -337,8 +351,7 @@ def format_report(tracker=None):
     advice = decision_template(rets, ind, factors)
     lines.append("## 💡 下周建议")
     lines.append("")
-    for a in advice:
-        lines.append(f"- {a}")
+    lines.extend(format_weekly_advice_section(advice))
     lines.append("")
 
     # 模块5: 定投收益曲线

@@ -20,8 +20,9 @@ Goal: Codex can read investment rules, safety boundaries, and output constraints
 
 Status: foundation in place. Decision-support, daily, and weekly outputs now
 include an explicit Facts / Data-Derived Inferences / Model Judgment / User
-Confirmation Required classification. Next step is tightening individual report
-sections so older free-form advice language is classified at the source.
+Confirmation Required classification. Daily and weekly advice sections now also
+classify their own content at the source, so older free-form advice language is
+framed as decision-support judgment with explicit user confirmation.
 
 ## L2: Local Portfolio Analysis Assistant
 
