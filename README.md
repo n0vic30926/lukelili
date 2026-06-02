@@ -108,6 +108,7 @@
 
 ```bash
 python3 scripts/smoke_test.py
+python3 scripts/ideal_agent_readiness.py
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 python3 scripts/mock_data_quality_test.py
 python3 scripts/mock_data_sources_test.py
@@ -129,6 +130,7 @@ python3 scripts/mock_report_section_contract_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_routing_test.py
 python3 scripts/mock_factor_status_test.py
+python3 scripts/mock_ideal_agent_readiness_test.py
 python3 scripts/mock_industry_intel_dynamic_test.py
 python3 scripts/mock_industry_research_test.py
 python3 scripts/mock_news_status_test.py
@@ -271,6 +273,7 @@ Delivery配置（所有cron通用）：
 - [x] L5 确认状态审计：跨角色未确认数据源进入 manual confirmation blockers
 - [x] L5 半自动决策辅助：确认状态审计与人工复核队列，不允许自动交易
 - [x] L5 人工复核结果记录：脱敏 resolution JSONL 与 history review 汇总，不构成交易授权
+- [x] 端到端验收矩阵：用 tracked 示例数据检查 L1-L5 与安全边界 readiness
 
 ---
 

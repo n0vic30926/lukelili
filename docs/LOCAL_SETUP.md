@@ -45,6 +45,7 @@ Optional `factor_profile` values route attribution modules:
 
 ```bash
 python3 scripts/smoke_test.py
+python3 scripts/ideal_agent_readiness.py
 python3 scripts/mock_data_quality_test.py
 python3 scripts/mock_data_sources_test.py
 python3 scripts/mock_decision_confirmation_test.py
@@ -65,6 +66,7 @@ python3 scripts/mock_report_section_contract_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_routing_test.py
 python3 scripts/mock_factor_status_test.py
+python3 scripts/mock_ideal_agent_readiness_test.py
 python3 scripts/mock_industry_intel_dynamic_test.py
 python3 scripts/mock_industry_research_test.py
 python3 scripts/mock_news_status_test.py

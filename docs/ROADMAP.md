@@ -70,8 +70,9 @@ manual decision-support prompts rather than trade instructions. Sanitized
 research branch fixtures now cover ok/skipped/failed role paths, ranked
 evidence, data sources, interpretations, and research questions. Cross-role
 research synthesis now summarizes role status, data-source status, unavailable
-sources, and ranked evidence for downstream confirmation audit. Next step is
-L5 confirmation-state auditing and richer manual review flows.
+sources, and ranked evidence for downstream confirmation audit. Real data depth
+can continue expanding by role, while end-to-end readiness is now checked by the
+ideal-agent acceptance matrix.
 
 ## L5: Semi-Automated Decision Support
 
@@ -88,8 +89,8 @@ Manual confirmation now includes a bounded review queue that separates user
 confirmation, data refresh, local-record updates, and risk-rule review. These
 queue action counts and manual review resolutions can be recorded as sanitized
 JSONL and summarized by history review without turning them into execution
-consent. Remaining work is an end-to-end acceptance matrix for ideal-agent
-readiness.
+consent. An end-to-end ideal-agent readiness matrix now checks L1-L5 and safety
+capabilities against tracked example data without reading private holdings.
 
 Explicitly out of scope:
 
