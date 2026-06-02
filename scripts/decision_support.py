@@ -11,6 +11,7 @@ import sys
 from common.config_loader import get_portfolio_path
 from common.evidence import rank_evidence
 from common.output_contract import format_output_sections
+from common.portfolio_exposure import summarize_portfolio_exposure
 from research_dispatch import build_research_plan, execute_research_plan
 
 
@@ -106,6 +107,7 @@ def build_decision_packet(portfolio, research_result=None):
     evidence = _research_evidence(research_result)
     risk_rule_checks = _risk_rule_checks(portfolio)
     missing_risk_rules = _missing_risk_rules(risk_rule_checks)
+    exposure = summarize_portfolio_exposure(portfolio)
     candidates = [
         _candidate_for_holding(index, holding, research_notes, missing_risk_rules)
         for index, holding in enumerate(portfolio.get("holdings", []))
@@ -118,6 +120,7 @@ def build_decision_packet(portfolio, research_result=None):
         "research_observations": research_notes,
         "evidence": evidence,
         "risk_rule_checks": risk_rule_checks,
+        "exposure": exposure,
         "candidates": candidates,
         "prohibited_actions": [
             "broker_connection",
@@ -136,6 +139,14 @@ def _output_sections(packet):
     if packet["strategy_counts"]:
         counts = " ".join(f"{key}={value}" for key, value in packet["strategy_counts"].items())
         facts.append(f"strategy_counts: {counts}")
+    exposure = packet.get("exposure") or {}
+    if exposure:
+        facts.append(
+            "exposure "
+            f"cash_pct={exposure.get('cash_pct', 0)} "
+            f"invested_pct={exposure.get('invested_pct', 0)} "
+            f"max_position_pct={exposure.get('max_position_pct', 0)}"
+        )
     for item in packet["risk_rule_checks"]:
         if item["status"] == "present":
             facts.append(f"risk_rule {item['rule']}={item['value']} status=present")
@@ -202,6 +213,32 @@ def format_decision_packet(packet):
                 lines.append(f"- {item['rule']}={item['value']} status=present")
             else:
                 lines.append(f"- {item['rule']} status=missing")
+        lines.append("")
+
+    if packet.get("exposure"):
+        exposure = packet["exposure"]
+        lines.append("## Exposure Checks")
+        lines.append(
+            "- "
+            f"cash_pct={exposure['cash_pct']} "
+            f"invested_pct={exposure['invested_pct']} "
+            f"max_position_pct={exposure['max_position_pct']}"
+        )
+        if exposure.get("strategy_counts"):
+            counts = " ".join(f"{key}={value}" for key, value in exposure["strategy_counts"].items())
+            lines.append(f"- strategy_counts: {counts}")
+        if exposure.get("factor_counts"):
+            counts = " ".join(f"{key}={value}" for key, value in exposure["factor_counts"].items())
+            lines.append(f"- factor_counts: {counts}")
+        if exposure.get("market_counts"):
+            counts = " ".join(f"{key}={value}" for key, value in exposure["market_counts"].items())
+            lines.append(f"- market_counts: {counts}")
+        for warning in exposure.get("warnings", []):
+            lines.append(
+                "- "
+                f"{warning['type']} holding_ref={warning['holding_ref']} "
+                f"actual_pct={warning['actual_pct']} limit_pct={warning['limit_pct']}"
+            )
         lines.append("")
 
     lines.append("## Candidates")

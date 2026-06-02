@@ -29,8 +29,10 @@ Goal: read local holdings, cost basis, cash, strategy type, and risk rules.
 
 Status: local path/config/schema foundation in place. Portfolio validation now
 checks required risk rules, positive cost/share values, and buy-record fields
-without printing private asset details. Next step is moving real holdings into
-`data/private/portfolio.local.json` manually and adding richer exposure checks.
+without printing private asset details. Local exposure checks now summarize
+cash/invested percentages, max single-position percentage, and strategy/factor/
+market distribution with anonymized holding refs. Next step is moving real
+holdings into `data/private/portfolio.local.json` manually.
 
 ## L3: Daily And Weekly Reports
 

@@ -22,19 +22,27 @@ def run_decision_support_test():
                 "name": "Private Holding A",
                 "strategy_type": "dca",
                 "strategy_label": "long-term plan",
+                "cost_basis": 1400,
+                "market": "us_stock",
+                "factor_profile": {"type": "qdii_us_equity"},
             },
             {
                 "code": "PRIVATE_B",
                 "name": "Private Holding B",
                 "strategy_type": "short_term",
+                "cost_basis": 100,
+                "market": "a_share",
+                "factor_profile": {"type": "a_share_ai"},
             },
             {
                 "code": "PRIVATE_C",
                 "name": "Private Holding C",
                 "strategy_type": "watch",
+                "cost_basis": 0,
             },
         ],
-        "risk_rules": {"single_loss_pct": 2, "daily_loss_pct": 6},
+        "cash": {"amount": 500},
+        "risk_rules": {"single_loss_pct": 2, "daily_loss_pct": 6, "max_single_position_pct": 50},
     }
     research_result = {
         "role_results": [
@@ -81,8 +89,11 @@ def run_decision_support_test():
     _assert_contains(output, "## Risk Rule Checks")
     _assert_contains(output, "single_loss_pct=2 status=present")
     _assert_contains(output, "daily_loss_pct=6 status=present")
-    _assert_contains(output, "max_single_position_pct status=missing")
-    _assert_contains(output, "missing hard risk rules: max_single_position_pct")
+    _assert_contains(output, "max_single_position_pct=50 status=present")
+    _assert_contains(output, "## Exposure Checks")
+    _assert_contains(output, "cash_pct=25.0")
+    _assert_contains(output, "max_position_pct=70.0")
+    _assert_contains(output, "single_position_exceeds_rule holding_ref=holding_1")
     _assert_not_contains(output, "PRIVATE_A")
     _assert_not_contains(output, "Private Holding")
     _assert_not_contains(output, "下单")
