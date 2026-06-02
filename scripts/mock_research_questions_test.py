@@ -21,11 +21,16 @@ def run_research_questions_test():
             {"name": "macro_rates", "status": "missing_dependency"},
             {"name": "fx_rates", "status": "available"},
             {"name": "liquidity_indicators", "status": "failed"},
+            {"name": "inflation_indicators", "status": "available"},
+            {"name": "pmi_indicators", "status": "empty"},
         ],
+        limit=5,
     )
     macro_text = "\n".join(macro_questions)
     _assert_contains(macro_text, "rate-sensitive exposure")
     _assert_contains(macro_text, "FX translation")
+    _assert_contains(macro_text, "inflation")
+    _assert_contains(macro_text, "PMI")
     _assert_contains(macro_text, "refresh before judgment")
 
     etf_questions = build_role_research_questions(

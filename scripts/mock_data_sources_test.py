@@ -10,6 +10,26 @@ def _assert_contains(text, expected):
 
 
 def run_data_sources_test():
+    macro = role_data_requirements("macro")
+    macro_names = [item["name"] for item in macro]
+    for expected in [
+        "macro_rates",
+        "fx_rates",
+        "liquidity_indicators",
+        "inflation_indicators",
+        "pmi_indicators",
+    ]:
+        if expected not in macro_names:
+            raise AssertionError(f"Missing macro data requirement {expected}: {macro}")
+
+    macro_summary = summarize_role_data_requirements("macro", env={})
+    macro_rendered = "\n".join(
+        f"{item['name']} source={item['source']} status={item['status']} tier={item['source_tier']}"
+        for item in macro_summary
+    )
+    _assert_contains(macro_rendered, "inflation_indicators source=AkShare status=")
+    _assert_contains(macro_rendered, "pmi_indicators source=AkShare status=")
+
     security = role_data_requirements("security")
     names = [item["name"] for item in security]
     for expected in [

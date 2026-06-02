@@ -155,6 +155,22 @@ def build_readiness_matrix():
         )
     )
 
+    macro_requirements = {item["name"] for item in role_data_requirements("macro")}
+    entries.append(
+        _entry(
+            "L4",
+            "macro role covers rates, FX, liquidity, inflation, and PMI context",
+            {
+                "macro_rates",
+                "fx_rates",
+                "liquidity_indicators",
+                "inflation_indicators",
+                "pmi_indicators",
+            }.issubset(macro_requirements),
+            "macro_data_requirements=" + ",".join(sorted(macro_requirements)),
+        )
+    )
+
     research_result = execute_research_plan(plan, portfolio)
     role_results = research_result.get("role_results", [])
     entries.append(

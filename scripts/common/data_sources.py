@@ -11,6 +11,8 @@ ROLE_DATA_REQUIREMENTS = {
         {"name": "macro_rates", "source": "AkShare"},
         {"name": "fx_rates", "source": "AkShare"},
         {"name": "liquidity_indicators", "source": "AkShare"},
+        {"name": "inflation_indicators", "source": "AkShare"},
+        {"name": "pmi_indicators", "source": "AkShare"},
     ],
     "industry": [
         {"name": "portfolio_context", "source": "local"},

@@ -15,6 +15,14 @@ ROLE_SOURCE_QUESTIONS = {
             "available": "How does confirmed liquidity_indicators freshness affect liquidity-sensitive exposure?",
             "unavailable": "Which liquidity_indicators source must refresh before judgment on liquidity-sensitive exposure?",
         },
+        "inflation_indicators": {
+            "available": "How does confirmed inflation_indicators freshness affect inflation-sensitive exposure?",
+            "unavailable": "Which inflation_indicators source must refresh before judgment on inflation-sensitive exposure?",
+        },
+        "pmi_indicators": {
+            "available": "How does confirmed pmi_indicators freshness affect PMI-sensitive exposure?",
+            "unavailable": "Which pmi_indicators source must refresh before judgment on PMI-sensitive exposure?",
+        },
     },
     "industry": {
         "industry_rotation": {

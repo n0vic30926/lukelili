@@ -17,6 +17,14 @@ class FakeAkShare:
     def macro_china_money_supply():
         return [{"月份": "2026-05", "M2同比": 7.2}]
 
+    @staticmethod
+    def macro_china_cpi():
+        return [{"月份": "2026-05", "全国同比": 0.3}]
+
+    @staticmethod
+    def macro_china_pmi():
+        return [{"月份": "2026-05", "制造业PMI": 50.4}]
+
 
 def _assert_contains(text, expected):
     if expected not in text:
@@ -36,16 +44,22 @@ def run_macro_research_test():
     _assert_contains(observations, "macro_rates_rows=1")
     _assert_contains(observations, "fx_rates_rows=1")
     _assert_contains(observations, "liquidity_indicators_rows=1")
+    _assert_contains(observations, "inflation_indicators_rows=1")
+    _assert_contains(observations, "pmi_indicators_rows=1")
     evidence = "\n".join(item["label"] for item in result["evidence"])
     _assert_contains(evidence, "macro.rates")
     _assert_contains(evidence, "macro.fx")
     _assert_contains(evidence, "macro.liquidity")
+    _assert_contains(evidence, "macro.inflation")
+    _assert_contains(evidence, "macro.pmi")
     data_sources = "\n".join(
         f"{item['name']} {item['status']}" for item in result["data_sources"]
     )
     _assert_contains(data_sources, "macro_rates available")
     _assert_contains(data_sources, "fx_rates available")
     _assert_contains(data_sources, "liquidity_indicators available")
+    _assert_contains(data_sources, "inflation_indicators available")
+    _assert_contains(data_sources, "pmi_indicators available")
 
 
 def main():

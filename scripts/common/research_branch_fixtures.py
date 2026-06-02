@@ -40,6 +40,8 @@ def research_branch_fixtures():
         {"name": "macro_rates", "source": "AkShare", "status": "missing_dependency", "source_tier": "community_data"},
         {"name": "fx_rates", "source": "AkShare", "status": "available", "source_tier": "community_data"},
         {"name": "liquidity_indicators", "source": "AkShare", "status": "failed", "source_tier": "community_data"},
+        {"name": "inflation_indicators", "source": "AkShare", "status": "available", "source_tier": "community_data"},
+        {"name": "pmi_indicators", "source": "AkShare", "status": "empty", "source_tier": "community_data"},
     ]
     etf_sources = [
         {"name": "portfolio_context", "source": "local", "status": "available", "source_tier": "local_user_data"},

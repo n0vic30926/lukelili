@@ -49,6 +49,8 @@ def fetch_macro_research(ak_client=_DEFAULT_AK_CLIENT):
                 _data_source("macro_rates", "missing_dependency"),
                 _data_source("fx_rates", "missing_dependency"),
                 _data_source("liquidity_indicators", "missing_dependency"),
+                _data_source("inflation_indicators", "missing_dependency"),
+                _data_source("pmi_indicators", "missing_dependency"),
             ],
             "limitations": ["missing_dependency: akshare"],
         }
@@ -57,6 +59,8 @@ def fetch_macro_research(ak_client=_DEFAULT_AK_CLIENT):
         ("macro_rates", "bond_zh_us_rate", "macro.rates"),
         ("fx_rates", "fx_spot_quote", "macro.fx"),
         ("liquidity_indicators", "macro_china_money_supply", "macro.liquidity"),
+        ("inflation_indicators", "macro_china_cpi", "macro.inflation"),
+        ("pmi_indicators", "macro_china_pmi", "macro.pmi"),
     ]
     observations = []
     evidence = []

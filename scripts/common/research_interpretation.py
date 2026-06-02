@@ -6,6 +6,8 @@ ROLE_SOURCE_NOTES = {
         "macro_rates": "rate-sensitive impact path",
         "fx_rates": "FX translation impact path",
         "liquidity_indicators": "liquidity impact path",
+        "inflation_indicators": "inflation pressure impact path",
+        "pmi_indicators": "economic momentum impact path",
     },
     "industry": {
         "industry_rotation": "industry fund-flow impact path",

@@ -78,6 +78,8 @@ def run_research_execution_test():
     _assert_contains(output, "## macro")
     _assert_contains(output, "macro_data_status=")
     _assert_contains(output, "macro_rates | source=AkShare | status=")
+    _assert_contains(output, "inflation_indicators | source=AkShare | status=")
+    _assert_contains(output, "pmi_indicators | source=AkShare | status=")
     _assert_contains(output, "- interpretation:")
     _assert_contains(output, "macro_rates")
     _assert_contains(output, "impact path")

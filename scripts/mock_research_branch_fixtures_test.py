@@ -38,6 +38,8 @@ def run_research_branch_fixtures_test():
     _assert_contains(combined, "- status: failed")
     _assert_contains(combined, "source_tier=local_user_data")
     _assert_contains(combined, "source_tier=community_data")
+    _assert_contains(combined, "inflation_indicators")
+    _assert_contains(combined, "pmi_indicators")
     _assert_contains(combined, "security_market_quotes")
     _assert_contains(combined, "research_reports")
     _assert_contains(combined, "etf_nav_history")

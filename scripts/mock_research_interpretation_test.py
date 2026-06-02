@@ -21,12 +21,16 @@ def run_research_interpretation_test():
             {"name": "macro_rates", "status": "missing_dependency"},
             {"name": "fx_rates", "status": "available"},
             {"name": "liquidity_indicators", "status": "failed"},
+            {"name": "inflation_indicators", "status": "available"},
+            {"name": "pmi_indicators", "status": "empty"},
         ],
     )
     macro_text = "\n".join(macro_notes)
     _assert_contains(macro_text, "macro_rates unavailable")
     _assert_contains(macro_text, "fx_rates available")
     _assert_contains(macro_text, "liquidity_indicators unavailable")
+    _assert_contains(macro_text, "inflation_indicators available")
+    _assert_contains(macro_text, "pmi_indicators unavailable")
     _assert_contains(macro_text, "unconfirmed")
 
     etf_notes = interpret_role_data_state(
