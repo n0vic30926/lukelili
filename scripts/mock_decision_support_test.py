@@ -54,6 +54,10 @@ def run_decision_support_test():
                     {"label": "external rumor", "source_tier": "news_search", "freshness": "unknown", "score": 15},
                     {"label": "portfolio.risk_rules", "source_tier": "local_user_data", "freshness": "fresh", "score": 70},
                 ],
+                "data_sources": [
+                    {"name": "risk_rules", "status": "available"},
+                    {"name": "market_quotes", "status": "missing_dependency"},
+                ],
                 "limitations": ["no live market data"],
             }
         ],
@@ -86,6 +90,10 @@ def run_decision_support_test():
     _assert_contains(output, "## Evidence Reliability")
     _assert_contains(output, "portfolio.risk_rules | source_tier=local_user_data | freshness=fresh | score=")
     _assert_contains(output, "external rumor | source_tier=news_search | freshness=unknown | score=")
+    _assert_contains(output, "## Cross-Role Research Audit")
+    _assert_contains(output, "role_status_counts: ok=1")
+    _assert_contains(output, "data_source_status_counts: available=1 missing_dependency=1")
+    _assert_contains(output, "unconfirmed_source role=risk source=market_quotes status=missing_dependency")
     _assert_contains(output, "## Risk Rule Checks")
     _assert_contains(output, "single_loss_pct=2 status=present")
     _assert_contains(output, "daily_loss_pct=6 status=present")
@@ -97,6 +105,7 @@ def run_decision_support_test():
     _assert_contains(output, "## Manual Confirmation Workflow")
     _assert_contains(output, "confirmation_status=pending_user_confirmation")
     _assert_contains(output, "confirmation_1 status=pending")
+    _assert_contains(output, "research_data_source_unconfirmed role=risk source=market_quotes status=missing_dependency")
     _assert_not_contains(output, "PRIVATE_A")
     _assert_not_contains(output, "Private Holding")
     _assert_not_contains(output, "下单")

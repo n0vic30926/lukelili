@@ -137,6 +137,7 @@ python3 scripts/mock_research_execution_test.py
 python3 scripts/mock_research_dispatch_test.py
 python3 scripts/mock_research_interpretation_test.py
 python3 scripts/mock_research_questions_test.py
+python3 scripts/mock_research_synthesis_test.py
 python3 scripts/mock_risk_research_test.py
 python3 scripts/mock_review_research_test.py
 python3 scripts/mock_security_research_test.py
@@ -258,6 +259,7 @@ Delivery配置（所有cron通用）：
 - [x] L4 Industry 只读数据适配：组合驱动新闻查询数、行业/概念轮动 AkShare 状态与缺依赖降级
 - [x] L4 Risk 只读数据适配：匿名组合暴露、风险规则/因子状态、市场报价状态与缺依赖降级
 - [x] L4 Review 只读数据适配：报告连续性、重复失败、数据质量、决策记录与确认阻断项脱敏汇总
+- [x] L4 跨角色证据综合：角色状态、数据源状态、缺口和 ranked evidence 汇总进入 L5 审计
 - [x] L4 数据状态解释：将角色数据源可用性映射为组合影响路径和未确认限制
 - [x] L4 角色研究问题：按角色和数据源状态生成下一步核查问题
 - [x] L4 研究分支夹具：脱敏覆盖 ok/skipped/failed、证据、解释、问题路径
@@ -265,6 +267,7 @@ Delivery配置（所有cron通用）：
 - [x] L5 决策辅助安全层：候选动作、风险、风险硬规则检查、确认清单，不允许自动交易
 - [x] L5 人工确认工作流：pending confirmation state、阻断项、不可执行边界
 - [x] L5 确认记录与复盘：脱敏 confirmation JSONL 与 history review 汇总
+- [x] L5 确认状态审计：跨角色未确认数据源进入 manual confirmation blockers
 - [ ] L5 半自动决策辅助：接入更完整数据后的确认状态审计与人工复核流程
 
 ---

@@ -68,8 +68,10 @@ reports no longer stop at raw availability lists. Role reports now also generate
 bounded per-role research questions from data-source states, keeping them as
 manual decision-support prompts rather than trade instructions. Sanitized
 research branch fixtures now cover ok/skipped/failed role paths, ranked
-evidence, data sources, interpretations, and research questions. Next step is
-cross-role evidence synthesis and L5 confirmation-state auditing.
+evidence, data sources, interpretations, and research questions. Cross-role
+research synthesis now summarizes role status, data-source status, unavailable
+sources, and ranked evidence for downstream confirmation audit. Next step is
+L5 confirmation-state auditing and richer manual review flows.
 
 ## L5: Semi-Automated Decision Support
 
@@ -80,10 +82,11 @@ types and research observations into candidate actions, rationale, risks, and
 required confirmation checks. It also surfaces missing hard risk rules from the
 local portfolio file, anonymized exposure checks, and a pending manual
 confirmation state with blockers. It sets `execution_allowed=false` and does not
-connect to broker endpoints. Confirmation states can now be recorded as
-sanitized JSONL and summarized by history review as status/blocker aggregates.
-Remaining work is stronger confirmation-state auditing and richer manual review
-flows.
+connect to broker endpoints. Cross-role research synthesis now feeds
+unavailable role/data-source states into the manual confirmation blockers.
+Confirmation states can be recorded as sanitized JSONL and summarized by history
+review as status/blocker aggregates. Remaining work is richer manual review
+flows around confirmation-state auditing.
 
 Explicitly out of scope:
 

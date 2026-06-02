@@ -13,6 +13,7 @@ from common.decision_confirmation import build_confirmation_state, format_confir
 from common.evidence import rank_evidence
 from common.output_contract import format_output_sections
 from common.portfolio_exposure import summarize_portfolio_exposure
+from common.research_synthesis import synthesize_research_result
 from research_dispatch import build_research_plan, execute_research_plan
 
 
@@ -104,8 +105,9 @@ def _candidate_for_holding(index, holding, research_notes, missing_risk_rules=No
 
 def build_decision_packet(portfolio, research_result=None):
     research_result = research_result or {}
+    research_synthesis = synthesize_research_result(research_result)
     research_notes = _research_observations(research_result)
-    evidence = _research_evidence(research_result)
+    evidence = research_synthesis["ranked_evidence"] or _research_evidence(research_result)
     risk_rule_checks = _risk_rule_checks(portfolio)
     missing_risk_rules = _missing_risk_rules(risk_rule_checks)
     exposure = summarize_portfolio_exposure(portfolio)
@@ -119,6 +121,7 @@ def build_decision_packet(portfolio, research_result=None):
         "requires_user_confirmation": True,
         "strategy_counts": _strategy_counts(portfolio),
         "research_observations": research_notes,
+        "research_synthesis": research_synthesis,
         "evidence": evidence,
         "risk_rule_checks": risk_rule_checks,
         "exposure": exposure,
@@ -206,6 +209,28 @@ def format_decision_packet(packet):
                 "- "
                 f"{item['label']} | source_tier={item['source_tier']} "
                 f"| freshness={item['freshness']} | score={item['score']}"
+            )
+        lines.append("")
+
+    if packet.get("research_synthesis"):
+        synthesis = packet["research_synthesis"]
+        lines.append("## Cross-Role Research Audit")
+        lines.append(f"- role_count={synthesis.get('role_count', 0)}")
+        if synthesis.get("role_status_counts"):
+            counts = " ".join(
+                f"{key}={value}" for key, value in synthesis["role_status_counts"].items()
+            )
+            lines.append(f"- role_status_counts: {counts}")
+        if synthesis.get("data_source_status_counts"):
+            counts = " ".join(
+                f"{key}={value}" for key, value in synthesis["data_source_status_counts"].items()
+            )
+            lines.append(f"- data_source_status_counts: {counts}")
+        for item in synthesis.get("unavailable_sources", []):
+            lines.append(
+                "- "
+                f"unconfirmed_source role={item['role']} "
+                f"source={item['source']} status={item['status']}"
             )
         lines.append("")
 

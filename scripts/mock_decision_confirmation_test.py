@@ -32,6 +32,21 @@ def run_decision_confirmation_test():
                 }
             ]
         },
+        "research_synthesis": {
+            "confirmation_audit_items": [
+                {
+                    "type": "data_source_unconfirmed",
+                    "role": "risk",
+                    "source": "market_quotes",
+                    "status": "missing_dependency",
+                },
+                {
+                    "type": "role_status_unconfirmed",
+                    "role": "review",
+                    "status": "skipped",
+                },
+            ]
+        },
         "candidates": [
             {
                 "holding_ref": "holding_1",
@@ -51,7 +66,7 @@ def run_decision_confirmation_test():
         raise AssertionError(f"Execution must stay disabled: {state}")
     if state["check_count"] != 2:
         raise AssertionError(f"Unexpected check count: {state}")
-    if state["blocker_count"] != 2:
+    if state["blocker_count"] != 4:
         raise AssertionError(f"Unexpected blocker count: {state}")
     if state["checks"][0]["check_ref"] != "confirmation_1":
         raise AssertionError(f"Expected anonymized check ref: {state}")
@@ -63,6 +78,8 @@ def run_decision_confirmation_test():
     _assert_contains(output, "confirmation_1 status=pending")
     _assert_contains(output, "missing_risk_rule rule=max_single_position_pct")
     _assert_contains(output, "single_position_exceeds_rule holding_ref=holding_1")
+    _assert_contains(output, "research_data_source_unconfirmed role=risk source=market_quotes status=missing_dependency")
+    _assert_contains(output, "research_role_status_unconfirmed role=review status=skipped")
     _assert_not_contains(output, "PRIVATE")
     _assert_not_contains(output, "买入")
     _assert_not_contains(output, "卖出")

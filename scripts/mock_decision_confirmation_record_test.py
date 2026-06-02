@@ -25,6 +25,16 @@ def run_decision_confirmation_record_test():
         "requires_user_confirmation": True,
         "risk_rule_checks": [{"rule": "max_single_position_pct", "status": "missing"}],
         "exposure": {"warnings": [{"type": "single_position_exceeds_rule", "holding_ref": "holding_1"}]},
+        "research_synthesis": {
+            "confirmation_audit_items": [
+                {
+                    "type": "data_source_unconfirmed",
+                    "role": "review",
+                    "source": "report_index",
+                    "status": "missing_file",
+                }
+            ]
+        },
         "candidates": [
             {
                 "holding_ref": "holding_1",
@@ -61,7 +71,7 @@ def run_decision_confirmation_record_test():
         records = load_confirmation_records(record_path)
         if records[0]["confirmation_status"] != "pending_user_confirmation":
             raise AssertionError(f"Unexpected loaded records: {records}")
-        if records[0]["check_count"] != 1 or records[0]["blocker_count"] != 2:
+        if records[0]["check_count"] != 1 or records[0]["blocker_count"] != 3:
             raise AssertionError(f"Unexpected counts: {records}")
         rendered = json.dumps(records, ensure_ascii=False)
         _assert_not_contains(rendered, "PRIVATE_A")
