@@ -59,9 +59,10 @@ premium/discount checks, NAV history, and holdings-through status. The Macro
 role has a read-only adapter for rates, FX, liquidity, inflation, and PMI source
 status with dependency-aware fallback. The Industry role has a read-only adapter for
 portfolio-driven news query counts, news result/signal counts, and AkShare
-industry/concept rotation source states. The Risk role has a first read-only adapter for anonymized portfolio
-exposure, local risk-rule/factor-profile state, and AkShare market quote
-availability. The Review role has a first read-only adapter for report
+industry/concept rotation source states. The Risk role has a read-only adapter for
+anonymized portfolio exposure, local risk-rule/factor-profile state, cash buffer,
+risk-limit breaches, AkShare market quote availability, and benchmark quote
+context. The Review role has a first read-only adapter for report
 continuity, repeated failures, data-quality totals, decision-record aggregates,
 and manual-confirmation blocker summaries. Role data-source states are now also
 interpreted into explicit impact paths and unconfirmed limitations, so execution

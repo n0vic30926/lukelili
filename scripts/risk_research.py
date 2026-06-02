@@ -101,6 +101,13 @@ def _market_quote_state(ak_client, etf_codes, stock_codes):
     return matched, requested, "missing_method"
 
 
+def _benchmark_quote_state(ak_client):
+    rows, status = _spot_rows(ak_client, "stock_zh_index_spot_em")
+    if status != "available":
+        return 0, status
+    return len(rows), "available" if rows else "empty"
+
+
 def fetch_risk_research(portfolio, ak_client=None):
     ak_client = ak_client if ak_client is not None else ak
     portfolio = portfolio or {}
@@ -116,24 +123,33 @@ def fetch_risk_research(portfolio, ak_client=None):
         f"invested_pct={exposure['invested_pct']}",
         f"max_position_pct={exposure['max_position_pct']}",
         f"exposure_warnings={len(exposure.get('warnings') or [])}",
+        f"risk_limit_breaches={len(exposure.get('warnings') or [])}",
+        f"cash_buffer_pct={exposure['cash_pct']}",
         f"factor_profile_count={factor_profile_count}",
     ]
     evidence = [
         {"label": "portfolio.exposure", "source_tier": "local_user_data", "freshness": "fresh"},
         {"label": "portfolio.risk_rules", "source_tier": "local_user_data", "freshness": "fresh"},
+        {"label": "portfolio.cash_buffer", "source_tier": "local_user_data", "freshness": "fresh"},
     ]
     data_sources = [
         _data_source("portfolio_context", "local", "available"),
         _data_source("risk_rules", "local", "available" if rules else "empty"),
         _data_source("portfolio_exposure", "local", "available"),
+        _data_source("cash_buffer", "local", "available" if "cash" in portfolio else "empty"),
+        _data_source("risk_limit_breaches", "local", "available"),
         _data_source("factor_exposure", "local", "available" if factor_profile_count else "empty"),
     ]
+    if exposure.get("warnings"):
+        evidence.append({"label": "portfolio.risk_limit_breaches", "source_tier": "local_user_data", "freshness": "fresh"})
     if factor_profile_count:
         evidence.append({"label": "portfolio.factor_profile", "source_tier": "local_user_data", "freshness": "fresh"})
 
     if ak_client is None:
         observations.append(f"market_quote_matches=0/{len(etf_codes) + len(stock_codes)}")
         data_sources.append(_data_source("market_quotes", "AkShare", "missing_dependency"))
+        observations.append("benchmark_quotes_rows=0")
+        data_sources.append(_data_source("benchmark_quotes", "AkShare", "missing_dependency"))
         return {
             "status": "skipped",
             "observations": observations,
@@ -148,12 +164,18 @@ def fetch_risk_research(portfolio, ak_client=None):
     if quote_status == "available":
         evidence.append({"label": "risk.market_quotes", "source_tier": "community_data", "freshness": "unknown"})
 
+    benchmark_rows, benchmark_status = _benchmark_quote_state(ak_client)
+    observations.append(f"benchmark_quotes_rows={benchmark_rows}")
+    data_sources.append(_data_source("benchmark_quotes", "AkShare", benchmark_status))
+    if benchmark_status == "available":
+        evidence.append({"label": "risk.benchmark_quotes", "source_tier": "community_data", "freshness": "unknown"})
+
     return {
-        "status": "ok" if quote_status == "available" else "skipped",
+        "status": "ok" if "available" in {quote_status, benchmark_status} else "skipped",
         "observations": observations,
         "evidence": evidence,
         "data_sources": data_sources,
-        "limitations": [] if quote_status == "available" else ["no market quote data fetched"],
+        "limitations": [] if "available" in {quote_status, benchmark_status} else ["no market quote data fetched"],
     }
 
 

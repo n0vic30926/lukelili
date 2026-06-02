@@ -95,9 +95,21 @@ ROLE_SOURCE_QUESTIONS = {
             "available": "Which portfolio concentration questions are supported by current portfolio_exposure?",
             "unavailable": "Which portfolio_exposure source must refresh before judgment on concentration risk?",
         },
+        "cash_buffer": {
+            "available": "Which cash buffer questions are supported by current cash_buffer?",
+            "unavailable": "Which cash_buffer source must refresh before judgment on cash resilience?",
+        },
+        "risk_limit_breaches": {
+            "available": "Which risk limit breach questions are supported by current risk_limit_breaches?",
+            "unavailable": "Which risk_limit_breaches source must refresh before judgment on hard controls?",
+        },
         "market_quotes": {
             "available": "What market movement context should be checked before risk judgment?",
             "unavailable": "Which market_quotes source must refresh before judgment on market movement context?",
+        },
+        "benchmark_quotes": {
+            "available": "What benchmark market context should be checked before risk judgment?",
+            "unavailable": "Which benchmark_quotes source must refresh before judgment on benchmark context?",
         },
         "factor_exposure": {
             "available": "What factor concentration questions are supported by current factor_exposure?",

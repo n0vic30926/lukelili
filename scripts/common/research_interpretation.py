@@ -32,7 +32,10 @@ ROLE_SOURCE_NOTES = {
     "risk": {
         "risk_rules": "hard risk-control impact path",
         "portfolio_exposure": "portfolio concentration impact path",
+        "cash_buffer": "cash buffer resilience impact path",
+        "risk_limit_breaches": "risk limit breach impact path",
         "market_quotes": "market movement impact path",
+        "benchmark_quotes": "benchmark market context impact path",
         "factor_exposure": "factor concentration impact path",
     },
     "review": {

@@ -186,6 +186,23 @@ def build_readiness_matrix():
         )
     )
 
+    risk_requirements = {item["name"] for item in role_data_requirements("risk")}
+    entries.append(
+        _entry(
+            "L4",
+            "risk role covers exposure, cash buffer, rule breaches, market quotes, and benchmarks",
+            {
+                "portfolio_exposure",
+                "cash_buffer",
+                "risk_limit_breaches",
+                "market_quotes",
+                "benchmark_quotes",
+                "factor_exposure",
+            }.issubset(risk_requirements),
+            "risk_data_requirements=" + ",".join(sorted(risk_requirements)),
+        )
+    )
+
     research_result = execute_research_plan(plan, portfolio)
     role_results = research_result.get("role_results", [])
     entries.append(

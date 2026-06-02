@@ -95,7 +95,10 @@ def run_data_sources_test():
     )
     _assert_contains(risk_rendered, "risk_rules source=local status=available tier=local_user_data")
     _assert_contains(risk_rendered, "portfolio_exposure source=local status=available tier=local_user_data")
+    _assert_contains(risk_rendered, "cash_buffer source=local status=available tier=local_user_data")
+    _assert_contains(risk_rendered, "risk_limit_breaches source=local status=available tier=local_user_data")
     _assert_contains(risk_rendered, "market_quotes source=AkShare status=")
+    _assert_contains(risk_rendered, "benchmark_quotes source=AkShare status=")
     _assert_contains(risk_rendered, "factor_exposure source=local status=available tier=local_user_data")
 
     review = summarize_role_data_requirements("review", env={})

@@ -90,14 +90,21 @@ def run_research_questions_test():
         [
             {"name": "risk_rules", "status": "available"},
             {"name": "portfolio_exposure", "status": "available"},
+            {"name": "cash_buffer", "status": "available"},
+            {"name": "risk_limit_breaches", "status": "available"},
             {"name": "market_quotes", "status": "missing_dependency"},
+            {"name": "benchmark_quotes", "status": "available"},
             {"name": "factor_exposure", "status": "available"},
         ],
+        limit=7,
     )
     risk_text = "\n".join(risk_questions)
     _assert_contains(risk_text, "hard risk controls")
     _assert_contains(risk_text, "portfolio concentration")
+    _assert_contains(risk_text, "cash buffer")
+    _assert_contains(risk_text, "risk limit")
     _assert_contains(risk_text, "market movement")
+    _assert_contains(risk_text, "benchmark")
     _assert_contains(risk_text, "factor concentration")
 
     review_questions = build_role_research_questions(

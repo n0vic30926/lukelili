@@ -85,14 +85,20 @@ def run_research_interpretation_test():
         [
             {"name": "risk_rules", "status": "available"},
             {"name": "portfolio_exposure", "status": "available"},
+            {"name": "cash_buffer", "status": "available"},
+            {"name": "risk_limit_breaches", "status": "available"},
             {"name": "market_quotes", "status": "missing_dependency"},
+            {"name": "benchmark_quotes", "status": "available"},
             {"name": "factor_exposure", "status": "available"},
         ],
     )
     risk_text = "\n".join(risk_notes)
     _assert_contains(risk_text, "risk_rules available")
     _assert_contains(risk_text, "portfolio_exposure available")
+    _assert_contains(risk_text, "cash_buffer available")
+    _assert_contains(risk_text, "risk_limit_breaches available")
     _assert_contains(risk_text, "market_quotes unavailable")
+    _assert_contains(risk_text, "benchmark_quotes available")
     _assert_contains(risk_text, "factor_exposure available")
 
     review_notes = interpret_role_data_state(

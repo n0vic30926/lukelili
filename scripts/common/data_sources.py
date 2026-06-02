@@ -41,7 +41,10 @@ ROLE_DATA_REQUIREMENTS = {
         {"name": "portfolio_context", "source": "local"},
         {"name": "risk_rules", "source": "local"},
         {"name": "portfolio_exposure", "source": "local"},
+        {"name": "cash_buffer", "source": "local"},
+        {"name": "risk_limit_breaches", "source": "local"},
         {"name": "market_quotes", "source": "AkShare"},
+        {"name": "benchmark_quotes", "source": "AkShare"},
         {"name": "factor_exposure", "source": "local"},
     ],
     "review": [
