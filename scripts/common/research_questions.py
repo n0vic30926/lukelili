@@ -76,6 +76,24 @@ ROLE_SOURCE_QUESTIONS = {
             "unavailable": "Which factor_exposure source must refresh before judgment on factor concentration?",
         },
     },
+    "review": {
+        "report_index": {
+            "available": "Which archived report periods support the current discipline review?",
+            "unavailable": "Which report_index source must refresh before judgment on report history?",
+        },
+        "report_continuity": {
+            "available": "What report continuity gaps should be reviewed before drawing discipline conclusions?",
+            "unavailable": "Which report_continuity source must refresh before judgment on continuity?",
+        },
+        "decision_records": {
+            "available": "What decision record aggregates should be checked against stated strategy discipline?",
+            "unavailable": "Which decision_records source must refresh before judgment on discipline history?",
+        },
+        "confirmation_records": {
+            "available": "What manual confirmation blockers should be audited before decision support?",
+            "unavailable": "Which confirmation_records source must refresh before judgment on manual review?",
+        },
+    },
 }
 
 AVAILABLE_STATUSES = {"available"}

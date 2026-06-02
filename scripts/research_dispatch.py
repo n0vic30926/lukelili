@@ -8,7 +8,7 @@ roles. It does not call broker APIs, place trades, or produce final decisions.
 import json
 import sys
 
-from common.config_loader import get_decision_track_dir, get_portfolio_path, load_settings, resolve_path
+from common.config_loader import get_portfolio_path
 from common.data_sources import role_data_requirements, summarize_role_data_requirements
 from common.evidence import rank_evidence
 from common.research_interpretation import interpret_role_data_state
@@ -369,45 +369,32 @@ def _etf_runner(task, portfolio):
 
 
 def _review_runner(task, portfolio):
+    observations = []
+    evidence = [
+        {"label": "reports.index", "source_tier": "local_user_data", "freshness": "unknown"},
+        {"label": "review.decision_records", "source_tier": "local_user_data", "freshness": "unknown"},
+    ]
+    data_sources = summarize_role_data_requirements("review")
+    limitations = []
     try:
-        from report_index import load_report_index
-        from review_history import load_decision_records, summarize_history
+        from review_research import fetch_review_research
 
-        settings = load_settings()
-        index_path = resolve_path(settings.get("report_index_path", "reports/index.jsonl"))
-        reports = load_report_index(index_path)
-        decisions = load_decision_records(get_decision_track_dir(settings))
-        summary = summarize_history(reports, decisions)
-        repeated = summary["repeated_failures"]
-        observations = [
-            f"reports={summary['report_count']}",
-            f"decision_records={summary['decision_record_count']}",
-            f"current_daily_streak={summary['report_continuity']['current_streak_days']}",
-        ]
-        if repeated:
-            observations.append(
-                "repeated_failures="
-                + ",".join(f"{name}:{count}" for name, count in sorted(repeated.items()))
-            )
-        return {
-            "status": "ok",
-            "observations": observations,
-            "evidence": [
-                {"label": "reports/index.jsonl", "source_tier": "local_user_data", "freshness": "unknown"},
-                {"label": "data/private/decision_track", "source_tier": "local_user_data", "freshness": "unknown"},
-            ],
-            "limitations": ["private decision details are summarized only"],
-        }
+        research = fetch_review_research()
+        observations.extend(_safe_list(research.get("observations"), limit=8))
+        evidence = research.get("evidence") or evidence
+        data_sources = research.get("data_sources") or data_sources
+        limitations.extend(_safe_list(research.get("limitations"), limit=5))
+        observations.append(f"review_data_status={research.get('status', 'unknown')}")
     except Exception as exc:
-        return {
-            "status": "failed",
-            "observations": [],
-            "evidence": [
-                {"label": "reports/index.jsonl", "source_tier": "local_user_data", "freshness": "unknown"},
-                {"label": "data/private/decision_track", "source_tier": "local_user_data", "freshness": "unknown"},
-            ],
-            "limitations": [type(exc).__name__],
-        }
+        limitations.append(type(exc).__name__)
+
+    return {
+        "status": "ok",
+        "observations": observations,
+        "evidence": evidence,
+        "data_sources": data_sources,
+        "limitations": limitations,
+    }
 
 
 DEFAULT_RUNNERS = {

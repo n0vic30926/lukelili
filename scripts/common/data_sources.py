@@ -39,7 +39,9 @@ ROLE_DATA_REQUIREMENTS = {
     ],
     "review": [
         {"name": "report_index", "source": "local"},
+        {"name": "report_continuity", "source": "local"},
         {"name": "decision_records", "source": "local"},
+        {"name": "confirmation_records", "source": "local"},
     ],
 }
 

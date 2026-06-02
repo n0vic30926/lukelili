@@ -28,6 +28,12 @@ ROLE_SOURCE_NOTES = {
         "market_quotes": "market movement impact path",
         "factor_exposure": "factor concentration impact path",
     },
+    "review": {
+        "report_index": "archived report availability impact path",
+        "report_continuity": "report continuity impact path",
+        "decision_records": "discipline record impact path",
+        "confirmation_records": "manual confirmation audit impact path",
+    },
 }
 
 AVAILABLE_STATUSES = {"available"}

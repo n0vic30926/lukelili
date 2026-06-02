@@ -69,11 +69,26 @@ def run_research_questions_test():
     _assert_contains(risk_text, "market movement")
     _assert_contains(risk_text, "factor concentration")
 
+    review_questions = build_role_research_questions(
+        "review",
+        [
+            {"name": "report_index", "status": "available"},
+            {"name": "report_continuity", "status": "empty"},
+            {"name": "decision_records", "status": "available"},
+            {"name": "confirmation_records", "status": "missing_file"},
+        ],
+    )
+    review_text = "\n".join(review_questions)
+    _assert_contains(review_text, "archived report periods")
+    _assert_contains(review_text, "report_continuity source")
+    _assert_contains(review_text, "decision record aggregates")
+    _assert_contains(review_text, "confirmation_records source")
+
     unknown_questions = build_role_research_questions("unknown", [{"name": "x", "status": "available"}])
     if unknown_questions:
         raise AssertionError(f"Unexpected unknown-role questions: {unknown_questions}")
 
-    all_text = "\n".join(macro_questions + security_questions + industry_questions + risk_questions + unknown_questions)
+    all_text = "\n".join(macro_questions + security_questions + industry_questions + risk_questions + review_questions + unknown_questions)
     _assert_not_contains(all_text, "买入")
     _assert_not_contains(all_text, "卖出")
     _assert_not_contains(all_text, "自动交易")

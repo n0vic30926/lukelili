@@ -105,6 +105,8 @@ def run_research_execution_test():
     _assert_contains(output, "external rumor | source_tier=news_search | freshness=unknown | score=")
     _assert_contains(output, "## review")
     _assert_contains(output, "- report continuity checked")
+    _assert_contains(output, "report_continuity | source=local | status=available | source_tier=local_user_data")
+    _assert_contains(output, "confirmation_records | source=local | status=available | source_tier=local_user_data")
     _assert_contains(output, "- Requires user confirmation: yes")
     _assert_not_contains(output, "PRIVATE_A")
     _assert_not_contains(output, "PRIVATE_ETF")

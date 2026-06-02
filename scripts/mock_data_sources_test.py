@@ -47,6 +47,16 @@ def run_data_sources_test():
     _assert_contains(risk_rendered, "market_quotes source=AkShare status=")
     _assert_contains(risk_rendered, "factor_exposure source=local status=available tier=local_user_data")
 
+    review = summarize_role_data_requirements("review", env={})
+    review_rendered = "\n".join(
+        f"{item['name']} source={item['source']} status={item['status']} tier={item['source_tier']}"
+        for item in review
+    )
+    _assert_contains(review_rendered, "report_index source=local status=available tier=local_user_data")
+    _assert_contains(review_rendered, "report_continuity source=local status=available tier=local_user_data")
+    _assert_contains(review_rendered, "decision_records source=local status=available tier=local_user_data")
+    _assert_contains(review_rendered, "confirmation_records source=local status=available tier=local_user_data")
+
 
 def main():
     run_data_sources_test()
