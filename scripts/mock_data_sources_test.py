@@ -12,7 +12,14 @@ def _assert_contains(text, expected):
 def run_data_sources_test():
     security = role_data_requirements("security")
     names = [item["name"] for item in security]
-    for expected in ["portfolio_context", "financial_statements", "announcements", "valuation_metrics"]:
+    for expected in [
+        "portfolio_context",
+        "financial_statements",
+        "announcements",
+        "valuation_metrics",
+        "security_market_quotes",
+        "research_reports",
+    ]:
         if expected not in names:
             raise AssertionError(f"Missing security data requirement {expected}: {security}")
 
@@ -25,6 +32,8 @@ def run_data_sources_test():
     _assert_contains(rendered, "financial_statements source=AkShare status=")
     _assert_contains(rendered, "announcements source=AkShare status=")
     _assert_contains(rendered, "valuation_metrics source=AkShare status=")
+    _assert_contains(rendered, "security_market_quotes source=AkShare status=")
+    _assert_contains(rendered, "research_reports source=AkShare status=")
 
     industry = summarize_role_data_requirements("industry", env={})
     industry_rendered = "\n".join(

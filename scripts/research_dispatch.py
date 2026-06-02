@@ -306,6 +306,10 @@ def _security_runner(task, portfolio):
         except Exception as exc:
             limitations.append(type(exc).__name__)
     else:
+        for source in summarize_role_data_requirements("security"):
+            if source["name"] != "portfolio_context":
+                source["status"] = "skipped"
+                data_sources.append(source)
         limitations.append("no direct security holding to query")
 
     return {

@@ -52,8 +52,9 @@ read-only role runners and merge observations into one research report. Evidence
 is ranked and displayed with source tier, freshness, and reliability score. Role
 reports now also show required data sources and availability status without
 printing keys or private holdings. The Individual Security role has a first
-read-only AkShare adapter for financial statements, announcements, and valuation
-metrics with dependency-aware fallback. The ETF role has a first read-only
+read-only AkShare adapter for financial statements, announcements, valuation
+metrics, market quotes/liquidity, and research reports with dependency-aware
+fallback. The ETF role has a first read-only
 adapter for ETF quotes, liquidity, and premium/discount checks. The Macro role
 has a first read-only adapter for rates, FX, and liquidity source status with
 dependency-aware fallback. The Industry role has a first read-only adapter for

@@ -23,6 +23,8 @@ ROLE_DATA_REQUIREMENTS = {
         {"name": "financial_statements", "source": "AkShare"},
         {"name": "announcements", "source": "AkShare"},
         {"name": "valuation_metrics", "source": "AkShare"},
+        {"name": "security_market_quotes", "source": "AkShare"},
+        {"name": "research_reports", "source": "AkShare"},
     ],
     "etf": [
         {"name": "portfolio_context", "source": "local"},

@@ -43,6 +43,14 @@ ROLE_SOURCE_QUESTIONS = {
             "available": "What valuation context questions are supported by current valuation_metrics?",
             "unavailable": "Which valuation_metrics source must refresh before judgment on valuation context?",
         },
+        "security_market_quotes": {
+            "available": "What market quote and liquidity questions are supported by current security_market_quotes?",
+            "unavailable": "Which security_market_quotes source must refresh before judgment on market quote context?",
+        },
+        "research_reports": {
+            "available": "What external research questions are supported by current research_reports?",
+            "unavailable": "Which research_reports source must refresh before judgment on external research context?",
+        },
     },
     "etf": {
         "etf_quotes": {

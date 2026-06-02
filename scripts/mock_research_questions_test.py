@@ -34,12 +34,17 @@ def run_research_questions_test():
             {"name": "financial_statements", "status": "available"},
             {"name": "announcements", "status": "missing_dependency"},
             {"name": "valuation_metrics", "status": "empty"},
+            {"name": "security_market_quotes", "status": "available"},
+            {"name": "research_reports", "status": "failed"},
         ],
+        limit=5,
     )
     security_text = "\n".join(security_questions)
     _assert_contains(security_text, "fundamental quality")
     _assert_contains(security_text, "announcements")
     _assert_contains(security_text, "valuation context")
+    _assert_contains(security_text, "market quote")
+    _assert_contains(security_text, "research_reports")
 
     industry_questions = build_role_research_questions(
         "industry",

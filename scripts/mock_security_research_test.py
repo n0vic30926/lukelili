@@ -17,6 +17,14 @@ class FakeAkShare:
     def stock_a_indicator_lg(symbol):
         return [{"pe": 18.5, "pb": 2.1}]
 
+    @staticmethod
+    def stock_zh_a_spot_em():
+        return [{"代码": "000001", "最新价": 12.3, "成交额": 456789}]
+
+    @staticmethod
+    def stock_research_report_em(symbol):
+        return [{"标题": "Example report"}]
+
 
 def _assert_contains(text, expected):
     if expected not in text:
@@ -36,16 +44,22 @@ def run_security_research_test():
     _assert_contains(observations, "financial_statements_rows=1")
     _assert_contains(observations, "announcements_rows=1")
     _assert_contains(observations, "valuation_metrics_rows=1")
+    _assert_contains(observations, "security_market_quotes_found=1")
+    _assert_contains(observations, "research_reports_rows=1")
     evidence = "\n".join(item["label"] for item in result["evidence"])
     _assert_contains(evidence, "security.financial_statements")
     _assert_contains(evidence, "security.announcements")
     _assert_contains(evidence, "security.valuation_metrics")
+    _assert_contains(evidence, "security.market_quotes")
+    _assert_contains(evidence, "security.research_reports")
     data_sources = "\n".join(
         f"{item['name']} {item['status']}" for item in result["data_sources"]
     )
     _assert_contains(data_sources, "financial_statements available")
     _assert_contains(data_sources, "announcements available")
     _assert_contains(data_sources, "valuation_metrics available")
+    _assert_contains(data_sources, "security_market_quotes available")
+    _assert_contains(data_sources, "research_reports available")
 
 
 def main():

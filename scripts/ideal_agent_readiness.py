@@ -14,6 +14,7 @@ warnings.filterwarnings("ignore", message="urllib3 v2 only supports OpenSSL.*")
 from common.output_contract import build_report_output_sections, format_output_sections
 from common.portfolio_exposure import summarize_portfolio_exposure
 from common.report_branch_fixtures import report_branch_fixtures
+from common.data_sources import role_data_requirements
 from common.research_synthesis import synthesize_research_result
 from decision_support import build_decision_packet
 from research_dispatch import build_research_plan, execute_research_plan
@@ -119,6 +120,22 @@ def build_readiness_matrix():
             "dispatcher covers macro, industry, security, ETF, risk, and review roles",
             required_roles.issubset(set(role_names)),
             "roles=" + ",".join(role_names),
+        )
+    )
+
+    security_requirements = {item["name"] for item in role_data_requirements("security")}
+    entries.append(
+        _entry(
+            "L4",
+            "security role covers fundamentals, filings, valuation, market quotes, and research reports",
+            {
+                "financial_statements",
+                "announcements",
+                "valuation_metrics",
+                "security_market_quotes",
+                "research_reports",
+            }.issubset(security_requirements),
+            "security_data_requirements=" + ",".join(sorted(security_requirements)),
         )
     )
 

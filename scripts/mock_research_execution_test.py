@@ -92,6 +92,8 @@ def run_research_execution_test():
     _assert_contains(output, "- data sources:")
     _assert_contains(output, "portfolio_context | source=local | status=available | source_tier=local_user_data")
     _assert_contains(output, "financial_statements | source=AkShare | status=")
+    _assert_contains(output, "security_market_quotes | source=AkShare | status=")
+    _assert_contains(output, "research_reports | source=AkShare | status=")
     _assert_contains(output, "direct_security_holdings=1")
     _assert_contains(output, "fundamentals, valuation, filings, liquidity require external data")
     _assert_contains(output, "portfolio.holdings | source_tier=local_user_data | freshness=fresh | score=")
@@ -116,6 +118,18 @@ def run_research_execution_test():
     _assert_not_contains(output, "买入")
     _assert_not_contains(output, "卖出")
     _assert_not_contains(output, "自动交易")
+
+    no_direct_portfolio = {
+        "holdings": [{"code": "PRIVATE_F", "type": "fund", "strategy_type": "dca"}],
+        "watchlist": [],
+        "risk_rules": {"single_loss_pct": 2, "daily_loss_pct": 6},
+    }
+    no_direct_plan = build_research_plan("个股 财报", no_direct_portfolio)
+    no_direct_output = format_research_report(execute_research_plan(no_direct_plan, no_direct_portfolio))
+    _assert_contains(no_direct_output, "security_market_quotes | source=AkShare | status=skipped")
+    _assert_contains(no_direct_output, "research_reports | source=AkShare | status=skipped")
+    _assert_contains(no_direct_output, "no direct security holding to query")
+    _assert_not_contains(no_direct_output, "PRIVATE_F")
 
 
 def main():

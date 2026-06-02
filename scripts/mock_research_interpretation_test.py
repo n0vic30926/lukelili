@@ -55,6 +55,21 @@ def run_research_interpretation_test():
     _assert_contains(industry_text, "concept_rotation unavailable")
     _assert_contains(industry_text, "news_search unavailable")
 
+    security_notes = interpret_role_data_state(
+        "security",
+        [
+            {"name": "financial_statements", "status": "available"},
+            {"name": "announcements", "status": "missing_dependency"},
+            {"name": "valuation_metrics", "status": "empty"},
+            {"name": "security_market_quotes", "status": "available"},
+            {"name": "research_reports", "status": "failed"},
+        ],
+    )
+    security_text = "\n".join(security_notes)
+    _assert_contains(security_text, "financial_statements available")
+    _assert_contains(security_text, "security_market_quotes available")
+    _assert_contains(security_text, "research_reports unavailable")
+
     risk_notes = interpret_role_data_state(
         "risk",
         [
@@ -89,7 +104,9 @@ def run_research_interpretation_test():
     if unknown_notes:
         raise AssertionError(f"Unexpected unknown-role notes: {unknown_notes}")
 
-    all_text = "\n".join(macro_notes + etf_notes + industry_notes + risk_notes + review_notes + unknown_notes)
+    all_text = "\n".join(
+        macro_notes + etf_notes + industry_notes + security_notes + risk_notes + review_notes + unknown_notes
+    )
     _assert_not_contains(all_text, "买入")
     _assert_not_contains(all_text, "卖出")
     _assert_not_contains(all_text, "自动交易")

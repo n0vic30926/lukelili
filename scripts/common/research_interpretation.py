@@ -16,6 +16,8 @@ ROLE_SOURCE_NOTES = {
         "financial_statements": "fundamental quality impact path",
         "announcements": "event and filing impact path",
         "valuation_metrics": "valuation context impact path",
+        "security_market_quotes": "security price and liquidity impact path",
+        "research_reports": "external research context impact path",
     },
     "etf": {
         "etf_quotes": "ETF price and tracking impact path",

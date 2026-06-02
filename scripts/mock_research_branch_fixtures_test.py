@@ -38,6 +38,8 @@ def run_research_branch_fixtures_test():
     _assert_contains(combined, "- status: failed")
     _assert_contains(combined, "source_tier=local_user_data")
     _assert_contains(combined, "source_tier=community_data")
+    _assert_contains(combined, "security_market_quotes")
+    _assert_contains(combined, "research_reports")
     _assert_contains(combined, "score=")
     _assert_contains(combined, "remains unconfirmed")
     _assert_contains(combined, "refresh before judgment")

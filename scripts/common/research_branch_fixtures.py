@@ -52,6 +52,8 @@ def research_branch_fixtures():
         {"name": "financial_statements", "source": "AkShare", "status": "missing_dependency", "source_tier": "community_data"},
         {"name": "announcements", "source": "AkShare", "status": "missing_dependency", "source_tier": "community_data"},
         {"name": "valuation_metrics", "source": "AkShare", "status": "missing_dependency", "source_tier": "community_data"},
+        {"name": "security_market_quotes", "source": "AkShare", "status": "missing_dependency", "source_tier": "community_data"},
+        {"name": "research_reports", "source": "AkShare", "status": "missing_dependency", "source_tier": "community_data"},
     ]
     failed_industry_sources = [
         {"name": "portfolio_context", "source": "local", "status": "available", "source_tier": "local_user_data"},
