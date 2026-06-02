@@ -54,10 +54,10 @@ reports now also show required data sources and availability status without
 printing keys or private holdings. The Individual Security role has a first
 read-only AkShare adapter for financial statements, announcements, valuation
 metrics, market quotes/liquidity, and research reports with dependency-aware
-fallback. The ETF role has a first read-only
-adapter for ETF quotes, liquidity, and premium/discount checks. The Macro role
-has a first read-only adapter for rates, FX, and liquidity source status with
-dependency-aware fallback. The Industry role has a first read-only adapter for
+fallback. The ETF role has a read-only adapter for ETF quotes, liquidity,
+premium/discount checks, NAV history, and holdings-through status. The Macro
+role has a first read-only adapter for rates, FX, and liquidity source status
+with dependency-aware fallback. The Industry role has a first read-only adapter for
 portfolio-driven news query counts plus AkShare industry/concept rotation source
 states. The Risk role has a first read-only adapter for anonymized portfolio
 exposure, local risk-rule/factor-profile state, and AkShare market quote

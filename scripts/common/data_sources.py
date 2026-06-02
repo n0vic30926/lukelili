@@ -31,6 +31,8 @@ ROLE_DATA_REQUIREMENTS = {
         {"name": "etf_quotes", "source": "AkShare"},
         {"name": "premium_discount", "source": "AkShare"},
         {"name": "liquidity_metrics", "source": "AkShare"},
+        {"name": "etf_nav_history", "source": "AkShare"},
+        {"name": "etf_holdings", "source": "AkShare"},
     ],
     "risk": [
         {"name": "portfolio_context", "source": "local"},

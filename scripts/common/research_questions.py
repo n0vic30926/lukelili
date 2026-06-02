@@ -65,6 +65,14 @@ ROLE_SOURCE_QUESTIONS = {
             "available": "What ETF liquidity questions are supported by current liquidity_metrics?",
             "unavailable": "Which liquidity_metrics source must refresh before judgment on ETF liquidity?",
         },
+        "etf_nav_history": {
+            "available": "What NAV history questions are supported before reviewing ETF tracking context?",
+            "unavailable": "Which etf_nav_history source must refresh before judgment on NAV history?",
+        },
+        "etf_holdings": {
+            "available": "What underlying holdings questions are supported by current etf_holdings?",
+            "unavailable": "Which etf_holdings source must refresh before judgment on underlying holdings?",
+        },
     },
     "risk": {
         "risk_rules": {

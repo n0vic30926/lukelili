@@ -28,6 +28,24 @@ def run_research_questions_test():
     _assert_contains(macro_text, "FX translation")
     _assert_contains(macro_text, "refresh before judgment")
 
+    etf_questions = build_role_research_questions(
+        "etf",
+        [
+            {"name": "etf_quotes", "status": "available"},
+            {"name": "premium_discount", "status": "empty"},
+            {"name": "liquidity_metrics", "status": "available"},
+            {"name": "etf_nav_history", "status": "available"},
+            {"name": "etf_holdings", "status": "failed"},
+        ],
+        limit=5,
+    )
+    etf_text = "\n".join(etf_questions)
+    _assert_contains(etf_text, "ETF quote")
+    _assert_contains(etf_text, "premium")
+    _assert_contains(etf_text, "liquidity")
+    _assert_contains(etf_text, "NAV history")
+    _assert_contains(etf_text, "etf_holdings")
+
     security_questions = build_role_research_questions(
         "security",
         [
@@ -93,7 +111,15 @@ def run_research_questions_test():
     if unknown_questions:
         raise AssertionError(f"Unexpected unknown-role questions: {unknown_questions}")
 
-    all_text = "\n".join(macro_questions + security_questions + industry_questions + risk_questions + review_questions + unknown_questions)
+    all_text = "\n".join(
+        macro_questions
+        + etf_questions
+        + security_questions
+        + industry_questions
+        + risk_questions
+        + review_questions
+        + unknown_questions
+    )
     _assert_not_contains(all_text, "买入")
     _assert_not_contains(all_text, "卖出")
     _assert_not_contains(all_text, "自动交易")

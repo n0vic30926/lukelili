@@ -23,6 +23,8 @@ ROLE_SOURCE_NOTES = {
         "etf_quotes": "ETF price and tracking impact path",
         "premium_discount": "premium or discount impact path",
         "liquidity_metrics": "ETF liquidity impact path",
+        "etf_nav_history": "ETF NAV and tracking-history impact path",
+        "etf_holdings": "ETF underlying holdings impact path",
     },
     "risk": {
         "risk_rules": "hard risk-control impact path",

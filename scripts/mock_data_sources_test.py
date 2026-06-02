@@ -35,6 +35,27 @@ def run_data_sources_test():
     _assert_contains(rendered, "security_market_quotes source=AkShare status=")
     _assert_contains(rendered, "research_reports source=AkShare status=")
 
+    etf = role_data_requirements("etf")
+    etf_names = [item["name"] for item in etf]
+    for expected in [
+        "portfolio_context",
+        "etf_quotes",
+        "premium_discount",
+        "liquidity_metrics",
+        "etf_nav_history",
+        "etf_holdings",
+    ]:
+        if expected not in etf_names:
+            raise AssertionError(f"Missing ETF data requirement {expected}: {etf}")
+
+    etf_summary = summarize_role_data_requirements("etf", env={})
+    etf_rendered = "\n".join(
+        f"{item['name']} source={item['source']} status={item['status']} tier={item['source_tier']}"
+        for item in etf_summary
+    )
+    _assert_contains(etf_rendered, "etf_nav_history source=AkShare status=")
+    _assert_contains(etf_rendered, "etf_holdings source=AkShare status=")
+
     industry = summarize_role_data_requirements("industry", env={})
     industry_rendered = "\n".join(
         f"{item['name']} source={item['source']} status={item['status']} tier={item['source_tier']}"

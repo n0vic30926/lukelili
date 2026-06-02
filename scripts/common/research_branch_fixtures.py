@@ -46,6 +46,8 @@ def research_branch_fixtures():
         {"name": "etf_quotes", "source": "AkShare", "status": "available", "source_tier": "community_data"},
         {"name": "premium_discount", "source": "AkShare", "status": "empty", "source_tier": "community_data"},
         {"name": "liquidity_metrics", "source": "AkShare", "status": "available", "source_tier": "community_data"},
+        {"name": "etf_nav_history", "source": "AkShare", "status": "available", "source_tier": "community_data"},
+        {"name": "etf_holdings", "source": "AkShare", "status": "failed", "source_tier": "community_data"},
     ]
     security_sources = [
         {"name": "portfolio_context", "source": "local", "status": "available", "source_tier": "local_user_data"},

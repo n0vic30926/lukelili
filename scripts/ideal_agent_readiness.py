@@ -139,6 +139,22 @@ def build_readiness_matrix():
         )
     )
 
+    etf_requirements = {item["name"] for item in role_data_requirements("etf")}
+    entries.append(
+        _entry(
+            "L4",
+            "ETF role covers quotes, liquidity, premium/discount, NAV history, and holdings",
+            {
+                "etf_quotes",
+                "liquidity_metrics",
+                "premium_discount",
+                "etf_nav_history",
+                "etf_holdings",
+            }.issubset(etf_requirements),
+            "etf_data_requirements=" + ",".join(sorted(etf_requirements)),
+        )
+    )
+
     research_result = execute_research_plan(plan, portfolio)
     role_results = research_result.get("role_results", [])
     entries.append(

@@ -35,12 +35,16 @@ def run_research_interpretation_test():
             {"name": "etf_quotes", "status": "available"},
             {"name": "premium_discount", "status": "empty"},
             {"name": "liquidity_metrics", "status": "available"},
+            {"name": "etf_nav_history", "status": "available"},
+            {"name": "etf_holdings", "status": "failed"},
         ],
     )
     etf_text = "\n".join(etf_notes)
     _assert_contains(etf_text, "etf_quotes available")
     _assert_contains(etf_text, "premium_discount unavailable")
     _assert_contains(etf_text, "liquidity_metrics available")
+    _assert_contains(etf_text, "etf_nav_history available")
+    _assert_contains(etf_text, "etf_holdings unavailable")
 
     industry_notes = interpret_role_data_state(
         "industry",

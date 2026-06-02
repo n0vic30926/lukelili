@@ -100,6 +100,8 @@ def run_research_execution_test():
     _assert_contains(output, "## etf")
     _assert_contains(output, "proxy_etf_codes=1")
     _assert_contains(output, "etf_quotes | source=AkShare | status=")
+    _assert_contains(output, "etf_nav_history | source=AkShare | status=")
+    _assert_contains(output, "etf_holdings | source=AkShare | status=")
     _assert_contains(output, "## risk")
     _assert_contains(output, "- risk rules present")
     _assert_contains(output, "portfolio_exposure | source=local | status=available | source_tier=local_user_data")

@@ -21,6 +21,10 @@ class FakeAkShare:
     def fund_etf_fund_info_em(symbol):
         return [{"净值日期": "2026-05-29", "单位净值": 1.20}]
 
+    @staticmethod
+    def fund_portfolio_hold_em(symbol, date):
+        return [{"股票名称": "Example Holding", "持仓占比": "10.0%"}]
+
 
 def _assert_contains(text, expected):
     if expected not in text:
@@ -40,15 +44,21 @@ def run_etf_research_test():
     _assert_contains(observations, "etf_quotes_found=1/1")
     _assert_contains(observations, "liquidity_amount_available=1")
     _assert_contains(observations, "premium_discount_available=1")
+    _assert_contains(observations, "etf_nav_history_available=1")
+    _assert_contains(observations, "etf_holdings_available=1")
     evidence = "\n".join(item["label"] for item in result["evidence"])
     _assert_contains(evidence, "etf.quotes")
     _assert_contains(evidence, "etf.premium_discount")
+    _assert_contains(evidence, "etf.nav_history")
+    _assert_contains(evidence, "etf.holdings")
     data_sources = "\n".join(
         f"{item['name']} {item['status']}" for item in result["data_sources"]
     )
     _assert_contains(data_sources, "etf_quotes available")
     _assert_contains(data_sources, "liquidity_metrics available")
     _assert_contains(data_sources, "premium_discount available")
+    _assert_contains(data_sources, "etf_nav_history available")
+    _assert_contains(data_sources, "etf_holdings available")
 
 
 def main():
