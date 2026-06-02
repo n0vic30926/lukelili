@@ -7,9 +7,64 @@
 """
 import json, os
 from datetime import datetime, timedelta
+from pathlib import Path
 from common.config_loader import get_decision_track_dir, get_portfolio_path
 
 TRACK_DIR = str(get_decision_track_dir())
+
+
+def _confirmation_record(state, created_at=None, source="decision_support"):
+    created_at = created_at or datetime.now().astimezone().isoformat(timespec="seconds")
+    return {
+        "event": "confirmation_state_recorded",
+        "created_at": created_at,
+        "source": source,
+        "confirmation_status": state.get("confirmation_status", "unknown"),
+        "execution_allowed": False,
+        "check_count": int(state.get("check_count", 0) or 0),
+        "blocker_count": int(state.get("blocker_count", 0) or 0),
+        "check_refs": [item.get("check_ref") for item in state.get("checks", []) if item.get("check_ref")],
+        "blocker_types": [item.get("type", "unknown") for item in state.get("blockers", [])],
+        "prohibited_actions": list(state.get("prohibited_actions") or []),
+    }
+
+
+def save_confirmation_record(state, record_path=None, created_at=None, source="decision_support"):
+    """Append a sanitized manual-confirmation state record to JSONL."""
+    record_path = Path(record_path) if record_path else Path(TRACK_DIR) / "confirmations.jsonl"
+    record_path.parent.mkdir(parents=True, exist_ok=True)
+    record = _confirmation_record(state, created_at=created_at, source=source)
+    with record_path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    return {"record_path": str(record_path), "record": record}
+
+
+def load_confirmation_records(record_path=None):
+    """Load sanitized manual-confirmation JSONL records."""
+    record_path = Path(record_path) if record_path else Path(TRACK_DIR) / "confirmations.jsonl"
+    if not record_path.exists():
+        return []
+    records = []
+    for line in record_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            item = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if item.get("event") != "confirmation_state_recorded":
+            continue
+        records.append(
+            {
+                "created_at": str(item.get("created_at") or ""),
+                "confirmation_status": str(item.get("confirmation_status") or "unknown"),
+                "execution_allowed": bool(item.get("execution_allowed")),
+                "check_count": int(item.get("check_count", 0) or 0),
+                "blocker_count": int(item.get("blocker_count", 0) or 0),
+                "blocker_types": [str(value) for value in item.get("blocker_types", [])],
+            }
+        )
+    return records
 
 
 def save_daily_decisions(portfolio_path):

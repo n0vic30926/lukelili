@@ -48,6 +48,7 @@ python3 scripts/smoke_test.py
 python3 scripts/mock_data_quality_test.py
 python3 scripts/mock_data_sources_test.py
 python3 scripts/mock_decision_confirmation_test.py
+python3 scripts/mock_decision_confirmation_record_test.py
 python3 scripts/mock_decision_support_test.py
 python3 scripts/mock_dependency_test.py
 python3 scripts/mock_evidence_ranking_test.py
@@ -141,6 +142,11 @@ private holdings:
 ```bash
 python3 scripts/review_history.py
 ```
+
+Manual confirmation state can be recorded as sanitized JSONL under the private
+decision-track directory. Review summaries aggregate confirmation status and
+blocker types only; they must not print holdings, costs, shares, or account
+details.
 
 Scan tracked files for common secret and private-portfolio leakage patterns:
 

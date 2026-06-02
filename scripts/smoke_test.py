@@ -68,6 +68,7 @@ def check_foundation_files():
         "scripts/mock_data_quality_test.py",
         "scripts/mock_data_sources_test.py",
         "scripts/mock_decision_confirmation_test.py",
+        "scripts/mock_decision_confirmation_record_test.py",
         "scripts/mock_decision_support_test.py",
         "scripts/mock_dependency_test.py",
         "scripts/mock_evidence_ranking_test.py",

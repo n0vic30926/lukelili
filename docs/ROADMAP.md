@@ -71,8 +71,10 @@ types and research observations into candidate actions, rationale, risks, and
 required confirmation checks. It also surfaces missing hard risk rules from the
 local portfolio file, anonymized exposure checks, and a pending manual
 confirmation state with blockers. It sets `execution_allowed=false` and does not
-connect to broker endpoints. Remaining work is a richer confirmation record and
-review loop.
+connect to broker endpoints. Confirmation states can now be recorded as
+sanitized JSONL and summarized by history review as status/blocker aggregates.
+Remaining work is stronger confirmation-state auditing and richer manual review
+flows.
 
 Explicitly out of scope:
 

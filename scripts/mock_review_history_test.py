@@ -75,6 +75,17 @@ def run_history_review_test():
                 ],
             },
         )
+        _write_json(
+            decision_dir / "confirmations.jsonl",
+            {
+                "event": "confirmation_state_recorded",
+                "created_at": "2026-05-28T16:00:00+08:00",
+                "confirmation_status": "pending_user_confirmation",
+                "check_count": 2,
+                "blocker_count": 1,
+                "blocker_types": ["missing_risk_rule"],
+            },
+        )
         decisions = load_decision_records(decision_dir)
         summary = summarize_history(reports, decisions)
         if summary["report_continuity"]["current_streak_days"] != 2:
@@ -83,6 +94,10 @@ def run_history_review_test():
             raise AssertionError(f"Unexpected failures: {summary['repeated_failures']}")
         if summary["strategy_counts"] != {"dca": 1, "trial": 1}:
             raise AssertionError(f"Unexpected strategy counts: {summary['strategy_counts']}")
+        if summary["confirmation_records"]["pending_user_confirmation"] != 1:
+            raise AssertionError(f"Unexpected confirmation records: {summary['confirmation_records']}")
+        if summary["confirmation_blockers"]["missing_risk_rule"] != 1:
+            raise AssertionError(f"Unexpected confirmation blockers: {summary['confirmation_blockers']}")
 
         output = format_history_review(summary)
         _assert_contains(output, "# History Review Summary")
@@ -90,6 +105,8 @@ def run_history_review_test():
         _assert_contains(output, "- Repeated failure: north_flow x2")
         _assert_contains(output, "- Data quality totals: fresh=4 stale=1 unknown=4")
         _assert_contains(output, "- Strategy records: dca=1 trial=1")
+        _assert_contains(output, "- Confirmation records: pending_user_confirmation=1")
+        _assert_contains(output, "- Confirmation blockers: missing_risk_rule=1")
         _assert_not_contains(output, "SECRET")
         _assert_not_contains(output, "999999")
         _assert_not_contains(output, "Private Fund")

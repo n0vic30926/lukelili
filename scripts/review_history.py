@@ -51,7 +51,7 @@ def _count_missing_report_days(items):
 
 
 def load_decision_records(decision_dir):
-    """Load private decision files and retain only date plus strategy labels."""
+    """Load private decision files and retain only sanitized review fields."""
     root = Path(decision_dir)
     if not root.exists():
         return []
@@ -67,10 +67,32 @@ def load_decision_records(decision_dir):
             strategies.append(str(holding.get("strategy_type") or "unknown"))
         records.append(
             {
+                "record_type": "daily_decision_snapshot",
                 "date": str(item.get("date") or path.stem),
                 "strategies": strategies,
             }
         )
+    confirmation_path = root / "confirmations.jsonl"
+    if confirmation_path.exists():
+        for line in confirmation_path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            try:
+                item = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if item.get("event") != "confirmation_state_recorded":
+                continue
+            records.append(
+                {
+                    "record_type": "confirmation_state",
+                    "date": str(item.get("created_at") or "")[:10],
+                    "confirmation_status": str(item.get("confirmation_status") or "unknown"),
+                    "check_count": int(item.get("check_count", 0) or 0),
+                    "blocker_count": int(item.get("blocker_count", 0) or 0),
+                    "blocker_types": [str(value) for value in item.get("blocker_types", [])],
+                }
+            )
     return records
 
 
@@ -78,6 +100,8 @@ def summarize_history(report_items, decision_records):
     failure_counts = Counter()
     quality = Counter({"fresh": 0, "stale": 0, "unknown": 0})
     strategy_counts = Counter()
+    confirmation_records = Counter()
+    confirmation_blockers = Counter()
 
     for item in report_items:
         run_summary = item.get("run_summary", {})
@@ -90,7 +114,11 @@ def summarize_history(report_items, decision_records):
             quality[key] += int(data_quality.get(key, 0) or 0)
 
     for record in decision_records:
-        strategy_counts.update(record.get("strategies", []))
+        if record.get("record_type") == "confirmation_state":
+            confirmation_records[str(record.get("confirmation_status") or "unknown")] += 1
+            confirmation_blockers.update(record.get("blocker_types", []))
+        else:
+            strategy_counts.update(record.get("strategies", []))
 
     return {
         "report_count": len(report_items),
@@ -108,6 +136,8 @@ def summarize_history(report_items, decision_records):
             "unknown": quality["unknown"],
         },
         "strategy_counts": dict(sorted(strategy_counts.items())),
+        "confirmation_records": dict(sorted(confirmation_records.items())),
+        "confirmation_blockers": dict(sorted(confirmation_blockers.items())),
     }
 
 
@@ -137,6 +167,8 @@ def format_history_review(summary):
     )
     lines.append(f"- Decision records: {summary['decision_record_count']}")
     lines.append(f"- Strategy records: {_format_counts(summary['strategy_counts'])}")
+    lines.append(f"- Confirmation records: {_format_counts(summary.get('confirmation_records', {}))}")
+    lines.append(f"- Confirmation blockers: {_format_counts(summary.get('confirmation_blockers', {}))}")
     return "\n".join(lines)
 
 
