@@ -54,6 +54,7 @@ python3 scripts/mock_etf_research_test.py
 python3 scripts/mock_macro_research_test.py
 python3 scripts/mock_output_contract_test.py
 python3 scripts/mock_portfolio_validation_test.py
+python3 scripts/mock_report_branch_fixtures_test.py
 python3 scripts/mock_report_output_contract_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_routing_test.py

@@ -118,6 +118,7 @@ python3 scripts/mock_etf_research_test.py
 python3 scripts/mock_macro_research_test.py
 python3 scripts/mock_output_contract_test.py
 python3 scripts/mock_portfolio_validation_test.py
+python3 scripts/mock_report_branch_fixtures_test.py
 python3 scripts/mock_report_output_contract_test.py
 python3 scripts/mock_daily_status_test.py
 python3 scripts/mock_factor_routing_test.py
@@ -233,6 +234,7 @@ Delivery配置（所有cron通用）：
 - [x] L3 报告稳定化：依赖检查、日志、缓存、归档、模块状态摘要
 - [x] L3 数据质量：宏观/ETF/新闻数据源质量分层和失败可见化
 - [x] L3 历史复盘摘要：报告连续性、重复失败模块、策略纪律聚合统计
+- [x] L3 报告分支夹具：脱敏覆盖 success/failed/skipped/cache_hit 输出路径
 - [x] 安全基线：tracked 文件敏感信息扫描、memory/Skill 脱敏模板化
 - [x] 行业情报本地化：从 portfolio 动态生成资讯查询和影响标签
 - [x] 因子归因本地化：从 portfolio `factor_profile` 动态路由 QDII/AI 归因
