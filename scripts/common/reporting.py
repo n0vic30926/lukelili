@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 
 from common.config_loader import load_settings, resolve_path
+from common.report_source_interpretation import interpret_data_module
 
 
 def _now_iso():
@@ -90,6 +91,7 @@ def format_run_summary(run_summary):
                 if item.get("detail"):
                     parts.append(f"detail={item['detail']}")
                 lines.append("- " + " | ".join(parts))
+                lines.append(f"- source_interpretation: {interpret_data_module(item)}")
         elif isinstance(value, dict):
             rendered = ", ".join(f"{k}={v}" for k, v in sorted(value.items()))
             lines.append(f"- {key}: {rendered}")

@@ -40,10 +40,12 @@ def run_report_branch_fixtures_test():
         _assert_contains(output, "execution_allowed=false")
         _assert_contains(summary, "## 运行摘要")
         _assert_contains(summary, "- modules:")
+        _assert_contains(summary, "- source_interpretation:")
 
     rendered = "\n".join(rendered_all)
     _assert_contains(rendered, "some data modules failed; report may be incomplete")
     _assert_contains(rendered, "some data modules were skipped by configuration or missing inputs")
+    _assert_contains(rendered, "report section remains incomplete")
     _assert_contains(rendered, "cache_hit=1")
     _assert_not_contains(rendered, "PRIVATE")
     _assert_not_contains(rendered, "买入")
