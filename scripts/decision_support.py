@@ -9,6 +9,7 @@ import json
 import sys
 
 from common.config_loader import get_portfolio_path
+from common.decision_confirmation import build_confirmation_state, format_confirmation_state
 from common.evidence import rank_evidence
 from common.output_contract import format_output_sections
 from common.portfolio_exposure import summarize_portfolio_exposure
@@ -112,7 +113,7 @@ def build_decision_packet(portfolio, research_result=None):
         _candidate_for_holding(index, holding, research_notes, missing_risk_rules)
         for index, holding in enumerate(portfolio.get("holdings", []))
     ]
-    return {
+    packet = {
         "mode": "decision_support_only",
         "execution_allowed": False,
         "requires_user_confirmation": True,
@@ -129,6 +130,8 @@ def build_decision_packet(portfolio, research_result=None):
             "treating_forecast_as_fact",
         ],
     }
+    packet["confirmation_state"] = build_confirmation_state(packet)
+    return packet
 
 
 def _output_sections(packet):
@@ -239,6 +242,10 @@ def format_decision_packet(packet):
                 f"{warning['type']} holding_ref={warning['holding_ref']} "
                 f"actual_pct={warning['actual_pct']} limit_pct={warning['limit_pct']}"
             )
+        lines.append("")
+
+    if packet.get("confirmation_state"):
+        lines.append(format_confirmation_state(packet["confirmation_state"]))
         lines.append("")
 
     lines.append("## Candidates")

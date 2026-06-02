@@ -69,8 +69,10 @@ Goal: provide buy/sell/hold/watch decision support with explicit user confirmati
 Status: a local decision-support packet builder now converts portfolio strategy
 types and research observations into candidate actions, rationale, risks, and
 required confirmation checks. It also surfaces missing hard risk rules from the
-local portfolio file. It sets `execution_allowed=false` and does not connect to
-broker endpoints.
+local portfolio file, anonymized exposure checks, and a pending manual
+confirmation state with blockers. It sets `execution_allowed=false` and does not
+connect to broker endpoints. Remaining work is a richer confirmation record and
+review loop.
 
 Explicitly out of scope:
 

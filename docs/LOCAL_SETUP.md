@@ -47,6 +47,7 @@ Optional `factor_profile` values route attribution modules:
 python3 scripts/smoke_test.py
 python3 scripts/mock_data_quality_test.py
 python3 scripts/mock_data_sources_test.py
+python3 scripts/mock_decision_confirmation_test.py
 python3 scripts/mock_decision_support_test.py
 python3 scripts/mock_dependency_test.py
 python3 scripts/mock_evidence_ranking_test.py
@@ -100,8 +101,8 @@ python3 scripts/decision_support.py "组合风险 复盘 决策辅助"
 ```
 
 The decision-support packet contains candidate actions, ranked evidence, hard
-risk rule checks, risks, and confirmation checks. It is not executable and must
-not be treated as user consent.
+risk rule checks, exposure checks, risks, and a pending manual-confirmation
+state. It is not executable and must not be treated as user consent.
 
 The smoke test checks local guardrails, config examples, schema, fictional example data, OpenClaw path removal, and Tavily key isolation. It does not install dependencies or call market data APIs.
 
