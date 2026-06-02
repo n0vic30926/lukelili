@@ -74,6 +74,59 @@ def load_confirmation_records(record_path=None):
     return records
 
 
+def _review_resolution_record(resolution, created_at=None, source="manual_review"):
+    created_at = created_at or datetime.now().astimezone().isoformat(timespec="seconds")
+    return {
+        "event": "manual_review_resolution_recorded",
+        "created_at": created_at,
+        "source": source,
+        "review_ref": str(resolution.get("review_ref") or "review_unknown"),
+        "action": str(resolution.get("action") or "unknown"),
+        "outcome": str(resolution.get("outcome") or "unknown"),
+        "reason_code": str(resolution.get("reason_code") or "unspecified"),
+        "execution_allowed": False,
+        "prohibited_actions": list(resolution.get("prohibited_actions") or []),
+    }
+
+
+def save_review_resolution_record(resolution, record_path=None, created_at=None, source="manual_review"):
+    """Append a sanitized manual-review resolution record to JSONL."""
+    record_path = Path(record_path) if record_path else Path(TRACK_DIR) / "review_resolutions.jsonl"
+    record_path.parent.mkdir(parents=True, exist_ok=True)
+    record = _review_resolution_record(resolution, created_at=created_at, source=source)
+    with record_path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    return {"record_path": str(record_path), "record": record}
+
+
+def load_review_resolution_records(record_path=None):
+    """Load sanitized manual-review resolution JSONL records."""
+    record_path = Path(record_path) if record_path else Path(TRACK_DIR) / "review_resolutions.jsonl"
+    if not record_path.exists():
+        return []
+    records = []
+    for line in record_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            item = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if item.get("event") != "manual_review_resolution_recorded":
+            continue
+        records.append(
+            {
+                "created_at": str(item.get("created_at") or ""),
+                "review_ref": str(item.get("review_ref") or "review_unknown"),
+                "action": str(item.get("action") or "unknown"),
+                "outcome": str(item.get("outcome") or "unknown"),
+                "reason_code": str(item.get("reason_code") or "unspecified"),
+                "execution_allowed": bool(item.get("execution_allowed")),
+            }
+        )
+    return records
+
+
 def save_daily_decisions(portfolio_path):
     """记录今日的持仓状态和建议（由daily brief调用）"""
     os.makedirs(TRACK_DIR, exist_ok=True)

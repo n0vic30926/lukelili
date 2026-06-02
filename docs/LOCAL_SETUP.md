@@ -79,6 +79,7 @@ python3 scripts/mock_review_research_test.py
 python3 scripts/mock_security_research_test.py
 python3 scripts/mock_report_index_test.py
 python3 scripts/mock_review_history_test.py
+python3 scripts/mock_review_resolution_record_test.py
 python3 scripts/mock_runtime_test.py
 python3 scripts/mock_reporting_test.py
 python3 scripts/mock_security_scan_test.py
@@ -153,9 +154,10 @@ python3 scripts/review_history.py
 ```
 
 Manual confirmation state can be recorded as sanitized JSONL under the private
-decision-track directory. Review summaries aggregate confirmation status and
-blocker/action types only; they must not print holdings, costs, shares, or
-account details.
+decision-track directory. Manual review resolutions can also be recorded as
+sanitized JSONL. Review summaries aggregate confirmation status,
+blocker/action types, and resolution outcomes only; they must not print
+holdings, costs, shares, or account details.
 
 Scan tracked files for common secret and private-portfolio leakage patterns:
 

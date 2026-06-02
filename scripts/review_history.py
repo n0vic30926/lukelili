@@ -97,6 +97,27 @@ def load_decision_records(decision_dir):
                     },
                 }
             )
+    resolution_path = root / "review_resolutions.jsonl"
+    if resolution_path.exists():
+        for line in resolution_path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            try:
+                item = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if item.get("event") != "manual_review_resolution_recorded":
+                continue
+            records.append(
+                {
+                    "record_type": "manual_review_resolution",
+                    "date": str(item.get("created_at") or "")[:10],
+                    "action": str(item.get("action") or "unknown"),
+                    "outcome": str(item.get("outcome") or "unknown"),
+                    "reason_code": str(item.get("reason_code") or "unspecified"),
+                    "execution_allowed": bool(item.get("execution_allowed")),
+                }
+            )
     return records
 
 
@@ -107,6 +128,9 @@ def summarize_history(report_items, decision_records):
     confirmation_records = Counter()
     confirmation_blockers = Counter()
     review_actions = Counter()
+    review_resolution_actions = Counter()
+    review_resolution_outcomes = Counter()
+    review_resolution_reasons = Counter()
 
     for item in report_items:
         run_summary = item.get("run_summary", {})
@@ -123,6 +147,10 @@ def summarize_history(report_items, decision_records):
             confirmation_records[str(record.get("confirmation_status") or "unknown")] += 1
             confirmation_blockers.update(record.get("blocker_types", []))
             review_actions.update(record.get("review_action_counts", {}))
+        elif record.get("record_type") == "manual_review_resolution":
+            review_resolution_actions[str(record.get("action") or "unknown")] += 1
+            review_resolution_outcomes[str(record.get("outcome") or "unknown")] += 1
+            review_resolution_reasons[str(record.get("reason_code") or "unspecified")] += 1
         else:
             strategy_counts.update(record.get("strategies", []))
 
@@ -145,6 +173,9 @@ def summarize_history(report_items, decision_records):
         "confirmation_records": dict(sorted(confirmation_records.items())),
         "confirmation_blockers": dict(sorted(confirmation_blockers.items())),
         "review_actions": dict(sorted(review_actions.items())),
+        "review_resolution_actions": dict(sorted(review_resolution_actions.items())),
+        "review_resolution_outcomes": dict(sorted(review_resolution_outcomes.items())),
+        "review_resolution_reasons": dict(sorted(review_resolution_reasons.items())),
     }
 
 
@@ -177,6 +208,9 @@ def format_history_review(summary):
     lines.append(f"- Confirmation records: {_format_counts(summary.get('confirmation_records', {}))}")
     lines.append(f"- Confirmation blockers: {_format_counts(summary.get('confirmation_blockers', {}))}")
     lines.append(f"- Review actions: {_format_counts(summary.get('review_actions', {}))}")
+    lines.append(f"- Review resolution actions: {_format_counts(summary.get('review_resolution_actions', {}))}")
+    lines.append(f"- Review resolution outcomes: {_format_counts(summary.get('review_resolution_outcomes', {}))}")
+    lines.append(f"- Review resolution reasons: {_format_counts(summary.get('review_resolution_reasons', {}))}")
     return "\n".join(lines)
 
 

@@ -86,9 +86,10 @@ connect to broker endpoints. Cross-role research synthesis now feeds
 unavailable role/data-source states into the manual confirmation blockers.
 Manual confirmation now includes a bounded review queue that separates user
 confirmation, data refresh, local-record updates, and risk-rule review. These
-queue action counts can be recorded as sanitized JSONL and summarized by history
-review. Remaining work is recording manual review resolutions without turning
-them into execution consent.
+queue action counts and manual review resolutions can be recorded as sanitized
+JSONL and summarized by history review without turning them into execution
+consent. Remaining work is an end-to-end acceptance matrix for ideal-agent
+readiness.
 
 Explicitly out of scope:
 

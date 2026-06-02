@@ -104,6 +104,7 @@ def check_foundation_files():
         "scripts/mock_reporting_test.py",
         "scripts/mock_report_index_test.py",
         "scripts/mock_review_history_test.py",
+        "scripts/mock_review_resolution_record_test.py",
         "scripts/mock_runtime_test.py",
         "scripts/mock_security_scan_test.py",
         "scripts/mock_security_research_test.py",

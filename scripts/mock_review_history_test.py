@@ -87,6 +87,19 @@ def run_history_review_test():
                 "review_action_counts": {"update_local_records": 1, "user_confirm": 2},
             },
         )
+        _write_json(
+            decision_dir / "review_resolutions.jsonl",
+            {
+                "event": "manual_review_resolution_recorded",
+                "created_at": "2026-05-28T16:30:00+08:00",
+                "review_ref": "review_4",
+                "action": "refresh_data",
+                "outcome": "still_blocked",
+                "reason_code": "missing_dependency",
+                "execution_allowed": False,
+                "private_note": "SECRET1 Private Fund 999999",
+            },
+        )
         decisions = load_decision_records(decision_dir)
         summary = summarize_history(reports, decisions)
         if summary["report_continuity"]["current_streak_days"] != 2:
@@ -101,6 +114,12 @@ def run_history_review_test():
             raise AssertionError(f"Unexpected confirmation blockers: {summary['confirmation_blockers']}")
         if summary["review_actions"] != {"update_local_records": 1, "user_confirm": 2}:
             raise AssertionError(f"Unexpected review actions: {summary['review_actions']}")
+        if summary["review_resolution_actions"] != {"refresh_data": 1}:
+            raise AssertionError(f"Unexpected review resolution actions: {summary['review_resolution_actions']}")
+        if summary["review_resolution_outcomes"] != {"still_blocked": 1}:
+            raise AssertionError(f"Unexpected review resolution outcomes: {summary['review_resolution_outcomes']}")
+        if summary["review_resolution_reasons"] != {"missing_dependency": 1}:
+            raise AssertionError(f"Unexpected review resolution reasons: {summary['review_resolution_reasons']}")
 
         output = format_history_review(summary)
         _assert_contains(output, "# History Review Summary")
@@ -111,6 +130,9 @@ def run_history_review_test():
         _assert_contains(output, "- Confirmation records: pending_user_confirmation=1")
         _assert_contains(output, "- Confirmation blockers: missing_risk_rule=1")
         _assert_contains(output, "- Review actions: update_local_records=1 user_confirm=2")
+        _assert_contains(output, "- Review resolution actions: refresh_data=1")
+        _assert_contains(output, "- Review resolution outcomes: still_blocked=1")
+        _assert_contains(output, "- Review resolution reasons: missing_dependency=1")
         _assert_not_contains(output, "SECRET")
         _assert_not_contains(output, "999999")
         _assert_not_contains(output, "Private Fund")
