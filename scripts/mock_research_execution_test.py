@@ -59,6 +59,7 @@ def run_research_execution_test():
                 {"name": "industry_rotation", "source": "AkShare", "status": "missing_dependency", "source_tier": "community_data"},
                 {"name": "concept_rotation", "source": "AkShare", "status": "missing_dependency", "source_tier": "community_data"},
                 {"name": "news_search", "source": "Tavily", "status": "missing_key", "source_tier": "news_search"},
+                {"name": "news_results", "source": "Tavily", "status": "missing_key", "source_tier": "news_search"},
             ],
             "limitations": ["no external news fetched"],
         }
@@ -90,6 +91,7 @@ def run_research_execution_test():
     _assert_contains(output, "industry_rotation | source=AkShare | status=missing_dependency")
     _assert_contains(output, "concept_rotation | source=AkShare | status=missing_dependency")
     _assert_contains(output, "news_search | source=Tavily | status=missing_key")
+    _assert_contains(output, "news_results | source=Tavily | status=missing_key")
     _assert_contains(output, "## security")
     _assert_contains(output, "- data sources:")
     _assert_contains(output, "portfolio_context | source=local | status=available | source_tier=local_user_data")

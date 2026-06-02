@@ -75,12 +75,15 @@ def run_research_questions_test():
             {"name": "industry_rotation", "status": "available"},
             {"name": "concept_rotation", "status": "empty"},
             {"name": "news_search", "status": "missing_key"},
+            {"name": "news_results", "status": "available"},
         ],
+        limit=4,
     )
     industry_text = "\n".join(industry_questions)
     _assert_contains(industry_text, "industry fund-flow")
     _assert_contains(industry_text, "theme rotation")
     _assert_contains(industry_text, "external news")
+    _assert_contains(industry_text, "news result")
 
     risk_questions = build_role_research_questions(
         "risk",

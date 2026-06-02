@@ -171,6 +171,21 @@ def build_readiness_matrix():
         )
     )
 
+    industry_requirements = {item["name"] for item in role_data_requirements("industry")}
+    entries.append(
+        _entry(
+            "L4",
+            "industry role covers rotation, concept, news search, and news result evidence",
+            {
+                "industry_rotation",
+                "concept_rotation",
+                "news_search",
+                "news_results",
+            }.issubset(industry_requirements),
+            "industry_data_requirements=" + ",".join(sorted(industry_requirements)),
+        )
+    )
+
     research_result = execute_research_plan(plan, portfolio)
     role_results = research_result.get("role_results", [])
     entries.append(

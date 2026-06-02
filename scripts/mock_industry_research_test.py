@@ -14,6 +14,19 @@ class FakeAkShare:
         return [{"概念": "Example Theme", "净流入": 456}]
 
 
+def fake_news_client(query):
+    return [
+        {
+            "title": "Example industry crash warning",
+            "content": "Sector pressure and crash risk update.",
+        },
+        {
+            "title": "Example industry rally update",
+            "content": "Sector rally and optimism update.",
+        },
+    ]
+
+
 def _assert_contains(text, expected):
     if expected not in text:
         raise AssertionError(f"Expected text to contain: {expected}")
@@ -54,6 +67,21 @@ def run_industry_research_test():
     _assert_contains(observations, "portfolio_driven_news_queries=2")
     _assert_contains(observations, "industry_rotation_rows=1")
     _assert_contains(observations, "concept_rotation_rows=1")
+
+    news_result = fetch_industry_research(portfolio, ak_client=FakeAkShare, news_client=fake_news_client)
+    if news_result["status"] != "ok":
+        raise AssertionError(f"Expected ok result with news: {news_result}")
+    news_observations = "\n".join(news_result["observations"])
+    _assert_contains(news_observations, "news_results_found=4")
+    _assert_contains(news_observations, "news_signal_red=2")
+    _assert_contains(news_observations, "news_signal_green=2")
+    news_evidence = "\n".join(item["label"] for item in news_result["evidence"])
+    _assert_contains(news_evidence, "industry.news_results")
+    news_sources = "\n".join(
+        f"{item['name']} {item['status']}" for item in news_result["data_sources"]
+    )
+    _assert_contains(news_sources, "news_results available")
+
     evidence = "\n".join(item["label"] for item in result["evidence"])
     _assert_contains(evidence, "industry.news_queries")
     _assert_contains(evidence, "industry.rotation")
@@ -65,7 +93,7 @@ def run_industry_research_test():
     _assert_contains(data_sources, "industry_rotation available")
     _assert_contains(data_sources, "concept_rotation available")
 
-    all_text = observations + "\n" + evidence + "\n" + data_sources
+    all_text = observations + "\n" + evidence + "\n" + data_sources + "\n" + news_observations + "\n" + news_evidence
     _assert_not_contains(all_text, "PRIVATE_A")
     _assert_not_contains(all_text, "PRIVATE_W")
     _assert_not_contains(all_text, "Private Holding A")

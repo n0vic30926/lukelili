@@ -13,6 +13,7 @@ ROLE_SOURCE_NOTES = {
         "industry_rotation": "industry fund-flow impact path",
         "concept_rotation": "theme rotation impact path",
         "news_search": "external news signal impact path",
+        "news_results": "external news evidence impact path",
     },
     "security": {
         "financial_statements": "fundamental quality impact path",

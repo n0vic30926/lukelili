@@ -63,6 +63,7 @@ def research_branch_fixtures():
         {"name": "portfolio_context", "source": "local", "status": "available", "source_tier": "local_user_data"},
         {"name": "industry_rotation", "source": "AkShare", "status": "failed", "source_tier": "community_data"},
         {"name": "news_search", "source": "Tavily", "status": "missing_key", "source_tier": "news_search"},
+        {"name": "news_results", "source": "Tavily", "status": "missing_key", "source_tier": "news_search"},
     ]
 
     return [

@@ -37,6 +37,10 @@ ROLE_SOURCE_QUESTIONS = {
             "available": "What external news signals need manual source review before judgment?",
             "unavailable": "Which news_search source or key must refresh before judgment on external news signals?",
         },
+        "news_results": {
+            "available": "What news result signal counts need manual source review before judgment?",
+            "unavailable": "Which news_results source must refresh before judgment on external news evidence?",
+        },
     },
     "security": {
         "financial_statements": {

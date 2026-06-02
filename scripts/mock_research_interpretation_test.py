@@ -56,12 +56,14 @@ def run_research_interpretation_test():
             {"name": "industry_rotation", "status": "available"},
             {"name": "concept_rotation", "status": "failed"},
             {"name": "news_search", "status": "missing_key"},
+            {"name": "news_results", "status": "available"},
         ],
     )
     industry_text = "\n".join(industry_notes)
     _assert_contains(industry_text, "industry_rotation available")
     _assert_contains(industry_text, "concept_rotation unavailable")
     _assert_contains(industry_text, "news_search unavailable")
+    _assert_contains(industry_text, "news_results available")
 
     security_notes = interpret_role_data_state(
         "security",
