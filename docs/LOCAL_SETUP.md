@@ -67,6 +67,7 @@ python3 scripts/mock_factor_routing_test.py
 python3 scripts/mock_factor_status_test.py
 python3 scripts/mock_industry_intel_dynamic_test.py
 python3 scripts/mock_news_status_test.py
+python3 scripts/mock_research_branch_fixtures_test.py
 python3 scripts/mock_research_execution_test.py
 python3 scripts/mock_research_dispatch_test.py
 python3 scripts/mock_research_interpretation_test.py

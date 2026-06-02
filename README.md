@@ -131,6 +131,7 @@ python3 scripts/mock_factor_routing_test.py
 python3 scripts/mock_factor_status_test.py
 python3 scripts/mock_industry_intel_dynamic_test.py
 python3 scripts/mock_news_status_test.py
+python3 scripts/mock_research_branch_fixtures_test.py
 python3 scripts/mock_research_execution_test.py
 python3 scripts/mock_research_dispatch_test.py
 python3 scripts/mock_research_interpretation_test.py
@@ -253,6 +254,7 @@ Delivery配置（所有cron通用）：
 - [x] L4 Macro 只读数据适配：利率、汇率、流动性 AkShare 状态与缺依赖降级
 - [x] L4 数据状态解释：将角色数据源可用性映射为组合影响路径和未确认限制
 - [x] L4 角色研究问题：按角色和数据源状态生成下一步核查问题
+- [x] L4 研究分支夹具：脱敏覆盖 ok/skipped/failed、证据、解释、问题路径
 - [ ] L4 多 Agent 研究角色：接入更完整的真实数据工具与证据排序
 - [x] L5 决策辅助安全层：候选动作、风险、风险硬规则检查、确认清单，不允许自动交易
 - [x] L5 人工确认工作流：pending confirmation state、阻断项、不可执行边界

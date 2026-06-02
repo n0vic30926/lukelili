@@ -60,8 +60,10 @@ dependency-aware fallback. Role data-source states are now also interpreted into
 explicit impact paths and unconfirmed limitations, so execution reports no
 longer stop at raw availability lists. Role reports now also generate bounded
 per-role research questions from data-source states, keeping them as manual
-decision-support prompts rather than trade instructions. Next step is adding
-branch fixtures for richer report paths.
+decision-support prompts rather than trade instructions. Sanitized research
+branch fixtures now cover ok/skipped/failed role paths, ranked evidence, data
+sources, interpretations, and research questions. Next step is expanding the
+real data tools behind each role.
 
 ## L5: Semi-Automated Decision Support
 
