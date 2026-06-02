@@ -158,17 +158,41 @@ def _portfolio_runner(task, portfolio):
 
 def _macro_runner(task, portfolio):
     summary = _portfolio_summary(portfolio)
+    observations = [
+        f"macro review should map rates, FX, and liquidity to {summary['holding_count']} holding(s)",
+        f"factor profiles: {','.join(summary['factor_profiles']) or 'none'}",
+    ]
+    evidence = [
+        {"label": "portfolio.factor_profile", "source_tier": "local_user_data", "freshness": "fresh"},
+        {"label": "portfolio.watchlist", "source_tier": "local_user_data", "freshness": "fresh"},
+    ]
+    data_sources = [
+        {
+            "name": "portfolio_context",
+            "source": "local",
+            "status": "available",
+            "source_tier": "local_user_data",
+        }
+    ]
+    limitations = []
+    try:
+        from macro_research import fetch_macro_research
+
+        research = fetch_macro_research()
+        observations.extend(_safe_list(research.get("observations"), limit=5))
+        evidence.extend(research.get("evidence") or [])
+        data_sources.extend(research.get("data_sources") or [])
+        limitations.extend(_safe_list(research.get("limitations"), limit=5))
+        observations.append(f"macro_data_status={research.get('status', 'unknown')}")
+    except Exception as exc:
+        limitations.append(type(exc).__name__)
+
     return {
         "status": "ok",
-        "observations": [
-            f"macro review should map rates, FX, and liquidity to {summary['holding_count']} holding(s)",
-            f"factor profiles: {','.join(summary['factor_profiles']) or 'none'}",
-        ],
-        "evidence": [
-            {"label": "portfolio.factor_profile", "source_tier": "local_user_data", "freshness": "fresh"},
-            {"label": "portfolio.watchlist", "source_tier": "local_user_data", "freshness": "fresh"},
-        ],
-        "limitations": ["macro live data not fetched by dispatcher"],
+        "observations": observations,
+        "evidence": evidence,
+        "data_sources": data_sources,
+        "limitations": limitations,
     }
 
 

@@ -51,8 +51,10 @@ reports now also show required data sources and availability status without
 printing keys or private holdings. The Individual Security role has a first
 read-only AkShare adapter for financial statements, announcements, and valuation
 metrics with dependency-aware fallback. The ETF role has a first read-only
-adapter for ETF quotes, liquidity, and premium/discount checks. Next step is
-adding richer interpretation and macro data tools.
+adapter for ETF quotes, liquidity, and premium/discount checks. The Macro role
+has a first read-only adapter for rates, FX, and liquidity source status with
+dependency-aware fallback. Next step is adding richer interpretation on top of
+these data states.
 
 ## L5: Semi-Automated Decision Support
 
