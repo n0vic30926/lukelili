@@ -55,8 +55,10 @@ adapter for ETF quotes, liquidity, and premium/discount checks. The Macro role
 has a first read-only adapter for rates, FX, and liquidity source status with
 dependency-aware fallback. Role data-source states are now also interpreted into
 explicit impact paths and unconfirmed limitations, so execution reports no
-longer stop at raw availability lists. Next step is adding richer per-role
-research questions and branch fixtures.
+longer stop at raw availability lists. Role reports now also generate bounded
+per-role research questions from data-source states, keeping them as manual
+decision-support prompts rather than trade instructions. Next step is adding
+branch fixtures for richer report paths.
 
 ## L5: Semi-Automated Decision Support
 

@@ -12,6 +12,7 @@ from common.config_loader import get_decision_track_dir, get_portfolio_path, loa
 from common.data_sources import role_data_requirements, summarize_role_data_requirements
 from common.evidence import rank_evidence
 from common.research_interpretation import interpret_role_data_state
+from common.research_questions import build_role_research_questions
 
 
 ROLE_DEFINITIONS = {
@@ -401,6 +402,9 @@ def execute_research_plan(plan, portfolio, runners=None):
                 "interpretations": _safe_list(
                     result.get("interpretations") or interpret_role_data_state(role, data_sources)
                 ),
+                "research_questions": _safe_list(
+                    result.get("research_questions") or build_role_research_questions(role, data_sources)
+                ),
                 "limitations": _safe_list(result.get("limitations")),
                 "boundary": task.get("boundary", "decision_support_only"),
             }
@@ -452,6 +456,10 @@ def format_research_report(result):
         if role_result.get("interpretations"):
             lines.append("- interpretation:")
             for item in role_result["interpretations"]:
+                lines.append(f"  - {item}")
+        if role_result.get("research_questions"):
+            lines.append("- research questions:")
+            for item in role_result["research_questions"]:
                 lines.append(f"  - {item}")
         if role_result["limitations"]:
             lines.append("- limitations:")

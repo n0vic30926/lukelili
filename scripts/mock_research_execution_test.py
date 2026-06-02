@@ -76,6 +76,8 @@ def run_research_execution_test():
     _assert_contains(output, "- interpretation:")
     _assert_contains(output, "macro_rates")
     _assert_contains(output, "impact path")
+    _assert_contains(output, "- research questions:")
+    _assert_contains(output, "rate-sensitive exposure")
     _assert_contains(output, "## industry")
     _assert_contains(output, "- status: skipped")
     _assert_contains(output, "## security")

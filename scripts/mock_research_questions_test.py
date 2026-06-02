@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+"""Offline tests for per-role research question generation."""
+
+from common.research_questions import build_role_research_questions
+
+
+def _assert_contains(text, expected):
+    if expected not in text:
+        raise AssertionError(f"Expected text to contain: {expected}")
+
+
+def _assert_not_contains(text, unexpected):
+    if unexpected in text:
+        raise AssertionError(f"Text should not contain: {unexpected}")
+
+
+def run_research_questions_test():
+    macro_questions = build_role_research_questions(
+        "macro",
+        [
+            {"name": "macro_rates", "status": "missing_dependency"},
+            {"name": "fx_rates", "status": "available"},
+            {"name": "liquidity_indicators", "status": "failed"},
+        ],
+    )
+    macro_text = "\n".join(macro_questions)
+    _assert_contains(macro_text, "rate-sensitive exposure")
+    _assert_contains(macro_text, "FX translation")
+    _assert_contains(macro_text, "refresh before judgment")
+
+    security_questions = build_role_research_questions(
+        "security",
+        [
+            {"name": "financial_statements", "status": "available"},
+            {"name": "announcements", "status": "missing_dependency"},
+            {"name": "valuation_metrics", "status": "empty"},
+        ],
+    )
+    security_text = "\n".join(security_questions)
+    _assert_contains(security_text, "fundamental quality")
+    _assert_contains(security_text, "announcements")
+    _assert_contains(security_text, "valuation context")
+
+    unknown_questions = build_role_research_questions("unknown", [{"name": "x", "status": "available"}])
+    if unknown_questions:
+        raise AssertionError(f"Unexpected unknown-role questions: {unknown_questions}")
+
+    all_text = "\n".join(macro_questions + security_questions + unknown_questions)
+    _assert_not_contains(all_text, "买入")
+    _assert_not_contains(all_text, "卖出")
+    _assert_not_contains(all_text, "自动交易")
+
+
+def main():
+    run_research_questions_test()
+    print("Mock research questions test passed")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
