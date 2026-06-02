@@ -62,6 +62,7 @@ python3 scripts/mock_industry_intel_dynamic_test.py
 python3 scripts/mock_news_status_test.py
 python3 scripts/mock_research_execution_test.py
 python3 scripts/mock_research_dispatch_test.py
+python3 scripts/mock_research_interpretation_test.py
 python3 scripts/mock_security_research_test.py
 python3 scripts/mock_report_index_test.py
 python3 scripts/mock_review_history_test.py

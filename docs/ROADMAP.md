@@ -53,8 +53,10 @@ read-only AkShare adapter for financial statements, announcements, and valuation
 metrics with dependency-aware fallback. The ETF role has a first read-only
 adapter for ETF quotes, liquidity, and premium/discount checks. The Macro role
 has a first read-only adapter for rates, FX, and liquidity source status with
-dependency-aware fallback. Next step is adding richer interpretation on top of
-these data states.
+dependency-aware fallback. Role data-source states are now also interpreted into
+explicit impact paths and unconfirmed limitations, so execution reports no
+longer stop at raw availability lists. Next step is adding richer per-role
+research questions and branch fixtures.
 
 ## L5: Semi-Automated Decision Support
 

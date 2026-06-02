@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+"""Offline tests for role data-state interpretation."""
+
+from common.research_interpretation import interpret_role_data_state
+
+
+def _assert_contains(text, expected):
+    if expected not in text:
+        raise AssertionError(f"Expected text to contain: {expected}")
+
+
+def _assert_not_contains(text, unexpected):
+    if unexpected in text:
+        raise AssertionError(f"Text should not contain: {unexpected}")
+
+
+def run_research_interpretation_test():
+    macro_notes = interpret_role_data_state(
+        "macro",
+        [
+            {"name": "macro_rates", "status": "missing_dependency"},
+            {"name": "fx_rates", "status": "available"},
+            {"name": "liquidity_indicators", "status": "failed"},
+        ],
+    )
+    macro_text = "\n".join(macro_notes)
+    _assert_contains(macro_text, "macro_rates unavailable")
+    _assert_contains(macro_text, "fx_rates available")
+    _assert_contains(macro_text, "liquidity_indicators unavailable")
+    _assert_contains(macro_text, "unconfirmed")
+
+    etf_notes = interpret_role_data_state(
+        "etf",
+        [
+            {"name": "etf_quotes", "status": "available"},
+            {"name": "premium_discount", "status": "empty"},
+            {"name": "liquidity_metrics", "status": "available"},
+        ],
+    )
+    etf_text = "\n".join(etf_notes)
+    _assert_contains(etf_text, "etf_quotes available")
+    _assert_contains(etf_text, "premium_discount unavailable")
+    _assert_contains(etf_text, "liquidity_metrics available")
+
+    unknown_notes = interpret_role_data_state("unknown", [{"name": "x", "status": "available"}])
+    if unknown_notes:
+        raise AssertionError(f"Unexpected unknown-role notes: {unknown_notes}")
+
+    all_text = "\n".join(macro_notes + etf_notes + unknown_notes)
+    _assert_not_contains(all_text, "买入")
+    _assert_not_contains(all_text, "卖出")
+    _assert_not_contains(all_text, "自动交易")
+
+
+def main():
+    run_research_interpretation_test()
+    print("Mock research interpretation test passed")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -11,6 +11,7 @@ import sys
 from common.config_loader import get_decision_track_dir, get_portfolio_path, load_settings, resolve_path
 from common.data_sources import role_data_requirements, summarize_role_data_requirements
 from common.evidence import rank_evidence
+from common.research_interpretation import interpret_role_data_state
 
 
 ROLE_DEFINITIONS = {
@@ -388,6 +389,7 @@ def execute_research_plan(plan, portfolio, runners=None):
                 "evidence": [{"label": role, "source_tier": "unknown", "freshness": "unknown"}],
                 "limitations": [type(exc).__name__],
             }
+        data_sources = result.get("data_sources") or summarize_role_data_requirements(role)
         role_results.append(
             {
                 "role": role,
@@ -395,7 +397,10 @@ def execute_research_plan(plan, portfolio, runners=None):
                 "status": str(result.get("status") or "unknown"),
                 "observations": _safe_list(result.get("observations")),
                 "evidence": rank_evidence(result.get("evidence")),
-                "data_sources": result.get("data_sources") or summarize_role_data_requirements(role),
+                "data_sources": data_sources,
+                "interpretations": _safe_list(
+                    result.get("interpretations") or interpret_role_data_state(role, data_sources)
+                ),
                 "limitations": _safe_list(result.get("limitations")),
                 "boundary": task.get("boundary", "decision_support_only"),
             }
@@ -444,6 +449,10 @@ def format_research_report(result):
                     f"{item['name']} | source={item['source']} | status={item['status']} "
                     f"| source_tier={item['source_tier']}"
                 )
+        if role_result.get("interpretations"):
+            lines.append("- interpretation:")
+            for item in role_result["interpretations"]:
+                lines.append(f"  - {item}")
         if role_result["limitations"]:
             lines.append("- limitations:")
             for item in role_result["limitations"]:

@@ -126,6 +126,7 @@ python3 scripts/mock_industry_intel_dynamic_test.py
 python3 scripts/mock_news_status_test.py
 python3 scripts/mock_research_execution_test.py
 python3 scripts/mock_research_dispatch_test.py
+python3 scripts/mock_research_interpretation_test.py
 python3 scripts/mock_security_research_test.py
 python3 scripts/mock_report_index_test.py
 python3 scripts/mock_review_history_test.py
@@ -238,6 +239,7 @@ Delivery配置（所有cron通用）：
 - [x] L4 只读研究执行：本地角色 runner 与聚合研究报告
 - [x] 证据可靠性排序：source_tier / freshness / score 进入研究与决策输出
 - [x] L4 Macro 只读数据适配：利率、汇率、流动性 AkShare 状态与缺依赖降级
+- [x] L4 数据状态解释：将角色数据源可用性映射为组合影响路径和未确认限制
 - [ ] L4 多 Agent 研究角色：接入更完整的真实数据工具与证据排序
 - [x] L5 决策辅助安全层：候选动作、风险、风险硬规则检查、确认清单，不允许自动交易
 - [ ] L5 半自动决策辅助：接入更完整数据后的人工确认工作流
