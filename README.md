@@ -137,6 +137,7 @@ python3 scripts/mock_research_execution_test.py
 python3 scripts/mock_research_dispatch_test.py
 python3 scripts/mock_research_interpretation_test.py
 python3 scripts/mock_research_questions_test.py
+python3 scripts/mock_risk_research_test.py
 python3 scripts/mock_security_research_test.py
 python3 scripts/mock_report_index_test.py
 python3 scripts/mock_review_history_test.py
@@ -254,6 +255,7 @@ Delivery配置（所有cron通用）：
 - [x] 证据可靠性排序：source_tier / freshness / score 进入研究与决策输出
 - [x] L4 Macro 只读数据适配：利率、汇率、流动性 AkShare 状态与缺依赖降级
 - [x] L4 Industry 只读数据适配：组合驱动新闻查询数、行业/概念轮动 AkShare 状态与缺依赖降级
+- [x] L4 Risk 只读数据适配：匿名组合暴露、风险规则/因子状态、市场报价状态与缺依赖降级
 - [x] L4 数据状态解释：将角色数据源可用性映射为组合影响路径和未确认限制
 - [x] L4 角色研究问题：按角色和数据源状态生成下一步核查问题
 - [x] L4 研究分支夹具：脱敏覆盖 ok/skipped/failed、证据、解释、问题路径

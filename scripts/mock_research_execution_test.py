@@ -100,6 +100,7 @@ def run_research_execution_test():
     _assert_contains(output, "etf_quotes | source=AkShare | status=")
     _assert_contains(output, "## risk")
     _assert_contains(output, "- risk rules present")
+    _assert_contains(output, "portfolio_exposure | source=local | status=available | source_tier=local_user_data")
     _assert_contains(output, "portfolio.risk_rules | source_tier=local_user_data | freshness=fresh | score=")
     _assert_contains(output, "external rumor | source_tier=news_search | freshness=unknown | score=")
     _assert_contains(output, "## review")

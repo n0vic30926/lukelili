@@ -24,6 +24,7 @@ ROLE_SOURCE_NOTES = {
     },
     "risk": {
         "risk_rules": "hard risk-control impact path",
+        "portfolio_exposure": "portfolio concentration impact path",
         "market_quotes": "market movement impact path",
         "factor_exposure": "factor concentration impact path",
     },

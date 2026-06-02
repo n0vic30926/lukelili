@@ -73,6 +73,7 @@ python3 scripts/mock_research_execution_test.py
 python3 scripts/mock_research_dispatch_test.py
 python3 scripts/mock_research_interpretation_test.py
 python3 scripts/mock_research_questions_test.py
+python3 scripts/mock_risk_research_test.py
 python3 scripts/mock_security_research_test.py
 python3 scripts/mock_report_index_test.py
 python3 scripts/mock_review_history_test.py

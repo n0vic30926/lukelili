@@ -33,8 +33,9 @@ ROLE_DATA_REQUIREMENTS = {
     "risk": [
         {"name": "portfolio_context", "source": "local"},
         {"name": "risk_rules", "source": "local"},
+        {"name": "portfolio_exposure", "source": "local"},
         {"name": "market_quotes", "source": "AkShare"},
-        {"name": "factor_exposure", "source": "AkShare"},
+        {"name": "factor_exposure", "source": "local"},
     ],
     "review": [
         {"name": "report_index", "source": "local"},

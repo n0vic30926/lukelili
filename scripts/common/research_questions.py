@@ -63,6 +63,10 @@ ROLE_SOURCE_QUESTIONS = {
             "available": "Which hard risk controls should be checked against current portfolio exposure?",
             "unavailable": "Which risk_rules source must refresh before judgment on hard risk controls?",
         },
+        "portfolio_exposure": {
+            "available": "Which portfolio concentration questions are supported by current portfolio_exposure?",
+            "unavailable": "Which portfolio_exposure source must refresh before judgment on concentration risk?",
+        },
         "market_quotes": {
             "available": "What market movement context should be checked before risk judgment?",
             "unavailable": "Which market_quotes source must refresh before judgment on market movement context?",

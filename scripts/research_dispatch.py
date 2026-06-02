@@ -158,6 +158,41 @@ def _portfolio_runner(task, portfolio):
     }
 
 
+def _risk_runner(task, portfolio):
+    observations = []
+    evidence = [
+        {"label": "portfolio summary", "source_tier": "local_user_data", "freshness": "fresh"}
+    ]
+    data_sources = [
+        {
+            "name": "portfolio_context",
+            "source": "local",
+            "status": "available",
+            "source_tier": "local_user_data",
+        }
+    ]
+    limitations = []
+    try:
+        from risk_research import fetch_risk_research
+
+        research = fetch_risk_research(portfolio)
+        observations.extend(_safe_list(research.get("observations"), limit=8))
+        evidence.extend(research.get("evidence") or [])
+        data_sources = research.get("data_sources") or data_sources
+        limitations.extend(_safe_list(research.get("limitations"), limit=5))
+        observations.append(f"risk_data_status={research.get('status', 'unknown')}")
+    except Exception as exc:
+        limitations.append(type(exc).__name__)
+
+    return {
+        "status": "ok",
+        "observations": observations,
+        "evidence": evidence,
+        "data_sources": data_sources,
+        "limitations": limitations,
+    }
+
+
 def _macro_runner(task, portfolio):
     summary = _portfolio_summary(portfolio)
     observations = [
@@ -380,7 +415,7 @@ DEFAULT_RUNNERS = {
     "industry": _industry_runner,
     "security": _security_runner,
     "etf": _etf_runner,
-    "risk": _portfolio_runner,
+    "risk": _risk_runner,
     "review": _review_runner,
 }
 
@@ -407,7 +442,7 @@ def execute_research_plan(plan, portfolio, runners=None):
                 "role": role,
                 "scope": task["scope"],
                 "status": str(result.get("status") or "unknown"),
-                "observations": _safe_list(result.get("observations")),
+                "observations": _safe_list(result.get("observations"), limit=8),
                 "evidence": rank_evidence(result.get("evidence")),
                 "data_sources": data_sources,
                 "interpretations": _safe_list(

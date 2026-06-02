@@ -37,6 +37,16 @@ def run_data_sources_test():
     if "tvly" + "-" in industry_rendered:
         raise AssertionError("Data source summaries must not expose API key values")
 
+    risk = summarize_role_data_requirements("risk", env={})
+    risk_rendered = "\n".join(
+        f"{item['name']} source={item['source']} status={item['status']} tier={item['source_tier']}"
+        for item in risk
+    )
+    _assert_contains(risk_rendered, "risk_rules source=local status=available tier=local_user_data")
+    _assert_contains(risk_rendered, "portfolio_exposure source=local status=available tier=local_user_data")
+    _assert_contains(risk_rendered, "market_quotes source=AkShare status=")
+    _assert_contains(risk_rendered, "factor_exposure source=local status=available tier=local_user_data")
+
 
 def main():
     run_data_sources_test()

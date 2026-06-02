@@ -58,14 +58,16 @@ adapter for ETF quotes, liquidity, and premium/discount checks. The Macro role
 has a first read-only adapter for rates, FX, and liquidity source status with
 dependency-aware fallback. The Industry role has a first read-only adapter for
 portfolio-driven news query counts plus AkShare industry/concept rotation source
-states. Role data-source states are now also interpreted into explicit impact
-paths and unconfirmed limitations, so execution reports no longer stop at raw
-availability lists. Role reports now also generate bounded per-role research
-questions from data-source states, keeping them as manual decision-support
-prompts rather than trade instructions. Sanitized research branch fixtures now
-cover ok/skipped/failed role paths, ranked evidence, data sources,
-interpretations, and research questions. Next step is expanding Risk/Review and
-cross-role data tools behind each role.
+states. The Risk role has a first read-only adapter for anonymized portfolio
+exposure, local risk-rule/factor-profile state, and AkShare market quote
+availability. Role data-source states are now also interpreted into explicit
+impact paths and unconfirmed limitations, so execution reports no longer stop
+at raw availability lists. Role reports now also generate bounded per-role
+research questions from data-source states, keeping them as manual
+decision-support prompts rather than trade instructions. Sanitized research
+branch fixtures now cover ok/skipped/failed role paths, ranked evidence, data
+sources, interpretations, and research questions. Next step is expanding Review
+and cross-role data tools behind each role.
 
 ## L5: Semi-Automated Decision Support
 
