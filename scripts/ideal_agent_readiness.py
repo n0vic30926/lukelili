@@ -20,6 +20,7 @@ from common.research_synthesis import synthesize_research_result
 from competitive_readiness import build_competitive_readiness
 from decision_support import build_decision_packet
 from etf_research import normalize_etf_holding_rows
+from portfolio_backtest import build_portfolio_backtest
 from portfolio_intersection import build_stock_intersection
 from portfolio_scenarios import build_scenario_review
 from portfolio_xray import build_portfolio_xray
@@ -116,6 +117,23 @@ def build_readiness_matrix():
             + str(stock_intersection.get("underlying_count", 0))
             + " covered="
             + str(stock_intersection.get("covered_holding_count", 0)),
+        )
+    )
+
+    backtest = build_portfolio_backtest(portfolio)
+    entries.append(
+        _entry(
+            "L2",
+            "portfolio backtest exposes historical return, drawdown, and volatility",
+            backtest.get("observation_count", 0) > 0
+            and "period_return_pct" in backtest
+            and "max_drawdown_pct" in backtest
+            and "annualized_volatility_pct" in backtest
+            and backtest.get("boundary", {}).get("execution_allowed") is False,
+            "portfolio backtest observations="
+            + str(backtest.get("observation_count", 0))
+            + " max_drawdown_pct="
+            + str(backtest.get("max_drawdown_pct", 0.0)),
         )
     )
 

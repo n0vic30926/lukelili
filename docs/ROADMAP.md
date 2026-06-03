@@ -36,10 +36,12 @@ Status: local path/config/schema foundation in place. Portfolio validation now
 checks required risk rules, positive cost/share values, and buy-record fields
 without printing private asset details. Local exposure checks now summarize
 cash/invested percentages, max single-position percentage, and strategy/factor/
-market distribution with anonymized holding refs. A local stock-intersection
-module now consumes optional `underlying_holdings` to calculate anonymized direct
-and indirect underlying concentration, overlap, coverage, and warnings. A local
-portfolio x-ray now adds allocation, factor overlap clusters, stock
+market distribution with anonymized holding refs. A local portfolio backtest
+module now consumes optional `return_history` to calculate anonymized historical
+period return, max drawdown, volatility, and coverage warnings. A local
+stock-intersection module now consumes optional `underlying_holdings` to
+calculate anonymized direct and indirect underlying concentration, overlap,
+coverage, and warnings. A local portfolio x-ray now adds allocation, factor overlap clusters, stock
 intersection, fee-coverage, and decision-support boundary review without
 printing private holdings. A local scenario review now supports explicit stress
 assumptions, model-projection labels, decision signals, and risk rule flags

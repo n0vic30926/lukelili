@@ -44,6 +44,20 @@
           "weight_pct": 20
         }
       ],
+      "return_history": [
+        {
+          "date": "2026-01-01",
+          "return_pct": 1.2
+        },
+        {
+          "date": "2026-01-02",
+          "return_pct": -0.8
+        },
+        {
+          "date": "2026-01-03",
+          "return_pct": 0.4
+        }
+      ],
       "buy_records": [
         {
           "date": "2026-01-02",

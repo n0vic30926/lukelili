@@ -26,6 +26,9 @@ an explicit guardrail.
 - stock intersection and holdings matrix: local optional `underlying_holdings`
   inputs can expose direct/indirect concentration while keeping only
   anonymized holding and underlying refs in rendered output.
+- local backtesting: optional `return_history` inputs can expose historical
+  return, drawdown, volatility, and coverage warnings without implying future
+  returns.
 - data freshness: reports and research roles show data-source status, freshness,
   and degraded paths when a source is missing or stale.
 - multi-role research: Macro, Industry, Individual Security, ETF, Risk, and

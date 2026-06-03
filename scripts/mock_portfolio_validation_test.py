@@ -29,6 +29,9 @@ def run_portfolio_validation_test():
                 "underlying_holdings": [
                     {"code": "EXAMPLE_UNDERLYING", "weight_pct": 35}
                 ],
+                "return_history": [
+                    {"date": "2026-01-01", "return_pct": 1.5}
+                ],
                 "buy_records": [
                     {
                         "date": "2026-01-02",
@@ -71,6 +74,10 @@ def run_portfolio_validation_test():
                     {"name": "", "weight_pct": 120},
                     "not-an-object",
                 ],
+                "return_history": [
+                    {"date": "", "return_pct": "bad"},
+                    "not-an-object",
+                ],
                 "buy_records": [
                     {"date": "2026-01-02", "amount": -100, "nav": 0, "shares": 0},
                     "not-an-object",
@@ -90,6 +97,9 @@ def run_portfolio_validation_test():
     _assert_has_error(errors, "holding[0].underlying_holdings[0] code or name is required")
     _assert_has_error(errors, "holding[0].underlying_holdings[0].weight_pct must be between 0 and 100")
     _assert_has_error(errors, "holding[0].underlying_holdings[1] must be an object")
+    _assert_has_error(errors, "holding[0].return_history[0] date is required")
+    _assert_has_error(errors, "holding[0].return_history[0].return_pct must be numeric")
+    _assert_has_error(errors, "holding[0].return_history[1] must be an object")
     _assert_has_error(errors, "holding[0].buy_records[0] confirm_date is required unless status=pending")
     _assert_has_error(errors, "holding[0].buy_records[0].amount must be positive")
     _assert_has_error(errors, "holding[0].buy_records[0].nav must be positive")

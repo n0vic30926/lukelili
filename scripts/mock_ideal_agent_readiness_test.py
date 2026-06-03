@@ -35,6 +35,7 @@ def run_ideal_agent_readiness_test():
     _assert_contains(output, "research coverage")
     _assert_contains(output, "normalized ETF holdings")
     _assert_contains(output, "portfolio x-ray")
+    _assert_contains(output, "portfolio backtest")
     _assert_contains(output, "stock intersection")
     _assert_contains(output, "portfolio scenarios")
     _assert_contains(output, "model projection")

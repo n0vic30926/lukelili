@@ -32,6 +32,10 @@ def run_report_decision_context_test():
                 "underlying_holdings": [
                     {"code": "PRIVATE_UNDERLYING", "weight_pct": 50}
                 ],
+                "return_history": [
+                    {"date": "2026-01-01", "return_pct": 1.0},
+                    {"date": "2026-01-02", "return_pct": -2.0},
+                ],
             }
         ],
         "watchlist": [],
@@ -60,6 +64,8 @@ def run_report_decision_context_test():
 
     _assert_contains(output, "- xray_holding_count=1")
     _assert_contains(output, "- xray_underlying_count=1")
+    _assert_contains(output, "- backtest_observation_count=2")
+    _assert_contains(output, "- backtest_max_drawdown_pct=-2.0")
     _assert_contains(output, "- scenario_projection=model projection, not a fact")
     _assert_contains(output, "- xray_fee_coverage=1")
     _assert_contains(output, "scenario=tech_drawdown decision_signal=risk_reduction_review priority=high")

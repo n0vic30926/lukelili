@@ -54,6 +54,17 @@
               ]
             }
           },
+          "return_history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["date", "return_pct"],
+              "properties": {
+                "date": {"type": "string"},
+                "return_pct": {"type": ["number", "integer"]}
+              }
+            }
+          },
           "buy_records": {
             "type": "array",
             "items": {

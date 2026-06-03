@@ -96,6 +96,19 @@ def _validate_underlying_holding(errors, holding_index, underlying_index, item):
         _validate_nonnegative_percent(errors, f"{label}.weight_pct", item["weight_pct"])
 
 
+def _validate_return_history_item(errors, holding_index, history_index, item):
+    label = f"holding[{holding_index}].return_history[{history_index}]"
+    if not isinstance(item, dict):
+        errors.append(f"{label} must be an object")
+        return
+    if not str(item.get("date") or "").strip():
+        errors.append(f"{label} date is required")
+    if "return_pct" not in item:
+        errors.append(f"{label}.return_pct is required")
+    elif not _is_number(item["return_pct"]):
+        errors.append(f"{label}.return_pct must be numeric")
+
+
 def validate_portfolio(data):
     errors = []
     for field in REQUIRED_TOP_LEVEL:
@@ -132,6 +145,11 @@ def validate_portfolio(data):
         elif "underlying_holdings" in holding:
             for underlying_index, item in enumerate(holding["underlying_holdings"]):
                 _validate_underlying_holding(errors, index, underlying_index, item)
+        if "return_history" in holding and not isinstance(holding["return_history"], list):
+            errors.append(f"holding[{index}] return_history must be a list")
+        elif "return_history" in holding:
+            for history_index, item in enumerate(holding["return_history"]):
+                _validate_return_history_item(errors, index, history_index, item)
     return errors
 
 

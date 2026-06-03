@@ -40,6 +40,17 @@ Validate a portfolio file:
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 ```
 
+Review anonymized local historical return and drawdown metrics:
+
+```bash
+python3 scripts/portfolio_backtest.py data/examples/portfolio.example.json
+```
+
+`portfolio_backtest.py` consumes optional `return_history` fields and reports
+historical period return, max drawdown, volatility, and coverage warnings. It
+does not forecast future returns by itself or create executable trade
+instructions; downstream reports may use it as decision-support context.
+
 Inspect anonymized direct and indirect underlying concentration:
 
 ```bash
