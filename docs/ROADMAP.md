@@ -82,9 +82,12 @@ manual decision-support prompts rather than trade instructions. Sanitized
 research branch fixtures now cover ok/skipped/failed role paths, ranked
 evidence, data sources, interpretations, and research questions. Cross-role
 research synthesis now summarizes role status, data-source status, unavailable
-sources, and ranked evidence for downstream confirmation audit. Real data depth
-can continue expanding by role, while end-to-end readiness is now checked by the
-ideal-agent acceptance matrix and the competitive benchmark gate.
+sources, coverage percentage, prioritized data gaps, and ranked evidence for
+downstream confirmation audit. Research execution reports now include a coverage
+matrix before role details, so missing AkShare/Tavily/local-history inputs are
+visible before model judgment. Real data depth can continue expanding by role,
+while end-to-end readiness is now checked by the ideal-agent acceptance matrix
+and the competitive benchmark gate.
 
 ## L5: Semi-Automated Decision Support
 

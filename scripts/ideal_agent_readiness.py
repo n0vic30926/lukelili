@@ -307,6 +307,21 @@ def build_readiness_matrix():
             f"role_count={synthesis['role_count']} unavailable_sources={len(synthesis['unavailable_sources'])}",
         )
     )
+    coverage = synthesis.get("coverage") or {}
+    entries.append(
+        _entry(
+            "L4/L5",
+            "cross-role research coverage ranks data gaps before decision support",
+            coverage.get("role_count") == len(role_results)
+            and coverage.get("requirement_count", 0) > 0
+            and "coverage_pct" in coverage
+            and all(item.get("priority") for item in coverage.get("gaps", [])),
+            "research coverage coverage_pct="
+            + str(coverage.get("coverage_pct", 0.0))
+            + " gaps="
+            + str(len(coverage.get("gaps") or [])),
+        )
+    )
 
     packet = build_decision_packet(portfolio, research_result, scenario_review=scenario_review)
     confirmation = packet["confirmation_state"]

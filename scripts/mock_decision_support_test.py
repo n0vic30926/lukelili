@@ -115,6 +115,8 @@ def run_decision_support_test():
     _assert_contains(output, "external rumor | source_tier=news_search | freshness=unknown | score=")
     _assert_contains(output, "## Cross-Role Research Audit")
     _assert_contains(output, "role_status_counts: ok=1")
+    _assert_contains(output, "coverage_pct=50.0")
+    _assert_contains(output, "coverage_gap role=risk source=market_quotes priority=medium")
     _assert_contains(output, "data_source_status_counts: available=1 missing_dependency=1")
     _assert_contains(output, "unconfirmed_source role=risk source=market_quotes status=missing_dependency")
     _assert_contains(output, "## Risk Rule Checks")

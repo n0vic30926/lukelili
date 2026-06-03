@@ -121,6 +121,10 @@ The dispatch command only creates a role/task contract or a merged research
 report. It does not run broker actions or convert research into
 user-confirmed trades.
 
+Executed research reports include a cross-role coverage matrix. The matrix
+shows total data requirements, available sources, coverage percentage, and the
+highest-priority missing data gaps before role-level observations.
+
 Create a decision-support packet:
 
 ```bash

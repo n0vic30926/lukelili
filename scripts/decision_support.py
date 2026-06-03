@@ -281,6 +281,22 @@ def format_decision_packet(packet):
                 f"unconfirmed_source role={item['role']} "
                 f"source={item['source']} status={item['status']}"
             )
+        if synthesis.get("coverage"):
+            coverage = synthesis["coverage"]
+            lines.append(
+                "- "
+                f"coverage_pct={coverage.get('coverage_pct', 0.0)} "
+                f"available={coverage.get('available_count', 0)}/"
+                f"{coverage.get('requirement_count', 0)}"
+            )
+            for item in (coverage.get("gaps") or [])[:3]:
+                lines.append(
+                    "- "
+                    f"coverage_gap role={item.get('role')} "
+                    f"source={item.get('source')} "
+                    f"priority={item.get('priority')} "
+                    f"status={item.get('status')}"
+                )
         lines.append("")
 
     if packet["risk_rule_checks"]:

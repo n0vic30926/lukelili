@@ -76,6 +76,9 @@ def run_research_execution_test():
 
     output = format_research_report(result)
     _assert_contains(output, "# Research Execution Report")
+    _assert_contains(output, "## Research Coverage Matrix")
+    _assert_contains(output, "coverage_pct=")
+    _assert_contains(output, "source=news_search status=missing_key priority=high")
     _assert_contains(output, "## macro")
     _assert_contains(output, "macro_data_status=")
     _assert_contains(output, "macro_rates | source=AkShare | status=")

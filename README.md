@@ -144,6 +144,7 @@ python3 scripts/mock_industry_intel_dynamic_test.py
 python3 scripts/mock_industry_research_test.py
 python3 scripts/mock_news_status_test.py
 python3 scripts/mock_research_branch_fixtures_test.py
+python3 scripts/mock_research_coverage_test.py
 python3 scripts/mock_research_execution_test.py
 python3 scripts/mock_research_dispatch_test.py
 python3 scripts/mock_research_interpretation_test.py
@@ -279,6 +280,7 @@ Delivery配置（所有cron通用）：
 - [x] L4 Industry 数据适配扩展：新闻搜索可用性之外加入新闻结果计数与信号分布
 - [x] L4 Risk 数据适配扩展：本地硬规则违例、现金缓冲与指数基准状态
 - [x] L4 跨角色证据综合：角色状态、数据源状态、缺口和 ranked evidence 汇总进入 L5 审计
+- [x] L4 研究覆盖矩阵：跨角色数据源覆盖率、缺口优先级和 coverage gaps 进入研究/L5 输出
 - [x] L4 数据状态解释：将角色数据源可用性映射为组合影响路径和未确认限制
 - [x] L4 角色研究问题：按角色和数据源状态生成下一步核查问题
 - [x] L4 研究分支夹具：脱敏覆盖 ok/skipped/failed、证据、解释、问题路径

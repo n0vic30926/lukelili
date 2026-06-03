@@ -11,6 +11,7 @@ import sys
 from common.config_loader import get_portfolio_path
 from common.data_sources import role_data_requirements, summarize_role_data_requirements
 from common.evidence import rank_evidence
+from common.research_coverage import build_research_coverage_matrix, format_research_coverage
 from common.research_interpretation import interpret_role_data_state
 from common.research_questions import build_role_research_questions
 
@@ -465,6 +466,8 @@ def format_research_report(result):
     )
     lines.append(f"- Requires user confirmation: {'yes' if result.get('requires_user_confirmation') else 'no'}")
     lines.append("- Boundary: decision support only")
+    lines.append("")
+    lines.append(format_research_coverage(build_research_coverage_matrix(result)))
     lines.append("")
     for role_result in result.get("role_results", []):
         lines.append(f"## {role_result['role']}")

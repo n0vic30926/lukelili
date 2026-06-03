@@ -47,6 +47,10 @@ def run_research_synthesis_test():
         raise AssertionError(f"Unexpected role status counts: {summary}")
     if summary["data_source_status_counts"] != {"available": 1, "empty": 1, "missing_dependency": 1, "missing_file": 1}:
         raise AssertionError(f"Unexpected source status counts: {summary}")
+    if summary["coverage"]["coverage_pct"] != 25.0:
+        raise AssertionError(f"Unexpected coverage matrix: {summary}")
+    if summary["coverage"]["gaps"][0]["priority"] != "high":
+        raise AssertionError(f"Expected high-priority coverage gap: {summary}")
 
     gaps = "\n".join(item["source_ref"] + " " + item["status"] for item in summary["unavailable_sources"])
     _assert_contains(gaps, "risk.market_quotes missing_dependency")

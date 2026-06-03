@@ -1,6 +1,7 @@
 """Cross-role research synthesis for decision-support confirmation audit."""
 
 from common.evidence import rank_evidence
+from common.research_coverage import build_research_coverage_matrix
 
 
 UNAVAILABLE_STATUSES = {
@@ -73,6 +74,7 @@ def synthesize_research_result(research_result, evidence_limit=8, gap_limit=12):
         "role_count": len(role_results),
         "role_status_counts": role_status_counts,
         "data_source_status_counts": _count_by(source_statuses),
+        "coverage": build_research_coverage_matrix(research_result),
         "unavailable_sources": unavailable_sources[:gap_limit],
         "confirmation_audit_items": confirmation_audit_items[:gap_limit],
         "ranked_evidence": rank_evidence(evidence)[:evidence_limit],
