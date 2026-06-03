@@ -27,6 +27,9 @@ def run_portfolio_xray_test():
                 "market": "us_stock",
                 "expense_ratio": 0.2,
                 "factor_profile": {"type": "growth", "benchmark": "NASDAQ"},
+                "underlying_holdings": [
+                    {"code": "PRIVATE_ALPHA", "name": "Private Alpha", "weight_pct": 60}
+                ],
             },
             {
                 "code": "PRIVATE_B",
@@ -36,6 +39,9 @@ def run_portfolio_xray_test():
                 "market": "us_stock",
                 "expense_ratio": 0.5,
                 "factor_profile": {"type": "growth", "benchmark": "NASDAQ"},
+                "underlying_holdings": [
+                    {"code": "PRIVATE_ALPHA", "name": "Private Alpha", "weight_pct": 40}
+                ],
             },
             {
                 "code": "PRIVATE_C",
@@ -61,6 +67,10 @@ def run_portfolio_xray_test():
         raise AssertionError(f"Expected missing fee ref: {xray}")
     if "fee_data_missing" not in [warning["type"] for warning in xray["warnings"]]:
         raise AssertionError(f"Expected fee-data warning: {xray}")
+    if xray["stock_intersection"]["underlying_count"] != 1:
+        raise AssertionError(f"Expected stock intersection: {xray}")
+    if "underlying_overlap_review_required" not in [warning["type"] for warning in xray["warnings"]]:
+        raise AssertionError(f"Expected underlying overlap warning: {xray}")
 
     rendered = format_portfolio_xray(xray)
     for expected in [
@@ -68,6 +78,8 @@ def run_portfolio_xray_test():
         "## Allocation",
         "## Overlap Review",
         "## Fee Review",
+        "## Stock Intersection",
+        "underlying_count=1",
         "overlap cluster",
         "weighted_expense_ratio_pct=0.3",
         "fee_data_missing",

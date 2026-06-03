@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 
 from common.portfolio_exposure import summarize_portfolio_exposure
+from portfolio_intersection import build_stock_intersection
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -109,6 +110,7 @@ def build_portfolio_xray(portfolio):
     exposure = summarize_portfolio_exposure(portfolio)
     overlap_clusters = _build_overlap_clusters(holdings, holding_values, invested)
     fee_review = _build_fee_review(holdings, holding_values)
+    stock_intersection = build_stock_intersection(portfolio)
 
     warnings = list(exposure.get("warnings") or [])
     if fee_review["missing_fee_refs"]:
@@ -125,6 +127,7 @@ def build_portfolio_xray(portfolio):
                 "cluster_count": len(overlap_clusters),
             }
         )
+    warnings.extend(stock_intersection.get("warnings") or [])
 
     return {
         "holding_count": len(holdings),
@@ -138,6 +141,7 @@ def build_portfolio_xray(portfolio):
             "market_counts": exposure["market_counts"],
         },
         "overlap_clusters": overlap_clusters,
+        "stock_intersection": stock_intersection,
         "fee_review": fee_review,
         "warnings": warnings,
         "boundary": {
@@ -184,6 +188,25 @@ def format_portfolio_xray(xray):
             )
     else:
         lines.append("- overlap cluster: none")
+    lines.append("")
+
+    intersection = xray.get("stock_intersection") or {}
+    lines.append("## Stock Intersection")
+    lines.append("- underlying_count=" + str(intersection.get("underlying_count", 0)))
+    lines.append(
+        "- covered_holding_count="
+        + str(intersection.get("covered_holding_count", 0))
+    )
+    if intersection.get("top_underlyings"):
+        for item in intersection["top_underlyings"][:5]:
+            lines.append(
+                "- "
+                f"underlying_ref={item['underlying_ref']} "
+                f"portfolio_pct={item['portfolio_pct']} "
+                f"source_holding_refs={','.join(item['source_holding_refs'])}"
+            )
+    else:
+        lines.append("- top_underlyings=none")
     lines.append("")
 
     lines.append("## Fee Review")

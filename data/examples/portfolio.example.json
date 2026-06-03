@@ -13,7 +13,8 @@
   "risk_rules": {
     "single_loss_pct": 2,
     "daily_loss_pct": 6,
-    "max_single_position_pct": 35
+    "max_single_position_pct": 35,
+    "max_underlying_position_pct": 25
   },
   "holdings": [
     {
@@ -31,6 +32,18 @@
       "cost_basis": 10000,
       "shares": 1000,
       "expense_ratio": 0.45,
+      "underlying_holdings": [
+        {
+          "code": "EXAMPLE_UNDERLYING_A",
+          "name": "Example Underlying A",
+          "weight_pct": 35
+        },
+        {
+          "code": "EXAMPLE_UNDERLYING_B",
+          "name": "Example Underlying B",
+          "weight_pct": 20
+        }
+      ],
       "buy_records": [
         {
           "date": "2026-01-02",

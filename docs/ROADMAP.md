@@ -36,13 +36,16 @@ Status: local path/config/schema foundation in place. Portfolio validation now
 checks required risk rules, positive cost/share values, and buy-record fields
 without printing private asset details. Local exposure checks now summarize
 cash/invested percentages, max single-position percentage, and strategy/factor/
-market distribution with anonymized holding refs. A local portfolio x-ray now
-adds allocation, overlap cluster, fee-coverage, and decision-support boundary
-review without printing private holdings. A local scenario review now supports
-explicit stress assumptions, model-projection labels, decision signals, and risk
-rule flags without turning them into executable orders. Scenario assumptions now
-have a local validator for allowed match keys, non-empty shocks, and bounded
-shock percentages. Next step is moving real holdings into
+market distribution with anonymized holding refs. A local stock-intersection
+module now consumes optional `underlying_holdings` to calculate anonymized direct
+and indirect underlying concentration, overlap, coverage, and warnings. A local
+portfolio x-ray now adds allocation, factor overlap clusters, stock
+intersection, fee-coverage, and decision-support boundary review without
+printing private holdings. A local scenario review now supports explicit stress
+assumptions, model-projection labels, decision signals, and risk rule flags
+without turning them into executable orders. Scenario assumptions now have a
+local validator for allowed match keys, non-empty shocks, and bounded shock
+percentages. Next step is moving real holdings into
 `data/private/portfolio.local.json` manually.
 
 ## L3: Daily And Weekly Reports

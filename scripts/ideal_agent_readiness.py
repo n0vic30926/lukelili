@@ -19,6 +19,7 @@ from common.data_sources import role_data_requirements
 from common.research_synthesis import synthesize_research_result
 from competitive_readiness import build_competitive_readiness
 from decision_support import build_decision_packet
+from portfolio_intersection import build_stock_intersection
 from portfolio_scenarios import build_scenario_review
 from portfolio_xray import build_portfolio_xray
 from research_dispatch import build_research_plan, execute_research_plan
@@ -95,6 +96,25 @@ def build_readiness_matrix():
             and xray.get("boundary", {}).get("execution_allowed") is False,
             "portfolio_xray fee_coverage_count="
             + str(xray.get("fee_review", {}).get("fee_coverage_count")),
+        )
+    )
+
+    stock_intersection = build_stock_intersection(portfolio)
+    entries.append(
+        _entry(
+            "L2",
+            "stock intersection exposes anonymized direct and indirect underlying concentration",
+            stock_intersection.get("underlying_count", 0) > 0
+            and stock_intersection.get("covered_holding_count", 0) > 0
+            and stock_intersection.get("boundary", {}).get("execution_allowed") is False
+            and all(
+                item.get("underlying_ref", "").startswith("underlying_")
+                for item in stock_intersection.get("top_underlyings", [])
+            ),
+            "stock intersection underlying_count="
+            + str(stock_intersection.get("underlying_count", 0))
+            + " covered="
+            + str(stock_intersection.get("covered_holding_count", 0)),
         )
     )
 

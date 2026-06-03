@@ -77,6 +77,8 @@ def build_competitive_readiness():
         "tax-loss harvesting",
         "portfolio tracking",
         "portfolio x-ray",
+        "stock intersection",
+        "holdings matrix",
         "backtesting",
         "factor analysis",
         "AI research",

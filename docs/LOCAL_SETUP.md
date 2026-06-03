@@ -40,6 +40,16 @@ Validate a portfolio file:
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 ```
 
+Inspect anonymized direct and indirect underlying concentration:
+
+```bash
+python3 scripts/portfolio_intersection.py data/examples/portfolio.example.json
+```
+
+`portfolio_intersection.py` consumes optional `underlying_holdings` fields and
+renders only `holding_N` and `underlying_N` references. It is a local
+decision-support view, not a trade instruction.
+
 Validate scenario assumptions:
 
 ```bash
@@ -73,6 +83,7 @@ python3 scripts/mock_etf_research_test.py
 python3 scripts/mock_macro_research_test.py
 python3 scripts/mock_output_contract_test.py
 python3 scripts/mock_portfolio_exposure_test.py
+python3 scripts/mock_portfolio_intersection_test.py
 python3 scripts/mock_portfolio_validation_test.py
 python3 scripts/mock_report_branch_fixtures_test.py
 python3 scripts/mock_report_advice_classification_test.py

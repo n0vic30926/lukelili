@@ -49,10 +49,12 @@ def build_report_decision_context(portfolio, scenario_review=None):
     signals = _scenario_signals(scenario_review)
     ranked_signals = rank_scenario_signals(signals)
     scenario_boundary = (scenario_review or {}).get("boundary") or {}
+    stock_intersection = xray.get("stock_intersection") or {}
 
     facts = [
         "report_decision_context=enabled",
         "xray_holding_count=" + str(xray.get("holding_count", 0)),
+        "xray_underlying_count=" + str(stock_intersection.get("underlying_count", 0)),
         "xray_execution_allowed="
         + str(bool((xray.get("boundary") or {}).get("execution_allowed"))).lower(),
     ]

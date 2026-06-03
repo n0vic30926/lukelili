@@ -29,6 +29,9 @@ def run_report_decision_context_test():
                 "market": "US",
                 "expense_ratio": 0.6,
                 "factor_profile": {"type": "equity", "benchmark": "NASDAQ"},
+                "underlying_holdings": [
+                    {"code": "PRIVATE_UNDERLYING", "weight_pct": 50}
+                ],
             }
         ],
         "watchlist": [],
@@ -56,6 +59,7 @@ def run_report_decision_context_test():
     output = with_output_contract("# Daily Report\n\nbody", sections)
 
     _assert_contains(output, "- xray_holding_count=1")
+    _assert_contains(output, "- xray_underlying_count=1")
     _assert_contains(output, "- scenario_projection=model projection, not a fact")
     _assert_contains(output, "- xray_fee_coverage=1")
     _assert_contains(output, "scenario=tech_drawdown decision_signal=risk_reduction_review priority=high")

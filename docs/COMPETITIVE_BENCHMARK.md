@@ -23,6 +23,9 @@ an explicit guardrail.
   endpoints, place orders, or present buy/sell/hold language as execution.
 - evidence ranking: research output ranks facts by source tier, freshness, and
   reliability instead of flattening all observations into one narrative.
+- stock intersection and holdings matrix: local optional `underlying_holdings`
+  inputs can expose direct/indirect concentration while keeping only
+  anonymized holding and underlying refs in rendered output.
 - data freshness: reports and research roles show data-source status, freshness,
   and degraded paths when a source is missing or stale.
 - multi-role research: Macro, Industry, Individual Security, ETF, Risk, and

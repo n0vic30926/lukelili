@@ -49,6 +49,12 @@ def _validate_risk_rules(errors, data):
             _validate_percent(errors, f"risk_rules.{field}", rules[field])
         else:
             _validate_positive(errors, f"risk_rules.{field}", rules[field])
+    if "max_underlying_position_pct" in rules:
+        _validate_percent(
+            errors,
+            "risk_rules.max_underlying_position_pct",
+            rules["max_underlying_position_pct"],
+        )
 
 
 def _validate_buy_record(errors, holding_index, record_index, record):
@@ -75,6 +81,19 @@ def _validate_buy_record(errors, holding_index, record_index, record):
             errors.append(f"{label}.{field} is required unless status=pending")
         else:
             _validate_positive(errors, f"{label}.{field}", record[field])
+
+
+def _validate_underlying_holding(errors, holding_index, underlying_index, item):
+    label = f"holding[{holding_index}].underlying_holdings[{underlying_index}]"
+    if not isinstance(item, dict):
+        errors.append(f"{label} must be an object")
+        return
+    if not str(item.get("code") or item.get("symbol") or item.get("name") or "").strip():
+        errors.append(f"{label} code or name is required")
+    if "weight_pct" not in item:
+        errors.append(f"{label}.weight_pct is required")
+    else:
+        _validate_nonnegative_percent(errors, f"{label}.weight_pct", item["weight_pct"])
 
 
 def validate_portfolio(data):
@@ -108,6 +127,11 @@ def validate_portfolio(data):
         elif "buy_records" in holding:
             for record_index, record in enumerate(holding["buy_records"]):
                 _validate_buy_record(errors, index, record_index, record)
+        if "underlying_holdings" in holding and not isinstance(holding["underlying_holdings"], list):
+            errors.append(f"holding[{index}] underlying_holdings must be a list")
+        elif "underlying_holdings" in holding:
+            for underlying_index, item in enumerate(holding["underlying_holdings"]):
+                _validate_underlying_holding(errors, index, underlying_index, item)
     return errors
 
 
