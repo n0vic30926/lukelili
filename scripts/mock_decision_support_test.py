@@ -91,6 +91,10 @@ def run_decision_support_test():
         raise AssertionError(f"Candidates must avoid private holding identifiers: {packet}")
     if packet["scenario_signals"][0]["signal"] != "risk_reduction_review":
         raise AssertionError(f"Expected scenario signal in decision packet: {packet}")
+    if packet["ranked_scenario_signals"][0]["scenario"] != "risk_drawdown":
+        raise AssertionError(f"Expected ranked scenario signal: {packet}")
+    if packet["ranked_scenario_signals"][0]["priority"] != "high":
+        raise AssertionError(f"Expected high-priority scenario signal: {packet}")
     if packet["scenario_boundary"]["projection"] != "model projection, not a fact":
         raise AssertionError(f"Expected scenario projection boundary: {packet}")
 
@@ -122,6 +126,8 @@ def run_decision_support_test():
     _assert_contains(output, "max_position_pct=70.0")
     _assert_contains(output, "single_position_exceeds_rule holding_ref=holding_1")
     _assert_contains(output, "## Scenario Decision Signals")
+    _assert_contains(output, "priority=high")
+    _assert_contains(output, "score=")
     _assert_contains(output, "scenario=risk_drawdown")
     _assert_contains(output, "decision_signal=risk_reduction_review")
     _assert_contains(output, "projection=model projection, not a fact")

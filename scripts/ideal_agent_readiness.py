@@ -305,12 +305,17 @@ def build_readiness_matrix():
             "L5",
             "decision packet carries scenario signals into manual confirmation",
             bool(packet.get("scenario_signals"))
+            and bool(packet.get("ranked_scenario_signals"))
             and all(item.get("requires_user_confirmation") for item in packet["scenario_signals"])
+            and all(item.get("priority") for item in packet["ranked_scenario_signals"])
             and any(
                 item.get("type") == "scenario_signal_requires_confirmation"
                 for item in confirmation.get("blockers", [])
             ),
-            "scenario_signals=" + str(len(packet.get("scenario_signals") or [])),
+            "scenario_signals="
+            + str(len(packet.get("scenario_signals") or []))
+            + " ranked="
+            + str(len(packet.get("ranked_scenario_signals") or [])),
         )
     )
 

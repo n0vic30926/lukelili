@@ -14,6 +14,7 @@ from common.evidence import rank_evidence
 from common.output_contract import format_output_sections
 from common.portfolio_exposure import summarize_portfolio_exposure
 from common.research_synthesis import synthesize_research_result
+from common.signal_ranking import rank_scenario_signals
 from research_dispatch import build_research_plan, execute_research_plan
 from portfolio_scenarios import build_scenario_review
 from validate_scenarios import validate_scenarios
@@ -148,6 +149,7 @@ def build_decision_packet(portfolio, research_result=None, scenario_review=None)
         for index, holding in enumerate(portfolio.get("holdings", []))
     ]
     scenario_signals = _scenario_signals(scenario_review)
+    ranked_scenario_signals = rank_scenario_signals(scenario_signals)
     for candidate in candidates:
         for confirmation in _scenario_confirmation_texts(scenario_signals):
             if confirmation not in candidate["required_confirmations"]:
@@ -158,6 +160,7 @@ def build_decision_packet(portfolio, research_result=None, scenario_review=None)
         "requires_user_confirmation": True,
         "scenario_boundary": (scenario_review or {}).get("boundary") or {},
         "scenario_signals": scenario_signals,
+        "ranked_scenario_signals": ranked_scenario_signals,
         "strategy_counts": _strategy_counts(portfolio),
         "research_observations": research_notes,
         "research_synthesis": research_synthesis,
@@ -212,8 +215,8 @@ def _output_sections(packet):
         for candidate in packet["candidates"]
     ]
     judgments.extend(
-        f"scenario={item['scenario']} decision_signal={item['signal']}"
-        for item in packet.get("scenario_signals") or []
+        f"scenario={item['scenario']} decision_signal={item['signal']} priority={item['priority']}"
+        for item in packet.get("ranked_scenario_signals") or []
     )
 
     confirmations = []
@@ -319,12 +322,14 @@ def format_decision_packet(packet):
         lines.append("## Scenario Decision Signals")
         projection = (packet.get("scenario_boundary") or {}).get("projection", "unknown")
         lines.append(f"- projection={projection}")
-        for item in packet["scenario_signals"]:
+        for item in packet.get("ranked_scenario_signals") or []:
             risk_flags = ",".join(item.get("risk_flags") or ["none"])
             lines.append(
                 "- "
                 f"scenario={item['scenario']} "
                 f"decision_signal={item['signal']} "
+                f"priority={item['priority']} "
+                f"score={item['score']} "
                 f"portfolio_impact_pct={item['portfolio_impact_pct']} "
                 f"risk_flags={risk_flags} "
                 f"requires_user_confirmation="

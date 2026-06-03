@@ -157,6 +157,7 @@ python3 scripts/mock_runtime_test.py
 python3 scripts/mock_scenario_validation_test.py
 python3 scripts/mock_reporting_test.py
 python3 scripts/mock_security_scan_test.py
+python3 scripts/mock_signal_ranking_test.py
 python3 scripts/mock_weekly_status_test.py
 python3 scripts/security_scan.py
 ```

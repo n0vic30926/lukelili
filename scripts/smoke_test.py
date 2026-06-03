@@ -70,6 +70,7 @@ def check_foundation_files():
         "scripts/common/research_interpretation.py",
         "scripts/common/research_questions.py",
         "scripts/common/research_synthesis.py",
+        "scripts/common/signal_ranking.py",
         "scripts/report_index.py",
         "scripts/research_dispatch.py",
         "scripts/risk_research.py",
@@ -122,6 +123,7 @@ def check_foundation_files():
         "scripts/mock_security_scan_test.py",
         "scripts/mock_security_research_test.py",
         "scripts/mock_scenario_validation_test.py",
+        "scripts/mock_signal_ranking_test.py",
         "scripts/mock_weekly_status_test.py",
     ]
     for path in required:
