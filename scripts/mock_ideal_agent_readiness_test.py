@@ -35,6 +35,7 @@ def run_ideal_agent_readiness_test():
     _assert_contains(output, "portfolio x-ray")
     _assert_contains(output, "portfolio scenarios")
     _assert_contains(output, "model projection")
+    _assert_contains(output, "scenario signals")
     _assert_contains(output, "competitive benchmark")
     _assert_not_contains(output, "PRIVATE")
     _assert_not_contains(output, "买入")

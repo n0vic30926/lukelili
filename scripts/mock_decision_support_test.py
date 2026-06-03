@@ -2,6 +2,7 @@
 """Offline tests for L5 decision-support safety boundaries."""
 
 from decision_support import build_decision_packet, format_decision_packet
+from portfolio_scenarios import build_scenario_review
 
 
 def _assert_contains(text, expected):
@@ -64,7 +65,17 @@ def run_decision_support_test():
         "requires_user_confirmation": True,
     }
 
-    packet = build_decision_packet(portfolio, research_result)
+    scenario_review = build_scenario_review(
+        portfolio,
+        [
+            {
+                "name": "risk_drawdown",
+                "description": "Hypothetical risk drawdown",
+                "shocks": [{"match": {"market": "us_stock"}, "shock_pct": -20}],
+            }
+        ],
+    )
+    packet = build_decision_packet(portfolio, research_result, scenario_review=scenario_review)
     if packet["requires_user_confirmation"] is not True:
         raise AssertionError(f"Packet must require confirmation: {packet}")
     if packet["execution_allowed"] is not False:
@@ -74,6 +85,10 @@ def run_decision_support_test():
         raise AssertionError(f"Unexpected candidate actions: {actions}")
     if any("code" in item or "name" in item for item in packet["candidates"]):
         raise AssertionError(f"Candidates must avoid private holding identifiers: {packet}")
+    if packet["scenario_signals"][0]["signal"] != "risk_reduction_review":
+        raise AssertionError(f"Expected scenario signal in decision packet: {packet}")
+    if packet["scenario_boundary"]["projection"] != "model projection, not a fact":
+        raise AssertionError(f"Expected scenario projection boundary: {packet}")
 
     output = format_decision_packet(packet)
     _assert_contains(output, "# Decision Support Packet")
@@ -102,12 +117,19 @@ def run_decision_support_test():
     _assert_contains(output, "cash_pct=25.0")
     _assert_contains(output, "max_position_pct=70.0")
     _assert_contains(output, "single_position_exceeds_rule holding_ref=holding_1")
+    _assert_contains(output, "## Scenario Decision Signals")
+    _assert_contains(output, "scenario=risk_drawdown")
+    _assert_contains(output, "decision_signal=risk_reduction_review")
+    _assert_contains(output, "projection=model projection, not a fact")
+    _assert_contains(output, "scenario_loss_exceeds_daily_loss_rule")
+    _assert_contains(output, "user confirms scenario signals are model judgment, not facts")
     _assert_contains(output, "## Manual Confirmation Workflow")
     _assert_contains(output, "confirmation_status=pending_user_confirmation")
     _assert_contains(output, "review_queue=")
     _assert_contains(output, "review_actions:")
     _assert_contains(output, "confirmation_1 status=pending")
     _assert_contains(output, "research_data_source_unconfirmed role=risk source=market_quotes status=missing_dependency")
+    _assert_contains(output, "scenario_signal_requires_confirmation scenario=risk_drawdown signal=risk_reduction_review")
     _assert_contains(output, "action=refresh_data status=pending source_ref=research_data_source_unconfirmed")
     _assert_not_contains(output, "PRIVATE_A")
     _assert_not_contains(output, "Private Holding")

@@ -270,7 +270,7 @@ def build_readiness_matrix():
         )
     )
 
-    packet = build_decision_packet(portfolio, research_result)
+    packet = build_decision_packet(portfolio, research_result, scenario_review=scenario_review)
     confirmation = packet["confirmation_state"]
     entries.append(
         _entry(
@@ -293,6 +293,19 @@ def build_readiness_matrix():
             + str(confirmation["review_queue_count"])
             + " review_actions="
             + ",".join(sorted(confirmation["review_action_counts"])),
+        )
+    )
+    entries.append(
+        _entry(
+            "L5",
+            "decision packet carries scenario signals into manual confirmation",
+            bool(packet.get("scenario_signals"))
+            and all(item.get("requires_user_confirmation") for item in packet["scenario_signals"])
+            and any(
+                item.get("type") == "scenario_signal_requires_confirmation"
+                for item in confirmation.get("blockers", [])
+            ),
+            "scenario_signals=" + str(len(packet.get("scenario_signals") or [])),
         )
     )
 

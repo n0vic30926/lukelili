@@ -103,7 +103,37 @@ def _candidate_for_holding(index, holding, research_notes, missing_risk_rules=No
     }
 
 
-def build_decision_packet(portfolio, research_result=None):
+def _scenario_signals(scenario_review):
+    signals = []
+    if not scenario_review:
+        return signals
+    for scenario in scenario_review.get("scenarios") or []:
+        risk_flags = scenario.get("risk_flags") or []
+        risk_flag_types = [str(item.get("type") or "unknown") for item in risk_flags]
+        for signal in scenario.get("decision_signals") or []:
+            signals.append(
+                {
+                    "scenario": str(scenario.get("name") or "unnamed_scenario"),
+                    "signal": str(signal.get("signal") or "unknown"),
+                    "portfolio_impact_pct": scenario.get("portfolio_impact_pct"),
+                    "risk_flags": risk_flag_types,
+                    "requires_user_confirmation": bool(
+                        signal.get("requires_user_confirmation")
+                    ),
+                }
+            )
+    return signals
+
+
+def _scenario_confirmation_texts(scenario_signals):
+    confirmations = []
+    if scenario_signals:
+        confirmations.append("user confirms scenario signals are model judgment, not facts")
+        confirmations.append("user confirms scenario signals are not execution consent")
+    return confirmations
+
+
+def build_decision_packet(portfolio, research_result=None, scenario_review=None):
     research_result = research_result or {}
     research_synthesis = synthesize_research_result(research_result)
     research_notes = _research_observations(research_result)
@@ -115,10 +145,17 @@ def build_decision_packet(portfolio, research_result=None):
         _candidate_for_holding(index, holding, research_notes, missing_risk_rules)
         for index, holding in enumerate(portfolio.get("holdings", []))
     ]
+    scenario_signals = _scenario_signals(scenario_review)
+    for candidate in candidates:
+        for confirmation in _scenario_confirmation_texts(scenario_signals):
+            if confirmation not in candidate["required_confirmations"]:
+                candidate["required_confirmations"].append(confirmation)
     packet = {
         "mode": "decision_support_only",
         "execution_allowed": False,
         "requires_user_confirmation": True,
+        "scenario_boundary": (scenario_review or {}).get("boundary") or {},
+        "scenario_signals": scenario_signals,
         "strategy_counts": _strategy_counts(portfolio),
         "research_observations": research_notes,
         "research_synthesis": research_synthesis,
@@ -158,6 +195,9 @@ def _output_sections(packet):
             facts.append(f"risk_rule {item['rule']}={item['value']} status=present")
         else:
             facts.append(f"risk_rule {item['rule']} status=missing")
+    if packet.get("scenario_signals"):
+        projection = (packet.get("scenario_boundary") or {}).get("projection", "unknown")
+        facts.append("scenario_projection=" + str(projection))
 
     inferences = list(packet["research_observations"])
     inferences.extend(
@@ -169,6 +209,10 @@ def _output_sections(packet):
         f"{candidate['holding_ref']} candidate_action={candidate['candidate_action']}"
         for candidate in packet["candidates"]
     ]
+    judgments.extend(
+        f"scenario={item['scenario']} decision_signal={item['signal']}"
+        for item in packet.get("scenario_signals") or []
+    )
 
     confirmations = []
     for candidate in packet["candidates"]:
@@ -266,6 +310,23 @@ def format_decision_packet(packet):
                 "- "
                 f"{warning['type']} holding_ref={warning['holding_ref']} "
                 f"actual_pct={warning['actual_pct']} limit_pct={warning['limit_pct']}"
+            )
+        lines.append("")
+
+    if packet.get("scenario_signals"):
+        lines.append("## Scenario Decision Signals")
+        projection = (packet.get("scenario_boundary") or {}).get("projection", "unknown")
+        lines.append(f"- projection={projection}")
+        for item in packet["scenario_signals"]:
+            risk_flags = ",".join(item.get("risk_flags") or ["none"])
+            lines.append(
+                "- "
+                f"scenario={item['scenario']} "
+                f"decision_signal={item['signal']} "
+                f"portfolio_impact_pct={item['portfolio_impact_pct']} "
+                f"risk_flags={risk_flags} "
+                f"requires_user_confirmation="
+                f"{str(item['requires_user_confirmation']).lower()}"
             )
         lines.append("")
 

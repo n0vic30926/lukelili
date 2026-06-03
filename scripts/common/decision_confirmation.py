@@ -67,6 +67,15 @@ def _blockers(packet):
                     "status": item.get("status", "unknown"),
                 }
             )
+    for item in packet.get("scenario_signals") or []:
+        if item.get("requires_user_confirmation"):
+            blockers.append(
+                {
+                    "type": "scenario_signal_requires_confirmation",
+                    "scenario": item.get("scenario", "unknown"),
+                    "signal": item.get("signal", "unknown"),
+                }
+            )
     return blockers
 
 
@@ -102,6 +111,9 @@ def _review_queue(checks, blockers):
         elif blocker_type == "research_role_status_unconfirmed":
             action = "refresh_data"
             reason = f"{blocker.get('role')} status={blocker.get('status')}"
+        elif blocker_type == "scenario_signal_requires_confirmation":
+            action = "user_confirm"
+            reason = f"{blocker.get('scenario')} signal={blocker.get('signal')}"
         elif blocker_type.endswith("_exceeds_rule") or blocker_type.endswith("_warning"):
             action = "review_risk_rule"
 
@@ -177,6 +189,12 @@ def format_confirmation_state(state):
                 "- "
                 f"research_role_status_unconfirmed role={item.get('role')} "
                 f"status={item.get('status')}"
+            )
+        elif item.get("type") == "scenario_signal_requires_confirmation":
+            lines.append(
+                "- "
+                f"scenario_signal_requires_confirmation scenario={item.get('scenario')} "
+                f"signal={item.get('signal')}"
             )
         else:
             lines.append(

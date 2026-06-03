@@ -92,8 +92,10 @@ Status: a local decision-support packet builder now converts portfolio strategy
 types and research observations into candidate actions, rationale, risks, and
 required confirmation checks. It also surfaces missing hard risk rules from the
 local portfolio file, anonymized exposure checks, and a pending manual
-confirmation state with blockers. It sets `execution_allowed=false` and does not
-connect to broker endpoints. Cross-role research synthesis now feeds
+confirmation state with blockers. Scenario decision signals now flow into the
+decision packet as model judgment with explicit user confirmation blockers. It
+sets `execution_allowed=false` and does not connect to broker endpoints.
+Cross-role research synthesis now feeds
 unavailable role/data-source states into the manual confirmation blockers.
 Manual confirmation now includes a bounded review queue that separates user
 confirmation, data refresh, local-record updates, and risk-rule review. These
