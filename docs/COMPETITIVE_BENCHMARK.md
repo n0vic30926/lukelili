@@ -29,6 +29,9 @@ an explicit guardrail.
 - local backtesting: optional `return_history` inputs can expose historical
   return, drawdown, volatility, and coverage warnings without implying future
   returns.
+- rebalance drift review: optional target allocation and tolerance inputs can
+  surface drift-based rebalance signals for manual confirmation, preserving the
+  automated-advisor discipline loop without broker execution.
 - data freshness: reports and research roles show data-source status, freshness,
   and degraded paths when a source is missing or stale.
 - multi-role research: Macro, Industry, Individual Security, ETF, Risk, and

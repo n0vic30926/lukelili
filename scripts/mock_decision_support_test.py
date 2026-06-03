@@ -28,6 +28,7 @@ def run_decision_support_test():
                 "strategy_type": "dca",
                 "strategy_label": "long-term plan",
                 "cost_basis": 1400,
+                "target_weight_pct": 70,
                 "market": "us_stock",
                 "factor_profile": {"type": "qdii_us_equity"},
             },
@@ -36,6 +37,7 @@ def run_decision_support_test():
                 "name": "Private Holding B",
                 "strategy_type": "short_term",
                 "cost_basis": 100,
+                "target_weight_pct": 10,
                 "market": "a_share",
                 "factor_profile": {"type": "a_share_ai"},
             },
@@ -46,8 +48,13 @@ def run_decision_support_test():
                 "cost_basis": 0,
             },
         ],
-        "cash": {"amount": 500},
-        "risk_rules": {"single_loss_pct": 2, "daily_loss_pct": 6, "max_single_position_pct": 50},
+        "cash": {"amount": 500, "target_weight_pct": 20},
+        "risk_rules": {
+            "single_loss_pct": 2,
+            "daily_loss_pct": 6,
+            "max_single_position_pct": 50,
+            "rebalance_tolerance_pct": 3,
+        },
     }
     research_result = {
         "role_results": [
@@ -97,6 +104,10 @@ def run_decision_support_test():
         raise AssertionError(f"Expected high-priority scenario signal: {packet}")
     if packet["scenario_boundary"]["projection"] != "model projection, not a fact":
         raise AssertionError(f"Expected scenario projection boundary: {packet}")
+    if len(packet["rebalance_signals"]) != 2:
+        raise AssertionError(f"Expected rebalance signals in decision packet: {packet}")
+    if packet["rebalance_signals"][0]["signal"] != "rebalance_review":
+        raise AssertionError(f"Expected rebalance review signal: {packet}")
 
     output = format_decision_packet(packet)
     _assert_contains(output, "# Decision Support Packet")
@@ -135,6 +146,10 @@ def run_decision_support_test():
     _assert_contains(output, "projection=model projection, not a fact")
     _assert_contains(output, "scenario_loss_exceeds_daily_loss_rule")
     _assert_contains(output, "user confirms scenario signals are model judgment, not facts")
+    _assert_contains(output, "## Rebalance Decision Signals")
+    _assert_contains(output, "signal=rebalance_review")
+    _assert_contains(output, "rebalance_signal_requires_confirmation position_ref=cash signal=rebalance_review")
+    _assert_contains(output, "user confirms rebalance signals are model judgment, not execution")
     _assert_contains(output, "## Manual Confirmation Workflow")
     _assert_contains(output, "confirmation_status=pending_user_confirmation")
     _assert_contains(output, "review_queue=")

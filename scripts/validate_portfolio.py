@@ -55,6 +55,27 @@ def _validate_risk_rules(errors, data):
             "risk_rules.max_underlying_position_pct",
             rules["max_underlying_position_pct"],
         )
+    if "rebalance_tolerance_pct" in rules:
+        _validate_percent(
+            errors,
+            "risk_rules.rebalance_tolerance_pct",
+            rules["rebalance_tolerance_pct"],
+        )
+
+
+def _validate_cash(errors, data):
+    cash = data.get("cash")
+    if cash is None:
+        return
+    if not isinstance(cash, dict):
+        errors.append("cash must be an object")
+        return
+    if "target_weight_pct" in cash:
+        _validate_nonnegative_percent(
+            errors,
+            "cash.target_weight_pct",
+            cash["target_weight_pct"],
+        )
 
 
 def _validate_buy_record(errors, holding_index, record_index, record):
@@ -116,6 +137,7 @@ def validate_portfolio(data):
             errors.append(f"missing top-level field: {field}")
     if "risk_rules" in data:
         _validate_risk_rules(errors, data)
+    _validate_cash(errors, data)
     holdings = data.get("holdings")
     if not isinstance(holdings, list) or not holdings:
         errors.append("holdings must be a non-empty list")
@@ -134,6 +156,10 @@ def validate_portfolio(data):
         if "expense_ratio" in holding:
             _validate_nonnegative_percent(
                 errors, f"holding[{index}] expense_ratio", holding["expense_ratio"]
+            )
+        if "target_weight_pct" in holding:
+            _validate_nonnegative_percent(
+                errors, f"holding[{index}] target_weight_pct", holding["target_weight_pct"]
             )
         if "buy_records" in holding and not isinstance(holding["buy_records"], list):
             errors.append(f"holding[{index}] buy_records must be a list")

@@ -76,6 +76,16 @@ def _blockers(packet):
                     "signal": item.get("signal", "unknown"),
                 }
             )
+    for item in packet.get("rebalance_signals") or []:
+        if item.get("requires_user_confirmation"):
+            blockers.append(
+                {
+                    "type": "rebalance_signal_requires_confirmation",
+                    "position_ref": item.get("position_ref", "unknown"),
+                    "signal": item.get("signal", "unknown"),
+                    "status": item.get("status", "unknown"),
+                }
+            )
     return blockers
 
 
@@ -114,6 +124,12 @@ def _review_queue(checks, blockers):
         elif blocker_type == "scenario_signal_requires_confirmation":
             action = "user_confirm"
             reason = f"{blocker.get('scenario')} signal={blocker.get('signal')}"
+        elif blocker_type == "rebalance_signal_requires_confirmation":
+            action = "user_confirm"
+            reason = (
+                f"{blocker.get('position_ref')} "
+                f"signal={blocker.get('signal')} status={blocker.get('status')}"
+            )
         elif blocker_type.endswith("_exceeds_rule") or blocker_type.endswith("_warning"):
             action = "review_risk_rule"
 
@@ -195,6 +211,12 @@ def format_confirmation_state(state):
                 "- "
                 f"scenario_signal_requires_confirmation scenario={item.get('scenario')} "
                 f"signal={item.get('signal')}"
+            )
+        elif item.get("type") == "rebalance_signal_requires_confirmation":
+            lines.append(
+                "- "
+                f"rebalance_signal_requires_confirmation position_ref={item.get('position_ref')} "
+                f"signal={item.get('signal')} status={item.get('status')}"
             )
         else:
             lines.append(

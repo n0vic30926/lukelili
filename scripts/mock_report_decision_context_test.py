@@ -18,8 +18,12 @@ def _assert_not_contains(text, unexpected):
 
 def run_report_decision_context_test():
     portfolio = {
-        "cash": {"amount": 1000},
-        "risk_rules": {"daily_loss_pct": 5, "max_single_position_pct": 60},
+        "cash": {"amount": 1000, "target_weight_pct": 20},
+        "risk_rules": {
+            "daily_loss_pct": 5,
+            "max_single_position_pct": 60,
+            "rebalance_tolerance_pct": 5,
+        },
         "holdings": [
             {
                 "code": "PRIVATE_A",
@@ -28,6 +32,7 @@ def run_report_decision_context_test():
                 "strategy_type": "dca",
                 "market": "US",
                 "expense_ratio": 0.6,
+                "target_weight_pct": 80,
                 "factor_profile": {"type": "equity", "benchmark": "NASDAQ"},
                 "underlying_holdings": [
                     {"code": "PRIVATE_UNDERLYING", "weight_pct": 50}
@@ -66,9 +71,13 @@ def run_report_decision_context_test():
     _assert_contains(output, "- xray_underlying_count=1")
     _assert_contains(output, "- backtest_observation_count=2")
     _assert_contains(output, "- backtest_max_drawdown_pct=-2.0")
+    _assert_contains(output, "- rebalance_reviewed_position_count=2")
+    _assert_contains(output, "- rebalance_max_abs_drift_pct=10.0")
     _assert_contains(output, "- scenario_projection=model projection, not a fact")
     _assert_contains(output, "- xray_fee_coverage=1")
     _assert_contains(output, "scenario=tech_drawdown decision_signal=risk_reduction_review priority=high")
+    _assert_contains(output, "rebalance_signal_count=2")
+    _assert_contains(output, "- user confirms report rebalance signals are model judgment, not execution")
     _assert_contains(output, "- user confirms report scenario signals are model judgment, not facts")
     _assert_contains(output, "- user confirms report scenario signals are not execution consent")
     _assert_contains(output, "- execution_allowed=false")

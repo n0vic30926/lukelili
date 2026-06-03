@@ -51,6 +51,17 @@ historical period return, max drawdown, volatility, and coverage warnings. It
 does not forecast future returns by itself or create executable trade
 instructions; downstream reports may use it as decision-support context.
 
+Review anonymized target-allocation drift:
+
+```bash
+python3 scripts/rebalance_review.py data/examples/portfolio.example.json
+```
+
+`rebalance_review.py` consumes optional `target_weight_pct` fields on `cash`
+and holdings, plus optional `risk_rules.rebalance_tolerance_pct`. It reports
+allocation drift and rebalance-style decision signals for manual review only;
+it does not place trades or create executable order instructions.
+
 Inspect anonymized direct and indirect underlying concentration:
 
 ```bash

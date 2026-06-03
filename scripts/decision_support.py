@@ -17,6 +17,7 @@ from common.research_synthesis import synthesize_research_result
 from common.signal_ranking import rank_scenario_signals
 from research_dispatch import build_research_plan, execute_research_plan
 from portfolio_scenarios import build_scenario_review
+from rebalance_review import build_rebalance_review
 from validate_scenarios import validate_scenarios
 
 
@@ -136,6 +137,12 @@ def _scenario_confirmation_texts(scenario_signals):
     return confirmations
 
 
+def _rebalance_confirmation_texts(rebalance_signals):
+    if not rebalance_signals:
+        return []
+    return ["user confirms rebalance signals are model judgment, not execution"]
+
+
 def build_decision_packet(portfolio, research_result=None, scenario_review=None):
     research_result = research_result or {}
     research_synthesis = synthesize_research_result(research_result)
@@ -150,8 +157,13 @@ def build_decision_packet(portfolio, research_result=None, scenario_review=None)
     ]
     scenario_signals = _scenario_signals(scenario_review)
     ranked_scenario_signals = rank_scenario_signals(scenario_signals)
+    rebalance_review = build_rebalance_review(portfolio)
+    rebalance_signals = rebalance_review.get("decision_signals") or []
     for candidate in candidates:
-        for confirmation in _scenario_confirmation_texts(scenario_signals):
+        for confirmation in (
+            _scenario_confirmation_texts(scenario_signals)
+            + _rebalance_confirmation_texts(rebalance_signals)
+        ):
             if confirmation not in candidate["required_confirmations"]:
                 candidate["required_confirmations"].append(confirmation)
     packet = {
@@ -161,6 +173,8 @@ def build_decision_packet(portfolio, research_result=None, scenario_review=None)
         "scenario_boundary": (scenario_review or {}).get("boundary") or {},
         "scenario_signals": scenario_signals,
         "ranked_scenario_signals": ranked_scenario_signals,
+        "rebalance_review": rebalance_review,
+        "rebalance_signals": rebalance_signals,
         "strategy_counts": _strategy_counts(portfolio),
         "research_observations": research_notes,
         "research_synthesis": research_synthesis,
@@ -203,6 +217,12 @@ def _output_sections(packet):
     if packet.get("scenario_signals"):
         projection = (packet.get("scenario_boundary") or {}).get("projection", "unknown")
         facts.append("scenario_projection=" + str(projection))
+    if packet.get("rebalance_review"):
+        rebalance_review = packet["rebalance_review"]
+        facts.append(
+            "rebalance_reviewed_position_count="
+            + str(rebalance_review.get("reviewed_position_count", 0))
+        )
 
     inferences = list(packet["research_observations"])
     inferences.extend(
@@ -217,6 +237,10 @@ def _output_sections(packet):
     judgments.extend(
         f"scenario={item['scenario']} decision_signal={item['signal']} priority={item['priority']}"
         for item in packet.get("ranked_scenario_signals") or []
+    )
+    judgments.extend(
+        f"rebalance position_ref={item['position_ref']} signal={item['signal']} status={item['status']}"
+        for item in packet.get("rebalance_signals") or []
     )
 
     confirmations = []
@@ -348,6 +372,26 @@ def format_decision_packet(packet):
                 f"score={item['score']} "
                 f"portfolio_impact_pct={item['portfolio_impact_pct']} "
                 f"risk_flags={risk_flags} "
+                f"requires_user_confirmation="
+                f"{str(item['requires_user_confirmation']).lower()}"
+            )
+        lines.append("")
+
+    if packet.get("rebalance_signals"):
+        lines.append("## Rebalance Decision Signals")
+        review = packet.get("rebalance_review") or {}
+        lines.append(
+            "- "
+            f"tolerance_pct={review.get('tolerance_pct', 0.0)} "
+            f"max_abs_drift_pct={review.get('max_abs_drift_pct', 0.0)}"
+        )
+        for item in packet.get("rebalance_signals") or []:
+            lines.append(
+                "- "
+                f"position_ref={item['position_ref']} "
+                f"signal={item['signal']} "
+                f"status={item['status']} "
+                f"drift_pct={item['drift_pct']} "
                 f"requires_user_confirmation="
                 f"{str(item['requires_user_confirmation']).lower()}"
             )

@@ -17,7 +17,9 @@ def run_portfolio_validation_test():
             "daily_loss_pct": 6,
             "max_single_position_pct": 35,
             "max_underlying_position_pct": 45,
+            "rebalance_tolerance_pct": 5,
         },
+        "cash": {"amount": 1000, "target_weight_pct": 10},
         "holdings": [
             {
                 "code": "EXAMPLE",
@@ -26,6 +28,7 @@ def run_portfolio_validation_test():
                 "cost_basis": 1000,
                 "shares": 100,
                 "expense_ratio": 0.2,
+                "target_weight_pct": 90,
                 "underlying_holdings": [
                     {"code": "EXAMPLE_UNDERLYING", "weight_pct": 35}
                 ],
@@ -61,7 +64,9 @@ def run_portfolio_validation_test():
             "daily_loss_pct": "6",
             "max_single_position_pct": 120,
             "max_underlying_position_pct": 0,
+            "rebalance_tolerance_pct": 101,
         },
+        "cash": {"amount": 1000, "target_weight_pct": "bad"},
         "holdings": [
             {
                 "code": "BAD",
@@ -70,6 +75,7 @@ def run_portfolio_validation_test():
                 "cost_basis": 0,
                 "shares": -2,
                 "expense_ratio": 120,
+                "target_weight_pct": -1,
                 "underlying_holdings": [
                     {"name": "", "weight_pct": 120},
                     "not-an-object",
@@ -91,9 +97,12 @@ def run_portfolio_validation_test():
     _assert_has_error(errors, "risk_rules.daily_loss_pct must be numeric")
     _assert_has_error(errors, "risk_rules.max_single_position_pct must be between 0 and 100")
     _assert_has_error(errors, "risk_rules.max_underlying_position_pct must be between 0 and 100")
+    _assert_has_error(errors, "risk_rules.rebalance_tolerance_pct must be between 0 and 100")
+    _assert_has_error(errors, "cash.target_weight_pct must be numeric")
     _assert_has_error(errors, "holding[0] cost_basis must be positive")
     _assert_has_error(errors, "holding[0] shares must be positive")
     _assert_has_error(errors, "holding[0] expense_ratio must be between 0 and 100")
+    _assert_has_error(errors, "holding[0] target_weight_pct must be between 0 and 100")
     _assert_has_error(errors, "holding[0].underlying_holdings[0] code or name is required")
     _assert_has_error(errors, "holding[0].underlying_holdings[0].weight_pct must be between 0 and 100")
     _assert_has_error(errors, "holding[0].underlying_holdings[1] must be an object")

@@ -39,7 +39,10 @@ cash/invested percentages, max single-position percentage, and strategy/factor/
 market distribution with anonymized holding refs. A local portfolio backtest
 module now consumes optional `return_history` to calculate anonymized historical
 period return, max drawdown, volatility, and coverage warnings. A local
-stock-intersection module now consumes optional `underlying_holdings` to
+rebalance review module now consumes optional `target_weight_pct` values and
+`rebalance_tolerance_pct` to calculate target-allocation drift and
+manual-confirmation rebalance signals. A local stock-intersection module now
+consumes optional `underlying_holdings` to
 calculate anonymized direct and indirect underlying concentration, overlap,
 coverage, and warnings. A local portfolio x-ray now adds allocation, factor overlap clusters, stock
 intersection, fee-coverage, and decision-support boundary review without

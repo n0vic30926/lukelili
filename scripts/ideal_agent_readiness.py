@@ -22,6 +22,7 @@ from decision_support import build_decision_packet
 from etf_research import normalize_etf_holding_rows
 from portfolio_backtest import build_portfolio_backtest
 from portfolio_intersection import build_stock_intersection
+from rebalance_review import build_rebalance_review
 from portfolio_scenarios import build_scenario_review
 from portfolio_xray import build_portfolio_xray
 from research_dispatch import build_research_plan, execute_research_plan
@@ -134,6 +135,27 @@ def build_readiness_matrix():
             + str(backtest.get("observation_count", 0))
             + " max_drawdown_pct="
             + str(backtest.get("max_drawdown_pct", 0.0)),
+        )
+    )
+
+    rebalance = build_rebalance_review(portfolio)
+    entries.append(
+        _entry(
+            "L2",
+            "rebalance review exposes target allocation drift and confirmation signals",
+            rebalance.get("reviewed_position_count", 0) > 0
+            and "max_abs_drift_pct" in rebalance
+            and rebalance.get("boundary", {}).get("execution_allowed") is False
+            and all(
+                item.get("requires_user_confirmation") is True
+                for item in rebalance.get("decision_signals", [])
+            ),
+            "rebalance review positions="
+            + str(rebalance.get("reviewed_position_count", 0))
+            + " max_abs_drift_pct="
+            + str(rebalance.get("max_abs_drift_pct", 0.0))
+            + " signals="
+            + str(len(rebalance.get("decision_signals") or [])),
         )
     )
 
@@ -435,6 +457,23 @@ def build_readiness_matrix():
             + str(len(packet.get("scenario_signals") or []))
             + " ranked="
             + str(len(packet.get("ranked_scenario_signals") or [])),
+        )
+    )
+    entries.append(
+        _entry(
+            "L5",
+            "decision packet carries rebalance signals into manual confirmation",
+            bool(packet.get("rebalance_signals"))
+            and all(
+                item.get("requires_user_confirmation")
+                for item in packet.get("rebalance_signals", [])
+            )
+            and any(
+                item.get("type") == "rebalance_signal_requires_confirmation"
+                for item in confirmation.get("blockers", [])
+            ),
+            "rebalance signals="
+            + str(len(packet.get("rebalance_signals") or [])),
         )
     )
 

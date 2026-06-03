@@ -6,7 +6,14 @@
   "properties": {
     "updated": {"type": "string"},
     "user_profile": {"type": "object"},
-    "cash": {"type": "object"},
+    "cash": {
+      "type": "object",
+      "properties": {
+        "currency": {"type": "string"},
+        "amount": {"type": ["number", "integer"]},
+        "target_weight_pct": {"type": ["number", "integer"], "minimum": 0, "maximum": 100}
+      }
+    },
     "risk_rules": {
       "type": "object",
       "required": ["single_loss_pct", "daily_loss_pct", "max_single_position_pct"],
@@ -14,7 +21,8 @@
         "single_loss_pct": {"type": ["number", "integer"], "exclusiveMinimum": 0},
         "daily_loss_pct": {"type": ["number", "integer"], "exclusiveMinimum": 0},
         "max_single_position_pct": {"type": ["number", "integer"], "exclusiveMinimum": 0, "maximum": 100},
-        "max_underlying_position_pct": {"type": ["number", "integer"], "exclusiveMinimum": 0, "maximum": 100}
+        "max_underlying_position_pct": {"type": ["number", "integer"], "exclusiveMinimum": 0, "maximum": 100},
+        "rebalance_tolerance_pct": {"type": ["number", "integer"], "exclusiveMinimum": 0, "maximum": 100}
       }
     },
     "holdings": {
@@ -36,6 +44,7 @@
           "cost_basis": {"type": ["number", "integer"], "exclusiveMinimum": 0},
           "shares": {"type": ["number", "integer"], "exclusiveMinimum": 0},
           "expense_ratio": {"type": ["number", "integer"], "minimum": 0, "maximum": 100},
+          "target_weight_pct": {"type": ["number", "integer"], "minimum": 0, "maximum": 100},
           "underlying_holdings": {
             "type": "array",
             "items": {
