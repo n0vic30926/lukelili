@@ -80,6 +80,33 @@ def run_portfolio_intersection_test():
     ]:
         _assert_not_contains(output, unexpected)
 
+    researched_portfolio = {
+        "cash": {"amount": 0},
+        "holdings": [
+            {
+                "code": "sh513100",
+                "name": "Private ETF",
+                "type": "etf",
+                "cost_basis": 1000,
+            }
+        ],
+    }
+    researched = build_stock_intersection(
+        researched_portfolio,
+        external_underlying_holdings_by_code={
+            "513100": [
+                {"code": "PRIVATE_RESEARCHED_A", "weight_pct": 60},
+                {"code": "PRIVATE_RESEARCHED_B", "weight_pct": 25},
+            ]
+        },
+    )
+    if researched["underlying_count"] != 2:
+        raise AssertionError(f"Expected researched holdings to feed intersection: {researched}")
+    researched_output = format_stock_intersection(researched)
+    _assert_contains(researched_output, "underlying_ref=underlying_1 portfolio_pct=60.0")
+    _assert_not_contains(researched_output, "PRIVATE_RESEARCHED")
+    _assert_not_contains(researched_output, "Private ETF")
+
 
 def main():
     run_portfolio_intersection_test()

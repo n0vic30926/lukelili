@@ -34,6 +34,10 @@ def _is_direct_security(holding):
     return market in {"a_share", "us_stock", "hk_stock"}
 
 
+def _clean_code(code):
+    return str(code or "").lower().replace("sh", "").replace("sz", "").strip()
+
+
 def _underlying_key(item):
     code = str(item.get("code") or item.get("symbol") or "").strip().lower()
     if code:
@@ -59,7 +63,16 @@ def _add_contribution(rows, key, holding_ref, amount):
         row["source_holding_refs"].append(holding_ref)
 
 
-def _build_rows(holdings):
+def _external_underlyings_for_holding(holding, external_underlying_holdings_by_code):
+    if not external_underlying_holdings_by_code:
+        return []
+    code = _clean_code(holding.get("code") or holding.get("symbol"))
+    if not code:
+        return []
+    return external_underlying_holdings_by_code.get(code) or []
+
+
+def _build_rows(holdings, external_underlying_holdings_by_code=None):
     rows = {}
     covered_holding_refs = set()
     missing_underlying_refs = []
@@ -68,6 +81,11 @@ def _build_rows(holdings):
         holding_ref = _holding_ref(index)
         value = _number(holding.get("cost_basis"))
         underlying_holdings = holding.get("underlying_holdings") or []
+        if not underlying_holdings:
+            underlying_holdings = _external_underlyings_for_holding(
+                holding,
+                external_underlying_holdings_by_code,
+            )
         if isinstance(underlying_holdings, list) and underlying_holdings:
             covered_holding_refs.add(holding_ref)
             for item in underlying_holdings:
@@ -86,12 +104,15 @@ def _build_rows(holdings):
     return rows, covered_holding_refs, missing_underlying_refs
 
 
-def build_stock_intersection(portfolio):
+def build_stock_intersection(portfolio, external_underlying_holdings_by_code=None):
     holdings = [item for item in portfolio.get("holdings", []) if isinstance(item, dict)]
     invested = sum(_number(item.get("cost_basis")) for item in holdings)
     cash = _number((portfolio.get("cash") or {}).get("amount"))
     total_capital = invested + cash
-    rows, covered_holding_refs, missing_underlying_refs = _build_rows(holdings)
+    rows, covered_holding_refs, missing_underlying_refs = _build_rows(
+        holdings,
+        external_underlying_holdings_by_code=external_underlying_holdings_by_code,
+    )
 
     sorted_items = sorted(
         rows.items(),

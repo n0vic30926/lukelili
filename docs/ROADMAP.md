@@ -68,7 +68,8 @@ printing keys or private holdings. The Individual Security role has a first
 read-only AkShare adapter for financial statements, announcements, valuation
 metrics, market quotes/liquidity, and research reports with dependency-aware
 fallback. The ETF role has a read-only adapter for ETF quotes, liquidity,
-premium/discount checks, NAV history, and holdings-through status. The Macro
+premium/discount checks, NAV history, holdings-through status, and normalized
+holdings rows that can feed stock intersection. The Macro
 role has a read-only adapter for rates, FX, liquidity, inflation, and PMI source
 status with dependency-aware fallback. The Industry role has a read-only adapter for
 portfolio-driven news query counts, news result/signal counts, and AkShare

@@ -19,6 +19,7 @@ from common.data_sources import role_data_requirements
 from common.research_synthesis import synthesize_research_result
 from competitive_readiness import build_competitive_readiness
 from decision_support import build_decision_packet
+from etf_research import normalize_etf_holding_rows
 from portfolio_intersection import build_stock_intersection
 from portfolio_scenarios import build_scenario_review
 from portfolio_xray import build_portfolio_xray
@@ -248,6 +249,38 @@ def build_readiness_matrix():
                 "etf_holdings",
             }.issubset(etf_requirements),
             "etf_data_requirements=" + ",".join(sorted(etf_requirements)),
+        )
+    )
+    normalized_etf_holdings = normalize_etf_holding_rows(
+        [
+            {"股票代码": "EXAMPLE_A", "股票名称": "Example A", "持仓占比": "10.0%"},
+            {"代码": "EXAMPLE_B", "名称": "Example B", "占净值比例": 5.5},
+        ]
+    )
+    intersection_from_etf = build_stock_intersection(
+        {
+            "holdings": [
+                {
+                    "code": "sh513100",
+                    "type": "etf",
+                    "cost_basis": 1000,
+                }
+            ],
+            "watchlist": [],
+        },
+        external_underlying_holdings_by_code={"513100": normalized_etf_holdings},
+    )
+    entries.append(
+        _entry(
+            "L4",
+            "ETF adapter normalizes holdings into stock-intersection inputs",
+            len(normalized_etf_holdings) == 2
+            and intersection_from_etf.get("underlying_count") == 2
+            and intersection_from_etf.get("covered_holding_count") == 1,
+            "normalized ETF holdings="
+            + str(len(normalized_etf_holdings))
+            + " intersection_underlyings="
+            + str(intersection_from_etf.get("underlying_count", 0)),
         )
     )
 

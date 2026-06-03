@@ -23,7 +23,10 @@ class FakeAkShare:
 
     @staticmethod
     def fund_portfolio_hold_em(symbol, date):
-        return [{"股票名称": "Example Holding", "持仓占比": "10.0%"}]
+        return [
+            {"股票代码": "EXAMPLE_A", "股票名称": "Example Holding A", "持仓占比": "10.0%"},
+            {"代码": "EXAMPLE_B", "名称": "Example Holding B", "占净值比例": 5.5},
+        ]
 
 
 def _assert_contains(text, expected):
@@ -46,11 +49,19 @@ def run_etf_research_test():
     _assert_contains(observations, "premium_discount_available=1")
     _assert_contains(observations, "etf_nav_history_available=1")
     _assert_contains(observations, "etf_holdings_available=1")
+    _assert_contains(observations, "etf_holdings_normalized=2")
+    normalized = result["underlying_holdings_by_code"]["513100"]
+    if normalized != [
+        {"code": "EXAMPLE_A", "name": "Example Holding A", "weight_pct": 10.0},
+        {"code": "EXAMPLE_B", "name": "Example Holding B", "weight_pct": 5.5},
+    ]:
+        raise AssertionError(f"Unexpected normalized ETF holdings: {normalized}")
     evidence = "\n".join(item["label"] for item in result["evidence"])
     _assert_contains(evidence, "etf.quotes")
     _assert_contains(evidence, "etf.premium_discount")
     _assert_contains(evidence, "etf.nav_history")
     _assert_contains(evidence, "etf.holdings")
+    _assert_contains(evidence, "etf.normalized_holdings")
     data_sources = "\n".join(
         f"{item['name']} {item['status']}" for item in result["data_sources"]
     )

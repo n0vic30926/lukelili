@@ -135,6 +135,8 @@ user-confirmed trades.
 Executed research reports include a cross-role coverage matrix. The matrix
 shows total data requirements, available sources, coverage percentage, and the
 highest-priority missing data gaps before role-level observations.
+When ETF holdings are available, the ETF adapter normalizes provider rows into
+`underlying_holdings`-compatible records for stock-intersection analysis.
 
 Create a decision-support packet:
 

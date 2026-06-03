@@ -29,6 +29,8 @@ def _records(value):
 
 
 def _float_or_none(value):
+    if isinstance(value, str):
+        value = value.strip().replace("%", "")
     try:
         return float(value)
     except (TypeError, ValueError):
@@ -85,6 +87,40 @@ def _holdings_rows_for_code(ak_client, code):
     return rows, "available" if rows else "empty"
 
 
+def _first_value(row, keys):
+    for key in keys:
+        value = row.get(key)
+        if value not in (None, ""):
+            return value
+    return None
+
+
+def normalize_etf_holding_rows(rows):
+    holdings = []
+    for row in _records(rows):
+        if not isinstance(row, dict):
+            continue
+        weight = _float_or_none(
+            _first_value(row, ["持仓占比", "占净值比例", "占比", "weight_pct"])
+        )
+        code = _first_value(row, ["股票代码", "代码", "symbol", "code"])
+        name = _first_value(row, ["股票名称", "名称", "name"])
+        if weight is None or not str(code or name or "").strip():
+            continue
+        item = {
+            "weight_pct": round(weight, 4),
+        }
+        if code not in (None, ""):
+            item["code"] = str(code)
+        if name not in (None, ""):
+            item["name"] = str(name)
+        holdings.append(item)
+    return sorted(
+        holdings,
+        key=lambda item: (-item["weight_pct"], item.get("code", ""), item.get("name", "")),
+    )
+
+
 def _aggregate_status(available_count, statuses):
     if available_count:
         return "available"
@@ -139,6 +175,7 @@ def fetch_etf_research(codes, ak_client=None):
     nav_statuses = []
     holdings_available = 0
     holdings_statuses = []
+    underlying_holdings_by_code = {}
     for code in cleaned_codes:
         row = row_by_code.get(code)
         price = _float_or_none((row or {}).get("最新价"))
@@ -152,6 +189,13 @@ def fetch_etf_research(codes, ak_client=None):
         holdings_statuses.append(holdings_status)
         if holding_rows:
             holdings_available += 1
+            normalized_holdings = normalize_etf_holding_rows(holding_rows)
+            if normalized_holdings:
+                underlying_holdings_by_code[code] = normalized_holdings
+
+    normalized_holding_count = sum(
+        len(items) for items in underlying_holdings_by_code.values()
+    )
 
     data_sources = [
         _data_source("etf_quotes", quote_status if matched else ("empty" if quote_status == "available" else quote_status)),
@@ -169,6 +213,8 @@ def fetch_etf_research(codes, ak_client=None):
         evidence.append({"label": "etf.nav_history", "source_tier": "community_data", "freshness": "unknown"})
     if holdings_available:
         evidence.append({"label": "etf.holdings", "source_tier": "community_data", "freshness": "unknown"})
+    if normalized_holding_count:
+        evidence.append({"label": "etf.normalized_holdings", "source_tier": "community_data", "freshness": "unknown"})
 
     return {
         "status": "ok" if evidence else "skipped",
@@ -178,9 +224,11 @@ def fetch_etf_research(codes, ak_client=None):
             f"premium_discount_available={premium_available}",
             f"etf_nav_history_available={nav_history_available}",
             f"etf_holdings_available={holdings_available}",
+            f"etf_holdings_normalized={normalized_holding_count}",
         ],
         "evidence": evidence,
         "data_sources": data_sources,
+        "underlying_holdings_by_code": underlying_holdings_by_code,
         "limitations": [] if evidence else ["no ETF data fetched"],
     }
 
