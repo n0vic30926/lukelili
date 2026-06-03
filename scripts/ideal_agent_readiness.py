@@ -18,6 +18,7 @@ from common.data_sources import role_data_requirements
 from common.research_synthesis import synthesize_research_result
 from competitive_readiness import build_competitive_readiness
 from decision_support import build_decision_packet
+from portfolio_scenarios import build_scenario_review
 from portfolio_xray import build_portfolio_xray
 from research_dispatch import build_research_plan, execute_research_plan
 from validate_portfolio import validate_portfolio
@@ -28,6 +29,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def _load_example_portfolio():
     with (ROOT / "data/examples/portfolio.example.json").open(encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _load_example_scenarios():
+    with (ROOT / "data/examples/scenario_assumptions.example.json").open(encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -87,6 +93,22 @@ def build_readiness_matrix():
             and xray.get("boundary", {}).get("execution_allowed") is False,
             "portfolio_xray fee_coverage_count="
             + str(xray.get("fee_review", {}).get("fee_coverage_count")),
+        )
+    )
+
+    scenario_review = build_scenario_review(portfolio, _load_example_scenarios())
+    entries.append(
+        _entry(
+            "L2",
+            "portfolio scenarios expose projections, decision signals, and risk flags",
+            scenario_review.get("scenario_count", 0) > 0
+            and scenario_review.get("boundary", {}).get("projection") == "model projection, not a fact"
+            and scenario_review.get("boundary", {}).get("requires_user_confirmation") is True
+            and scenario_review.get("boundary", {}).get("execution_allowed") is False
+            and all(item.get("decision_signals") for item in scenario_review.get("scenarios", [])),
+            "portfolio_scenarios scenario_count="
+            + str(scenario_review.get("scenario_count", 0))
+            + " boundary=model projection, not a fact",
         )
     )
 
@@ -278,6 +300,7 @@ def build_readiness_matrix():
         (ROOT / path).exists()
         for path in [
             "AGENTS.md",
+            "docs/SIGNAL_POLICY.md",
             "docs/SECURITY_AND_BOUNDARIES.md",
             "docs/ROADMAP.md",
             "docs/LOCAL_SETUP.md",
@@ -288,7 +311,7 @@ def build_readiness_matrix():
             "Safety",
             "local guardrails and setup documentation are present",
             docs_ok,
-            "AGENTS.md docs/SECURITY_AND_BOUNDARIES.md docs/ROADMAP.md docs/LOCAL_SETUP.md",
+            "AGENTS.md docs/SIGNAL_POLICY.md docs/SECURITY_AND_BOUNDARIES.md docs/ROADMAP.md docs/LOCAL_SETUP.md",
         )
     )
 

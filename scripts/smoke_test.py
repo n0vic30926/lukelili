@@ -39,8 +39,10 @@ def check_foundation_files():
         "config/settings.example.json",
         "schemas/portfolio.schema.json",
         "data/examples/portfolio.example.json",
+        "data/examples/scenario_assumptions.example.json",
         "docs/LOCAL_SETUP.md",
         "docs/COMPETITIVE_BENCHMARK.md",
+        "docs/SIGNAL_POLICY.md",
         "docs/SECURITY_AND_BOUNDARIES.md",
         "docs/ROADMAP.md",
         "scripts/competitive_readiness.py",
@@ -49,6 +51,7 @@ def check_foundation_files():
         "scripts/etf_research.py",
         "scripts/industry_research.py",
         "scripts/macro_research.py",
+        "scripts/portfolio_scenarios.py",
         "scripts/portfolio_xray.py",
         "scripts/common/decision_confirmation.py",
         "scripts/common/config_loader.py",
@@ -93,6 +96,7 @@ def check_foundation_files():
         "scripts/mock_news_status_test.py",
         "scripts/mock_output_contract_test.py",
         "scripts/mock_portfolio_exposure_test.py",
+        "scripts/mock_portfolio_scenarios_test.py",
         "scripts/mock_portfolio_validation_test.py",
         "scripts/mock_portfolio_xray_test.py",
         "scripts/mock_report_branch_fixtures_test.py",
@@ -131,6 +135,7 @@ def check_json_files():
         "config/settings.example.json",
         "schemas/portfolio.schema.json",
         "data/examples/portfolio.example.json",
+        "data/examples/scenario_assumptions.example.json",
     ]:
         try:
             _json(path)

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "example_growth_drawdown",
+    "description": "Hypothetical growth-market drawdown for local stress review.",
+    "shocks": [
+      {
+        "match": {
+          "factor_type": "qdii_us_equity"
+        },
+        "shock_pct": -10
+      }
+    ]
+  },
+  {
+    "name": "example_cash_cushion",
+    "description": "Hypothetical mild drawdown to show cash-buffer effect.",
+    "shocks": [
+      {
+        "match": {
+          "market": "example_market"
+        },
+        "shock_pct": -3
+      }
+    ]
+  }
+]

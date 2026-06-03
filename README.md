@@ -18,9 +18,9 @@
 
 ## 6条固化原则
 
-1. **估值锚是风险提示器，不是交易信号器** — 永远不输出"暂停/加仓/止盈"
+1. **估值锚是风险提示器，不是执行指令器** — 可进入决策辅助信号，但不能替用户下结论
 2. **反事实追踪评估"建议是否符合系统原则"** — 不是"结果赚没赚钱"
-3. **系统增强纪律，绝不替代纪律** — "暂停定投"出现在输出中就是系统bug
+3. **系统增强纪律，绝不替代纪律** — "暂停定投"不能作为未确认的执行结论
 4. **输出设计本身就是策略设计** — 隐性择时语言必须清除
 5. **Agent永远不能替用户定义投资哲学/策略类型** — strategy_type必须用户声明
 6. **人格标签化是危险信号** — 应改为时间戳行为记录
@@ -111,6 +111,7 @@ python3 scripts/smoke_test.py
 python3 scripts/competitive_readiness.py
 python3 scripts/ideal_agent_readiness.py
 python3 scripts/portfolio_xray.py
+python3 scripts/portfolio_scenarios.py
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 python3 scripts/mock_competitive_readiness_test.py
 python3 scripts/mock_data_quality_test.py
@@ -124,6 +125,7 @@ python3 scripts/mock_etf_research_test.py
 python3 scripts/mock_macro_research_test.py
 python3 scripts/mock_output_contract_test.py
 python3 scripts/mock_portfolio_exposure_test.py
+python3 scripts/mock_portfolio_scenarios_test.py
 python3 scripts/mock_portfolio_validation_test.py
 python3 scripts/mock_portfolio_xray_test.py
 python3 scripts/mock_report_branch_fixtures_test.py
@@ -244,7 +246,7 @@ Delivery配置（所有cron通用）：
 3. **QDII三因子归因** — 纳指贡献+汇率贡献+残差，30天解释75.5%
 4. **15赛道产业周期** — 从存储芯片到CPO到AI SaaS的全产业链覆盖
 5. **反事实追踪** — 自动记录每日建议，周度检查是否偏离纪律原则
-6. **估值锚纯风险提示** — 99.6%百分位只输出"高估区注意风险"，绝不输出"暂停定投"
+6. **估值锚纯风险提示** — 99.6%百分位可进入风险/信号判断，但不能直接变成执行指令
 
 ## 路线图
 

@@ -29,11 +29,17 @@ Finance Agent may provide:
 
 - facts from data sources;
 - data-derived observations;
+- model projections and hypothetical scenarios;
 - risk reminders;
+- candidate buy/sell/hold/rebalance style signals;
 - decision-support framing;
 - user-confirmation checklists.
 
 Finance Agent must not convert those into order placement or final user consent.
+
+Predictions and trading-style signals are allowed only when they are explicitly
+framed as model judgment or decision-support signals. They must not be presented
+as facts, promised returns, or executable orders.
 
 Decision-support outputs and scheduled reports should explicitly separate facts,
 data-derived inferences, model judgment, and user confirmation requirements.

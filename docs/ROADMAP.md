@@ -15,6 +15,8 @@ This worktree now has a local L1/L2 foundation:
 - a tracked-file security scanner guards against common secret and private-portfolio leakage.
 - a competitive benchmark maps high-quality peer capabilities to local
   privacy-first, evidence-ranked, decision-support-only iteration gates.
+- a signal policy now permits projections and trading-style signals as model
+  judgment, while keeping confirmation and execution boundaries explicit.
 
 ## L1: Document Investment Assistant
 
@@ -36,8 +38,10 @@ without printing private asset details. Local exposure checks now summarize
 cash/invested percentages, max single-position percentage, and strategy/factor/
 market distribution with anonymized holding refs. A local portfolio x-ray now
 adds allocation, overlap cluster, fee-coverage, and decision-support boundary
-review without printing private holdings. Next step is moving real holdings into
-`data/private/portfolio.local.json` manually.
+review without printing private holdings. A local scenario review now supports
+explicit stress assumptions, model-projection labels, decision signals, and risk
+rule flags without turning them into executable orders. Next step is moving real
+holdings into `data/private/portfolio.local.json` manually.
 
 ## L3: Daily And Weekly Reports
 
