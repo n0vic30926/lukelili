@@ -38,6 +38,7 @@ def check_foundation_files():
         "requirements.txt",
         "config/settings.example.json",
         "schemas/portfolio.schema.json",
+        "schemas/scenario_assumptions.schema.json",
         "data/examples/portfolio.example.json",
         "data/examples/scenario_assumptions.example.json",
         "docs/LOCAL_SETUP.md",
@@ -77,6 +78,7 @@ def check_foundation_files():
         "scripts/security_scan.py",
         "scripts/security_research.py",
         "scripts/validate_portfolio.py",
+        "scripts/validate_scenarios.py",
         "scripts/mock_data_quality_test.py",
         "scripts/mock_data_sources_test.py",
         "scripts/mock_competitive_readiness_test.py",
@@ -119,6 +121,7 @@ def check_foundation_files():
         "scripts/mock_runtime_test.py",
         "scripts/mock_security_scan_test.py",
         "scripts/mock_security_research_test.py",
+        "scripts/mock_scenario_validation_test.py",
         "scripts/mock_weekly_status_test.py",
     ]
     for path in required:
@@ -134,6 +137,7 @@ def check_json_files():
     for path in [
         "config/settings.example.json",
         "schemas/portfolio.schema.json",
+        "schemas/scenario_assumptions.schema.json",
         "data/examples/portfolio.example.json",
         "data/examples/scenario_assumptions.example.json",
     ]:

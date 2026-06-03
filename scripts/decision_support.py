@@ -16,6 +16,7 @@ from common.portfolio_exposure import summarize_portfolio_exposure
 from common.research_synthesis import synthesize_research_result
 from research_dispatch import build_research_plan, execute_research_plan
 from portfolio_scenarios import build_scenario_review
+from validate_scenarios import validate_scenarios
 
 
 ACTION_BY_STRATEGY = {
@@ -366,6 +367,8 @@ def load_scenario_review(portfolio, settings=None):
         return None
     with path.open(encoding="utf-8") as f:
         scenarios = json.load(f)
+    if validate_scenarios(scenarios):
+        return None
     return build_scenario_review(portfolio, scenarios)
 
 

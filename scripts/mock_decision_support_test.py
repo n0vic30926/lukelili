@@ -186,6 +186,12 @@ def run_scenario_loader_test():
         if review["scenario_count"] != 0:
             raise AssertionError(f"Expected example scenario fallback: {review}")
 
+        local_path.write_text(json.dumps([{"name": "", "shocks": []}]), encoding="utf-8")
+        review = load_scenario_review(portfolio, settings=settings)
+        if review is not None:
+            raise AssertionError(f"Invalid local scenarios should not build signals: {review}")
+
+        local_path.unlink()
         example_path.unlink()
         review = load_scenario_review(portfolio, settings=settings)
         if review is not None:

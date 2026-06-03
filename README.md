@@ -113,6 +113,7 @@ python3 scripts/ideal_agent_readiness.py
 python3 scripts/portfolio_xray.py
 python3 scripts/portfolio_scenarios.py
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
+python3 scripts/validate_scenarios.py data/examples/scenario_assumptions.example.json
 python3 scripts/mock_competitive_readiness_test.py
 python3 scripts/mock_data_quality_test.py
 python3 scripts/mock_data_sources_test.py
@@ -153,6 +154,7 @@ python3 scripts/mock_report_index_test.py
 python3 scripts/mock_review_history_test.py
 python3 scripts/mock_review_resolution_record_test.py
 python3 scripts/mock_runtime_test.py
+python3 scripts/mock_scenario_validation_test.py
 python3 scripts/mock_reporting_test.py
 python3 scripts/mock_security_scan_test.py
 python3 scripts/mock_weekly_status_test.py

@@ -40,8 +40,10 @@ market distribution with anonymized holding refs. A local portfolio x-ray now
 adds allocation, overlap cluster, fee-coverage, and decision-support boundary
 review without printing private holdings. A local scenario review now supports
 explicit stress assumptions, model-projection labels, decision signals, and risk
-rule flags without turning them into executable orders. Next step is moving real
-holdings into `data/private/portfolio.local.json` manually.
+rule flags without turning them into executable orders. Scenario assumptions now
+have a local validator for allowed match keys, non-empty shocks, and bounded
+shock percentages. Next step is moving real holdings into
+`data/private/portfolio.local.json` manually.
 
 ## L3: Daily And Weekly Reports
 

@@ -21,6 +21,7 @@ from decision_support import build_decision_packet
 from portfolio_scenarios import build_scenario_review
 from portfolio_xray import build_portfolio_xray
 from research_dispatch import build_research_plan, execute_research_plan
+from validate_scenarios import validate_scenarios
 from validate_portfolio import validate_portfolio
 
 
@@ -97,17 +98,21 @@ def build_readiness_matrix():
     )
 
     scenario_review = build_scenario_review(portfolio, _load_example_scenarios())
+    scenario_errors = validate_scenarios(_load_example_scenarios())
     entries.append(
         _entry(
             "L2",
-            "portfolio scenarios expose projections, decision signals, and risk flags",
+            "portfolio scenarios validate and expose projections, decision signals, and risk flags",
             scenario_review.get("scenario_count", 0) > 0
+            and not scenario_errors
             and scenario_review.get("boundary", {}).get("projection") == "model projection, not a fact"
             and scenario_review.get("boundary", {}).get("requires_user_confirmation") is True
             and scenario_review.get("boundary", {}).get("execution_allowed") is False
             and all(item.get("decision_signals") for item in scenario_review.get("scenarios", [])),
             "portfolio_scenarios scenario_count="
             + str(scenario_review.get("scenario_count", 0))
+            + " validation_errors="
+            + str(len(scenario_errors))
             + " boundary=model projection, not a fact",
         )
     )

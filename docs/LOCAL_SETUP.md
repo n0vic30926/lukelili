@@ -40,8 +40,16 @@ Validate a portfolio file:
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
 ```
 
+Validate scenario assumptions:
+
+```bash
+python3 scripts/validate_scenarios.py data/examples/scenario_assumptions.example.json
+```
+
 The validator checks required risk rules, positive cost/share values, and
 buy-record fields. Pending buy records may omit confirmed NAV and shares.
+The scenario validator checks explicit scenario names, match keys, non-empty
+shock lists, and `shock_pct` values between -100 and 100.
 
 Optional `factor_profile` values route attribution modules:
 
