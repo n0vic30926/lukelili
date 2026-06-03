@@ -135,6 +135,11 @@ includes a review queue that separates user confirmation, data refresh,
 local-record updates, and risk-rule review. It is not executable and must not be
 treated as user consent.
 
+Daily and weekly report output contracts also include local portfolio x-ray
+context and scenario signal summaries when scenario assumptions are configured.
+These report-side signals are model judgment for manual review, not execution
+consent.
+
 The smoke test checks local guardrails, config examples, schema, fictional example data, OpenClaw path removal, and Tavily key isolation. It does not install dependencies or call market data APIs.
 
 Install runtime dependencies manually before running daily or weekly reports:

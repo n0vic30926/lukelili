@@ -13,6 +13,7 @@ warnings.filterwarnings("ignore", message="urllib3 v2 only supports OpenSSL.*")
 
 from common.output_contract import build_report_output_sections, format_output_sections
 from common.portfolio_exposure import summarize_portfolio_exposure
+from common.report_decision_context import build_report_sections_with_decision_context
 from common.report_branch_fixtures import report_branch_fixtures
 from common.data_sources import role_data_requirements
 from common.research_synthesis import synthesize_research_result
@@ -150,6 +151,38 @@ def build_readiness_matrix():
             "daily/weekly report branches expose success, degraded, and skipped paths",
             len(report_fixtures) >= 3 and has_degraded_report and all(section.get("facts") for section in report_sections),
             f"report_branch_fixtures={len(report_fixtures)}",
+        )
+    )
+
+    report_context = build_report_sections_with_decision_context(
+        "daily",
+        portfolio,
+        {
+            "portfolio_source": "example",
+            "is_example_data": True,
+            "modules": {"success": 1, "failed": 0, "skipped": 0},
+        },
+        scenario_review=scenario_review,
+    )
+    report_context_text = "\n".join(
+        item for values in report_context.values() for item in values
+    )
+    report_ranked_count = sum(
+        1 for item in report_context.get("judgments", []) if "priority=" in item
+    )
+    entries.append(
+        _entry(
+            "L3",
+            "daily/weekly reports carry report decision context with x-ray and ranked scenario signals",
+            "report_decision_context=enabled" in report_context_text
+            and "xray_holding_count=" in report_context_text
+            and "scenario_projection=model projection, not a fact" in report_context_text
+            and "priority=" in report_context_text
+            and "not execution consent" in report_context_text,
+            "report decision context xray_holding_count="
+            + str(xray.get("holding_count", 0))
+            + " ranked="
+            + str(report_ranked_count),
         )
     )
 

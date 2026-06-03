@@ -4,9 +4,9 @@
 
 ## 系统定位
 
-**纪律守护系统，不是alpha预测系统。**
+**纪律守护与决策支持系统，不是自动交易或收益承诺系统。**
 
-核心理念：定投系统的真正敌人不是判断错误，而是行为偏差（恐慌割肉、追涨杀跌）。系统增强纪律，绝不替代纪律。
+核心理念：定投系统的真正敌人不是判断错误，而是行为偏差（恐慌割肉、追涨杀跌）。系统可以输出明确标注的模型预测和交易风格信号，但必须增强人工判断与纪律，绝不替代纪律或自动执行。
 
 ### 三层架构
 
@@ -99,6 +99,7 @@
 - `schemas/portfolio.schema.json`：portfolio schema，包含风险规则、持仓数值和买入记录约束；
 - `data/examples/portfolio.example.json`：虚构示例持仓；
 - `scripts/common/config_loader.py`：统一读取本地配置；
+- `scripts/common/report_decision_context.py`：将 portfolio x-ray 与情景信号并入日报/周报输出契约；
 - `scripts/validate_portfolio.py`：标准库 portfolio 校验；
 - `scripts/smoke_test.py`：离线基础检查。
 
@@ -131,6 +132,7 @@ python3 scripts/mock_portfolio_validation_test.py
 python3 scripts/mock_portfolio_xray_test.py
 python3 scripts/mock_report_branch_fixtures_test.py
 python3 scripts/mock_report_advice_classification_test.py
+python3 scripts/mock_report_decision_context_test.py
 python3 scripts/mock_report_output_contract_test.py
 python3 scripts/mock_report_source_interpretation_test.py
 python3 scripts/mock_report_section_contract_test.py

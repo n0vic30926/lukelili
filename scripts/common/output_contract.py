@@ -50,7 +50,7 @@ def format_classified_report_section(title=None, facts=None, inferences=None, ju
     return "\n".join(lines).rstrip()
 
 
-def build_report_output_sections(report_type, portfolio, run_summary):
+def build_report_output_sections(report_type, portfolio, run_summary, decision_context=None):
     holdings = portfolio.get("holdings", [])
     watchlist = portfolio.get("watchlist", [])
     modules = (run_summary or {}).get("modules", {})
@@ -84,7 +84,7 @@ def build_report_output_sections(report_type, portfolio, run_summary):
     if modules and modules.get("skipped", 0):
         inferences.append("some data modules were skipped by configuration or missing inputs")
 
-    return {
+    sections = {
         "facts": facts,
         "inferences": inferences,
         "judgments": [
@@ -97,6 +97,9 @@ def build_report_output_sections(report_type, portfolio, run_summary):
             "user confirms no broker action should be automated",
         ],
     }
+    for key in sections:
+        sections[key].extend((decision_context or {}).get(key) or [])
+    return sections
 
 
 def with_output_contract(content, sections):
