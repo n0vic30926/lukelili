@@ -24,6 +24,7 @@ def run_portfolio_validation_test():
                 "strategy_type": "dca",
                 "cost_basis": 1000,
                 "shares": 100,
+                "expense_ratio": 0.2,
                 "buy_records": [
                     {
                         "date": "2026-01-02",
@@ -60,6 +61,7 @@ def run_portfolio_validation_test():
                 "strategy_type": "dca",
                 "cost_basis": 0,
                 "shares": -2,
+                "expense_ratio": 120,
                 "buy_records": [
                     {"date": "2026-01-02", "amount": -100, "nav": 0, "shares": 0},
                     "not-an-object",
@@ -74,6 +76,7 @@ def run_portfolio_validation_test():
     _assert_has_error(errors, "risk_rules.max_single_position_pct must be between 0 and 100")
     _assert_has_error(errors, "holding[0] cost_basis must be positive")
     _assert_has_error(errors, "holding[0] shares must be positive")
+    _assert_has_error(errors, "holding[0] expense_ratio must be between 0 and 100")
     _assert_has_error(errors, "holding[0].buy_records[0] confirm_date is required unless status=pending")
     _assert_has_error(errors, "holding[0].buy_records[0].amount must be positive")
     _assert_has_error(errors, "holding[0].buy_records[0].nav must be positive")

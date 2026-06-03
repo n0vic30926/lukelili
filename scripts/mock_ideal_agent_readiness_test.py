@@ -32,6 +32,7 @@ def run_ideal_agent_readiness_test():
     _assert_contains(output, "execution_allowed=false")
     _assert_contains(output, "manual confirmation state includes blockers and a review queue")
     _assert_contains(output, "cross-role synthesis")
+    _assert_contains(output, "portfolio x-ray")
     _assert_contains(output, "competitive benchmark")
     _assert_not_contains(output, "PRIVATE")
     _assert_not_contains(output, "买入")

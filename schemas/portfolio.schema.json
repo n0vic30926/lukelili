@@ -34,6 +34,7 @@
           },
           "cost_basis": {"type": ["number", "integer"], "exclusiveMinimum": 0},
           "shares": {"type": ["number", "integer"], "exclusiveMinimum": 0},
+          "expense_ratio": {"type": ["number", "integer"], "minimum": 0, "maximum": 100},
           "buy_records": {
             "type": "array",
             "items": {

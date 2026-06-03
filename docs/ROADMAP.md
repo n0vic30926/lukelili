@@ -34,8 +34,10 @@ Status: local path/config/schema foundation in place. Portfolio validation now
 checks required risk rules, positive cost/share values, and buy-record fields
 without printing private asset details. Local exposure checks now summarize
 cash/invested percentages, max single-position percentage, and strategy/factor/
-market distribution with anonymized holding refs. Next step is moving real
-holdings into `data/private/portfolio.local.json` manually.
+market distribution with anonymized holding refs. A local portfolio x-ray now
+adds allocation, overlap cluster, fee-coverage, and decision-support boundary
+review without printing private holdings. Next step is moving real holdings into
+`data/private/portfolio.local.json` manually.
 
 ## L3: Daily And Weekly Reports
 

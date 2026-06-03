@@ -18,6 +18,7 @@ from common.data_sources import role_data_requirements
 from common.research_synthesis import synthesize_research_result
 from competitive_readiness import build_competitive_readiness
 from decision_support import build_decision_packet
+from portfolio_xray import build_portfolio_xray
 from research_dispatch import build_research_plan, execute_research_plan
 from validate_portfolio import validate_portfolio
 
@@ -72,6 +73,20 @@ def build_readiness_matrix():
             "portfolio exposure summary is anonymized and includes allocation checks",
             bool(exposure.get("holding_count")) and "positions" in exposure,
             f"holding_count={exposure.get('holding_count')} max_position_pct={exposure.get('max_position_pct')}",
+        )
+    )
+
+    xray = build_portfolio_xray(portfolio)
+    entries.append(
+        _entry(
+            "L2",
+            "portfolio x-ray exposes allocation, overlap, fee review, and boundaries",
+            bool(xray.get("allocation"))
+            and "overlap_clusters" in xray
+            and xray.get("fee_review", {}).get("weighted_expense_ratio_pct") is not None
+            and xray.get("boundary", {}).get("execution_allowed") is False,
+            "portfolio_xray fee_coverage_count="
+            + str(xray.get("fee_review", {}).get("fee_coverage_count")),
         )
     )
 

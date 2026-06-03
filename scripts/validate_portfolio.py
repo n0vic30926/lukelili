@@ -29,6 +29,13 @@ def _validate_percent(errors, label, value):
         errors.append(f"{label} must be between 0 and 100")
 
 
+def _validate_nonnegative_percent(errors, label, value):
+    if not _is_number(value):
+        errors.append(f"{label} must be numeric")
+    elif value < 0 or value > 100:
+        errors.append(f"{label} must be between 0 and 100")
+
+
 def _validate_risk_rules(errors, data):
     rules = data.get("risk_rules")
     if not isinstance(rules, dict):
@@ -92,6 +99,10 @@ def validate_portfolio(data):
             _validate_positive(errors, f"holding[{index}] cost_basis", holding["cost_basis"])
         if "shares" in holding:
             _validate_positive(errors, f"holding[{index}] shares", holding["shares"])
+        if "expense_ratio" in holding:
+            _validate_nonnegative_percent(
+                errors, f"holding[{index}] expense_ratio", holding["expense_ratio"]
+            )
         if "buy_records" in holding and not isinstance(holding["buy_records"], list):
             errors.append(f"holding[{index}] buy_records must be a list")
         elif "buy_records" in holding:

@@ -30,6 +30,7 @@
       },
       "cost_basis": 10000,
       "shares": 1000,
+      "expense_ratio": 0.45,
       "buy_records": [
         {
           "date": "2026-01-02",
