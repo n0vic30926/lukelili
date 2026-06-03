@@ -108,8 +108,10 @@
 
 ```bash
 python3 scripts/smoke_test.py
+python3 scripts/competitive_readiness.py
 python3 scripts/ideal_agent_readiness.py
 python3 scripts/validate_portfolio.py data/examples/portfolio.example.json
+python3 scripts/mock_competitive_readiness_test.py
 python3 scripts/mock_data_quality_test.py
 python3 scripts/mock_data_sources_test.py
 python3 scripts/mock_decision_confirmation_test.py

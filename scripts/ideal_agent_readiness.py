@@ -16,6 +16,7 @@ from common.portfolio_exposure import summarize_portfolio_exposure
 from common.report_branch_fixtures import report_branch_fixtures
 from common.data_sources import role_data_requirements
 from common.research_synthesis import synthesize_research_result
+from competitive_readiness import build_competitive_readiness
 from decision_support import build_decision_packet
 from research_dispatch import build_research_plan, execute_research_plan
 from validate_portfolio import validate_portfolio
@@ -273,6 +274,19 @@ def build_readiness_matrix():
             "local guardrails and setup documentation are present",
             docs_ok,
             "AGENTS.md docs/SECURITY_AND_BOUNDARIES.md docs/ROADMAP.md docs/LOCAL_SETUP.md",
+        )
+    )
+
+    competitive_entries = build_competitive_readiness()
+    competitive_failures = [
+        entry for entry in competitive_entries if entry["status"] == "fail"
+    ]
+    entries.append(
+        _entry(
+            "Strategy",
+            "competitive benchmark exists and gates future roadmap iterations",
+            not competitive_failures,
+            "competitive_readiness failures=" + str(len(competitive_failures)),
         )
     )
     return entries

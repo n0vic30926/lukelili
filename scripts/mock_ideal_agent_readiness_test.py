@@ -22,7 +22,7 @@ def run_ideal_agent_readiness_test():
     if counts.get("fail", 0) != 0:
         raise AssertionError(f"Readiness matrix should have no failures: {entries}")
     layers = {entry["layer"] for entry in entries}
-    for expected in ["L1", "L2", "L3", "L4", "L4/L5", "L5", "Safety"]:
+    for expected in ["L1", "L2", "L3", "L4", "L4/L5", "L5", "Safety", "Strategy"]:
         if expected not in layers:
             raise AssertionError(f"Missing readiness layer {expected}: {layers}")
 
@@ -32,6 +32,7 @@ def run_ideal_agent_readiness_test():
     _assert_contains(output, "execution_allowed=false")
     _assert_contains(output, "manual confirmation state includes blockers and a review queue")
     _assert_contains(output, "cross-role synthesis")
+    _assert_contains(output, "competitive benchmark")
     _assert_not_contains(output, "PRIVATE")
     _assert_not_contains(output, "买入")
     _assert_not_contains(output, "卖出")

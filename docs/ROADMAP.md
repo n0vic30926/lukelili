@@ -13,6 +13,8 @@ This worktree now has a local L1/L2 foundation:
 - core scripts no longer hardcode OpenClaw portfolio paths or Tavily key values;
 - tracked `memory/` and Skill files use sanitized templates instead of real holdings;
 - a tracked-file security scanner guards against common secret and private-portfolio leakage.
+- a competitive benchmark maps high-quality peer capabilities to local
+  privacy-first, evidence-ranked, decision-support-only iteration gates.
 
 ## L1: Document Investment Assistant
 
@@ -74,7 +76,7 @@ evidence, data sources, interpretations, and research questions. Cross-role
 research synthesis now summarizes role status, data-source status, unavailable
 sources, and ranked evidence for downstream confirmation audit. Real data depth
 can continue expanding by role, while end-to-end readiness is now checked by the
-ideal-agent acceptance matrix.
+ideal-agent acceptance matrix and the competitive benchmark gate.
 
 ## L5: Semi-Automated Decision Support
 
