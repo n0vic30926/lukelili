@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """Offline tests for L5 decision-support safety boundaries."""
 
-from decision_support import build_decision_packet, format_decision_packet
+import json
+import tempfile
+from pathlib import Path
+
+from decision_support import build_decision_packet, format_decision_packet, load_scenario_review
 from portfolio_scenarios import build_scenario_review
 
 
@@ -139,8 +143,58 @@ def run_decision_support_test():
     _assert_not_contains(output, "立即卖出")
 
 
+def run_scenario_loader_test():
+    portfolio = {
+        "holdings": [
+            {
+                "cost_basis": 1000,
+                "market": "us_stock",
+                "strategy_type": "dca",
+                "factor_profile": {"type": "growth"},
+            }
+        ],
+        "cash": {"amount": 0},
+        "risk_rules": {"daily_loss_pct": 5},
+    }
+    scenarios = [
+        {
+            "name": "configured_drawdown",
+            "description": "Configured local drawdown",
+            "shocks": [{"match": {"market": "us_stock"}, "shock_pct": -8}],
+        }
+    ]
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        local_path = tmp_path / "scenario.local.json"
+        example_path = tmp_path / "scenario.example.json"
+        local_path.write_text(json.dumps(scenarios), encoding="utf-8")
+        example_path.write_text(json.dumps([]), encoding="utf-8")
+
+        settings = {
+            "scenario_assumptions_path": str(local_path),
+            "example_scenario_assumptions_path": str(example_path),
+        }
+        review = load_scenario_review(portfolio, settings=settings)
+        if review["scenario_count"] != 1:
+            raise AssertionError(f"Expected configured scenario review: {review}")
+        if review["scenarios"][0]["name"] != "configured_drawdown":
+            raise AssertionError(f"Expected local scenario assumptions first: {review}")
+
+        local_path.unlink()
+        review = load_scenario_review(portfolio, settings=settings)
+        if review["scenario_count"] != 0:
+            raise AssertionError(f"Expected example scenario fallback: {review}")
+
+        example_path.unlink()
+        review = load_scenario_review(portfolio, settings=settings)
+        if review is not None:
+            raise AssertionError(f"Missing scenarios should not block decisions: {review}")
+
+
 def main():
     run_decision_support_test()
+    run_scenario_loader_test()
     print("Mock decision support test passed")
     return 0
 

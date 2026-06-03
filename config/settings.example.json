@@ -1,6 +1,8 @@
 {
   "portfolio_path": "data/private/portfolio.local.json",
   "example_portfolio_path": "data/examples/portfolio.example.json",
+  "scenario_assumptions_path": "data/private/scenario_assumptions.local.json",
+  "example_scenario_assumptions_path": "data/examples/scenario_assumptions.example.json",
   "decision_track_dir": "data/private/decision_track",
   "daily_report_dir": "reports/daily",
   "weekly_report_dir": "reports/weekly",

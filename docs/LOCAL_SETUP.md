@@ -24,7 +24,15 @@ Place real holdings in:
 data/private/portfolio.local.json
 ```
 
+Optional local scenario assumptions can be placed in:
+
+```text
+data/private/scenario_assumptions.local.json
+```
+
 Use `data/examples/portfolio.example.json` only as a structural reference. Do not copy real costs, shares, account data, API keys, or transaction records into tracked files.
+Use `data/examples/scenario_assumptions.example.json` only as a scenario
+structure reference. Scenario assumptions are model inputs, not facts.
 
 Validate a portfolio file:
 
@@ -113,9 +121,11 @@ python3 scripts/decision_support.py "组合风险 复盘 决策辅助"
 
 The decision-support packet contains candidate actions, ranked evidence, hard
 risk rule checks, exposure checks, risks, and a pending manual-confirmation
-state. The confirmation state also includes a review queue that separates user
-confirmation, data refresh, local-record updates, and risk-rule review. It is
-not executable and must not be treated as user consent.
+state. If scenario assumptions are configured, it also includes model-projection
+scenario signals as decision-support judgments. The confirmation state also
+includes a review queue that separates user confirmation, data refresh,
+local-record updates, and risk-rule review. It is not executable and must not be
+treated as user consent.
 
 The smoke test checks local guardrails, config examples, schema, fictional example data, OpenClaw path removal, and Tavily key isolation. It does not install dependencies or call market data APIs.
 

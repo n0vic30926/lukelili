@@ -8,13 +8,14 @@ broker endpoints, places orders, or treats model judgment as user consent.
 import json
 import sys
 
-from common.config_loader import get_portfolio_path
+from common.config_loader import get_portfolio_path, get_scenario_assumptions_path
 from common.decision_confirmation import build_confirmation_state, format_confirmation_state
 from common.evidence import rank_evidence
 from common.output_contract import format_output_sections
 from common.portfolio_exposure import summarize_portfolio_exposure
 from common.research_synthesis import synthesize_research_result
 from research_dispatch import build_research_plan, execute_research_plan
+from portfolio_scenarios import build_scenario_review
 
 
 ACTION_BY_STRATEGY = {
@@ -359,13 +360,28 @@ def _load_portfolio():
         return json.load(f)
 
 
+def load_scenario_review(portfolio, settings=None):
+    path = get_scenario_assumptions_path(settings)
+    if not path.exists():
+        return None
+    with path.open(encoding="utf-8") as f:
+        scenarios = json.load(f)
+    return build_scenario_review(portfolio, scenarios)
+
+
 def main(argv=None):
     argv = argv or sys.argv[1:]
     query = " ".join(argv) if argv else "组合风险 复盘 决策辅助"
     portfolio = _load_portfolio()
     plan = build_research_plan(query, portfolio)
     research_result = execute_research_plan(plan, portfolio)
-    print(format_decision_packet(build_decision_packet(portfolio, research_result)))
+    scenario_review = load_scenario_review(portfolio)
+    packet = build_decision_packet(
+        portfolio,
+        research_result,
+        scenario_review=scenario_review,
+    )
+    print(format_decision_packet(packet))
     return 0
 
 

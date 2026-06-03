@@ -46,6 +46,16 @@ def get_decision_track_dir(settings=None):
     return resolve_path(settings["decision_track_dir"])
 
 
+def get_scenario_assumptions_path(settings=None, prefer_example=False):
+    settings = settings or load_settings()
+    if prefer_example:
+        return resolve_path(settings["example_scenario_assumptions_path"])
+    private_path = resolve_path(settings["scenario_assumptions_path"])
+    if private_path.exists():
+        return private_path
+    return resolve_path(settings["example_scenario_assumptions_path"])
+
+
 def get_tavily_api_key(settings=None):
     settings = settings or load_settings()
     env_name = settings.get("tavily_api_key_env", "TAVILY_API_KEY")
@@ -55,4 +65,3 @@ def get_tavily_api_key(settings=None):
 def news_enabled(settings=None):
     settings = settings or load_settings()
     return bool(settings.get("enable_news")) and bool(get_tavily_api_key(settings))
-
