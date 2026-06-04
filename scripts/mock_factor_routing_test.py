@@ -28,6 +28,11 @@ def run_factor_routing_test():
                 "factor_profile": {"type": "a_share_ai", "benchmark": "CSI_AI"},
             },
             {
+                "code": "FUND_D",
+                "name": "Example CN AI Theme Alias",
+                "factor_profile": {"type": "cn_ai_theme_equity", "benchmark": "CSI_AI"},
+            },
+            {
                 "code": "FUND_C",
                 "name": "Example Cash Fund",
                 "factor_profile": {"type": "none"},
@@ -35,9 +40,9 @@ def run_factor_routing_test():
         ]
     }
     jobs = build_factor_jobs(portfolio)
-    if [job["code"] for job in jobs] != ["FUND_A", "FUND_B"]:
+    if [job["code"] for job in jobs] != ["FUND_A", "FUND_B", "FUND_D"]:
         raise AssertionError(f"Unexpected jobs: {jobs}")
-    if [job["attribution_type"] for job in jobs] != ["qdii_us_equity", "a_share_ai"]:
+    if [job["attribution_type"] for job in jobs] != ["qdii_us_equity", "a_share_ai", "a_share_ai"]:
         raise AssertionError(f"Unexpected job types: {jobs}")
 
     qdii_text = format_factor_result(

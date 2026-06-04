@@ -2,8 +2,12 @@
 """Offline report-level checks with mocked market data."""
 
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+EXAMPLE_PORTFOLIO = ROOT / "data/examples/portfolio.example.json"
 
 
 def _fund_nav_frame():
@@ -33,6 +37,7 @@ def run_daily_mock():
 
     daily.TRACKER.records.clear()
     daily.MISSING_RUNTIME_DEPS.clear()
+    daily.PORTFOLIO_PATH = EXAMPLE_PORTFOLIO
     daily.USING_EXAMPLE_PORTFOLIO = True
     daily.get_fund_nav = lambda code, days=10: _fund_nav_frame().tail(days)
     daily.get_etf_quote = lambda codes: {
@@ -75,12 +80,13 @@ def run_daily_partial_failure_mock():
 
     daily.TRACKER.records.clear()
     daily.MISSING_RUNTIME_DEPS.clear()
+    daily.PORTFOLIO_PATH = EXAMPLE_PORTFOLIO
     daily.USING_EXAMPLE_PORTFOLIO = True
 
     def fund_nav(code, days=10):
         if code == "000000":
             daily.TRACKER.fail(f"fund_nav:{code}", "fixture", "simulated fund nav failure")
-            return None
+            return "simulated non-frame cache value"
         daily.TRACKER.ok(f"fund_nav:{code}", "fixture")
         return _fund_nav_frame().tail(days)
 
@@ -117,6 +123,7 @@ def run_weekly_mock():
 
     weekly.TRACKER.records.clear()
     weekly.MISSING_RUNTIME_DEPS.clear()
+    weekly.PORTFOLIO_PATH = EXAMPLE_PORTFOLIO
     weekly.USING_EXAMPLE_PORTFOLIO = True
     weekly.weekly_returns = lambda: [
         {
@@ -149,6 +156,7 @@ def run_weekly_partial_failure_mock():
 
     weekly.TRACKER.records.clear()
     weekly.MISSING_RUNTIME_DEPS.clear()
+    weekly.PORTFOLIO_PATH = EXAMPLE_PORTFOLIO
     weekly.USING_EXAMPLE_PORTFOLIO = True
     weekly.weekly_returns = lambda: []
     weekly.industry_rotation = lambda: None

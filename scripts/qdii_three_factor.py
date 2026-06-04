@@ -8,7 +8,7 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from common.config_loader import get_portfolio_path_with_flag, load_settings
-from common.data_runtime import DataStatusTracker, cached_call, missing_dependencies
+from common.data_runtime import DataStatusTracker, missing_dependencies
 
 try:
     import akshare as ak
@@ -26,6 +26,20 @@ except ImportError:
 SETTINGS = load_settings()
 TRACKER = DataStatusTracker()
 MISSING_RUNTIME_DEPS = missing_dependencies(["akshare", "pandas", "numpy"])
+
+
+def _is_frame(value):
+    return hasattr(value, "empty") and hasattr(value, "iloc") and not value.empty
+
+
+def _call_dataframe(tracker, module, source, producer):
+    try:
+        result = producer()
+        tracker.success(module, source=source)
+        return result
+    except Exception as exc:
+        tracker.failure(module, source=source, error=exc)
+        return None
 
 
 def _missing_dependency(module, tracker=None):
@@ -46,6 +60,8 @@ def build_factor_jobs(portfolio):
     for holding in portfolio.get("holdings", []):
         profile = holding.get("factor_profile") or {}
         attribution_type = str(profile.get("type") or "none")
+        if attribution_type == "cn_ai_theme_equity":
+            attribution_type = "a_share_ai"
         if attribution_type not in ("qdii_us_equity", "a_share_ai"):
             continue
         jobs.append(
@@ -99,16 +115,13 @@ def qdii_attribution(fund_code=None, days=30, tracker=None):
         return {"error": "missing_fund_code"}
     active_tracker = tracker or TRACKER
     # 1. 基金净值序列
-    df_fund = cached_call(
-        SETTINGS,
+    df_fund = _call_dataframe(
         active_tracker,
         f"qdii_fund_nav:{fund_code}",
         "AkShare fund_open_fund_info_em",
-        f"qdii_fund_nav:{fund_code}:{days}",
         lambda: ak.fund_open_fund_info_em(symbol=fund_code, indicator="单位净值走势"),
-        None,
     )
-    if df_fund is None:
+    if not _is_frame(df_fund):
         return {"error": "基金净值数据不可用"}
     df_fund['净值日期'] = pd.to_datetime(df_fund['净值日期'])
     df_fund = df_fund.tail(days + 5).drop_duplicates(subset='净值日期').tail(days)
@@ -119,16 +132,13 @@ def qdii_attribution(fund_code=None, days=30, tracker=None):
     date_end = df_fund.iloc[-1]['净值日期']
 
     # 2. 纳斯达克指数
-    df_nasdaq = cached_call(
-        SETTINGS,
+    df_nasdaq = _call_dataframe(
         active_tracker,
         "qdii_nasdaq_index",
         "AkShare index_us_stock_sina",
-        "qdii_nasdaq_index:.IXIC",
         lambda: ak.index_us_stock_sina(symbol=".IXIC"),
-        None,
     )
-    if df_nasdaq is None:
+    if not _is_frame(df_nasdaq):
         return {"error": "纳指数据不可用"}
     df_nasdaq['date'] = pd.to_datetime(df_nasdaq['date'])
     df_nasdaq = df_nasdaq.sort_values('date')
@@ -141,16 +151,13 @@ def qdii_attribution(fund_code=None, days=30, tracker=None):
     nasdaq_ret = (nasdaq_end / nasdaq_start - 1) * 100
 
     # 3. 汇率变化
-    df_fx = cached_call(
-        SETTINGS,
+    df_fx = _call_dataframe(
         active_tracker,
         "qdii_fx_history",
         "AkShare currency_boc_safe",
-        "qdii_fx_history",
         lambda: ak.currency_boc_safe(),
-        None,
     )
-    if df_fx is None:
+    if not _is_frame(df_fx):
         return {"error": "汇率历史数据不可用"}
     df_fx['日期'] = pd.to_datetime(df_fx['日期'])
     df_fx = df_fx.sort_values('日期')
@@ -201,16 +208,13 @@ def portfolio_risk_scan(tracker=None):
     holdings = portfolio['holdings']
     nav_series = {}
     for h in holdings:
-        df = cached_call(
-            SETTINGS,
+        df = _call_dataframe(
             active_tracker,
             f"risk_fund_nav:{h['code']}",
             "AkShare fund_open_fund_info_em",
-            f"risk_fund_nav:{h['code']}",
             lambda code=h['code']: ak.fund_open_fund_info_em(symbol=code, indicator="单位净值走势"),
-            None,
         )
-        if df is None:
+        if not _is_frame(df):
             return {"error": f"{h['code']} 净值数据不可用"}
         df['净值日期'] = pd.to_datetime(df['净值日期'])
         df = df.tail(30).drop_duplicates(subset='净值日期')
@@ -274,16 +278,13 @@ def ai_fund_attribution(fund_code=None, days=30, tracker=None):
         return {"error": "missing_fund_code"}
     active_tracker = tracker or TRACKER
     # 1. 基金净值序列
-    df_fund = cached_call(
-        SETTINGS,
+    df_fund = _call_dataframe(
         active_tracker,
         f"ai_fund_nav:{fund_code}",
         "AkShare fund_open_fund_info_em",
-        f"ai_fund_nav:{fund_code}:{days}",
         lambda: ak.fund_open_fund_info_em(symbol=fund_code, indicator="单位净值走势"),
-        None,
     )
-    if df_fund is None:
+    if not _is_frame(df_fund):
         return {"error": "AI基金净值数据不可用"}
     df_fund['净值日期'] = pd.to_datetime(df_fund['净值日期'])
     df_fund = df_fund.tail(days + 5).drop_duplicates(subset='净值日期').tail(days)
@@ -296,16 +297,13 @@ def ai_fund_attribution(fund_code=None, days=30, tracker=None):
     # 2. 中证AI指数(930713) — 中证指数公司数据源，不受东方财富反爬影响
     start_str = (date_start - timedelta(days=5)).strftime('%Y%m%d')
     end_str = (date_end + timedelta(days=3)).strftime('%Y%m%d')
-    df_index = cached_call(
-        SETTINGS,
+    df_index = _call_dataframe(
         active_tracker,
         "ai_index_history",
         "AkShare stock_zh_index_hist_csindex",
-        f"ai_index_history:930713:{start_str}:{end_str}",
         lambda: ak.stock_zh_index_hist_csindex(symbol='930713', start_date=start_str, end_date=end_str),
-        None,
     )
-    if df_index is None:
+    if not _is_frame(df_index):
         return {"error": "中证AI指数数据不可用"}
     df_index['日期'] = pd.to_datetime(df_index['日期'])
     df_index = df_index.sort_values('日期')
@@ -321,16 +319,13 @@ def ai_fund_attribution(fund_code=None, days=30, tracker=None):
     sector_results = []
     for ind in ai_industries:
         try:
-            df_s = cached_call(
-                SETTINGS,
+            df_s = _call_dataframe(
                 active_tracker,
                 f"ai_sector_flow:{ind}",
                 "AkShare stock_sector_fund_flow_hist",
-                f"ai_sector_flow:{ind}:{date_start.date()}:{date_end.date()}",
                 lambda ind=ind: ak.stock_sector_fund_flow_hist(symbol=ind),
-                None,
             )
-            if df_s is not None and len(df_s) > 0:
+            if _is_frame(df_s) and len(df_s) > 0:
                 df_s['日期'] = pd.to_datetime(df_s['日期'])
                 mask = (df_s['日期'] >= date_start) & (df_s['日期'] <= date_end)
                 df_s = df_s[mask]

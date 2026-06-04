@@ -102,15 +102,17 @@ def get_fund_nav(code, days=10, tracker=None):
         df = df.tail(days).copy()
         df['净值日期'] = pd.to_datetime(df['净值日期'])
         return df
-    if tracker:
-        try:
-            result = producer()
-            tracker.success(module, source="AkShare")
-            return result
-        except Exception as exc:
-            tracker.failure(module, source="AkShare", error=exc)
-            return None
-    return cached_call(SETTINGS, active_tracker, module, "AkShare fund_open_fund_info_em", f"fund_nav:{code}:{days}", producer, None)
+    try:
+        result = producer()
+        active_tracker.success(module, source="AkShare fund_open_fund_info_em")
+        return result
+    except Exception as exc:
+        active_tracker.failure(module, source="AkShare fund_open_fund_info_em", error=exc)
+        return None
+
+
+def _is_nav_frame(value):
+    return hasattr(value, "empty") and hasattr(value, "iloc") and not value.empty
 
 
 def get_etf_quote(codes, tracker=None):
@@ -144,7 +146,13 @@ def get_us_index():
         df = ak.index_us_stock_sina(symbol=".IXIC")
         df = df.tail(5).copy()
         return df
-    return cached_call(SETTINGS, TRACKER, "us_index", "AkShare index_us_stock_sina", "us_index:.IXIC:5", producer, None)
+    try:
+        result = producer()
+        TRACKER.success("us_index", source="AkShare index_us_stock_sina")
+        return result
+    except Exception as exc:
+        TRACKER.failure("us_index", source="AkShare index_us_stock_sina", error=exc)
+        return None
 
 
 def get_fx_usdcny():
@@ -235,7 +243,7 @@ def main():
         name = h['name']
         df_nav = get_fund_nav(code, days=5)
 
-        if df_nav is None or df_nav.empty:
+        if not _is_nav_frame(df_nav):
             lines.append(f"**{name}** ({code}): 数据获取失败")
             lines.append("")
             continue
@@ -288,7 +296,7 @@ def main():
 
     # 美股纳指
     us_idx = get_us_index()
-    if us_idx is not None and not us_idx.empty:
+    if _is_nav_frame(us_idx):
         latest_us = us_idx.iloc[-1]
         prev_us = us_idx.iloc[-2] if len(us_idx) >= 2 else latest_us
         us_close = float(latest_us['close'])
@@ -385,7 +393,7 @@ def main():
         cost = h.get('cost_basis')
         shares = h.get('shares')
         df_nav = get_fund_nav(h['code'], days=3)
-        if cost and shares and df_nav is not None and not df_nav.empty:
+        if cost and shares and _is_nav_frame(df_nav):
             latest_nav = float(df_nav.iloc[-1]['单位净值'])
             market_val = shares * latest_nav
             pnl = market_val - cost
@@ -412,18 +420,18 @@ def main():
     lines.append("## 🔬 QDII三因子归因（近30日）")
     lines.append("")
     try:
-        from qdii_three_factor import qdii_attribution, ai_fund_attribution
-        attr = qdii_attribution(days=30)
-        if 'error' not in attr:
-            lines.append(f"- 基金收益: {attr['fund_ret']:+.2f}%")
-            lines.append(f"- 纳指贡献: {attr['nasdaq_contrib']:+.2f}%")
-            lines.append(f"- 汇率贡献: {attr['fx_contrib']:+.2f}%")
-            lines.append(f"- 残差(超额/跟踪误差): {attr['residual']:+.2f}%")
-            lines.append(f"- 解释度: {attr['explained_pct']:.1f}%")
-            attr_data = attr  # 供决策模块用
+        from qdii_three_factor import build_factor_jobs, format_factor_result, run_factor_job
+        factor_jobs = build_factor_jobs(portfolio)
+        qdii_jobs = [job for job in factor_jobs if job.get("attribution_type") == "qdii_us_equity"]
+        attr_data = None
+        if qdii_jobs:
+            for job in qdii_jobs:
+                attr = run_factor_job(job, days=30, tracker=TRACKER)
+                lines.extend(format_factor_result(job, attr).splitlines())
+                if attr and "error" not in attr and attr_data is None:
+                    attr_data = attr
         else:
-            lines.append(f"- 归因计算失败: {attr['error']}")
-            attr_data = None
+            lines.append("- 未配置 qdii_us_equity 持仓。")
     except Exception as e:
         lines.append(f"- 归因计算异常: {e}")
         attr_data = None
@@ -433,18 +441,18 @@ def main():
     lines.append("## 🔬 AI基金三因子归因（近30日）")
     lines.append("")
     try:
-        from qdii_three_factor import ai_fund_attribution
-        ai_attr = ai_fund_attribution(days=30)
-        if 'error' not in ai_attr:
-            lines.append(f"- 基金收益: {ai_attr['fund_ret']:+.2f}%")
-            lines.append(f"- 中证AI指数贡献: {ai_attr['index_contrib']:+.2f}%")
-            lines.append(f"- 行业轮动贡献: {ai_attr['rotation_contrib']:+.2f}%")
-            lines.append(f"- 残差(alpha/跟踪误差): {ai_attr['residual']:+.2f}%")
-            lines.append(f"- 解释度: {ai_attr['explained_pct']:.1f}%")
-            ai_attr_data = ai_attr
+        from qdii_three_factor import build_factor_jobs, format_factor_result, run_factor_job
+        factor_jobs = build_factor_jobs(portfolio)
+        ai_jobs = [job for job in factor_jobs if job.get("attribution_type") == "a_share_ai"]
+        ai_attr_data = None
+        if ai_jobs:
+            for job in ai_jobs:
+                ai_attr = run_factor_job(job, days=30, tracker=TRACKER)
+                lines.extend(format_factor_result(job, ai_attr).splitlines())
+                if ai_attr and "error" not in ai_attr and ai_attr_data is None:
+                    ai_attr_data = ai_attr
         else:
-            lines.append(f"- 归因计算失败: {ai_attr['error']}")
-            ai_attr_data = None
+            lines.append("- 未配置 a_share_ai 持仓。")
     except Exception as e:
         lines.append(f"- 归因计算异常: {e}")
         ai_attr_data = None
@@ -487,7 +495,7 @@ def main():
         cost = h.get('cost_basis')
         shares = h.get('shares')
         df_nav_h = get_fund_nav(h['code'], days=3)
-        if not (cost and shares and df_nav_h is not None and not df_nav_h.empty):
+        if not (cost and shares and _is_nav_frame(df_nav_h)):
             continue
         nav_now = float(df_nav_h.iloc[-1]['单位净值'])
         pnl_pct = ((shares * nav_now - cost) / cost) * 100
@@ -542,7 +550,7 @@ def main():
         # 极端时刻纪律提醒
         for h in portfolio['holdings']:
             df_3d = get_fund_nav(h['code'], days=3)
-            if df_3d is not None and len(df_3d) >= 2:
+            if _is_nav_frame(df_3d) and len(df_3d) >= 2:
                 chg = float(df_3d.iloc[-1].get('日增长率', 0))
                 if abs(chg) >= 2:
                     direction = "大跌" if chg < 0 else "大涨"

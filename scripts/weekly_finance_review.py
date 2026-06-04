@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from common.config_loader import get_portfolio_path_with_flag, get_report_dirs, load_settings
-from common.data_runtime import DataStatusTracker, cached_call, missing_dependencies
+from common.data_runtime import DataStatusTracker, missing_dependencies
 from common.output_contract import format_classified_report_section
 from common.reporting import write_report
 
@@ -30,6 +30,21 @@ PORTFOLIO_PATH, USING_EXAMPLE_PORTFOLIO = get_portfolio_path_with_flag(SETTINGS)
 REPORT_DIRS = get_report_dirs(SETTINGS)
 TRACKER = DataStatusTracker()
 MISSING_RUNTIME_DEPS = missing_dependencies(["akshare", "pandas", "numpy"])
+
+
+def _is_frame(value):
+    return hasattr(value, "empty") and hasattr(value, "iloc") and not value.empty
+
+
+def _call_dataframe(tracker, module, source, producer):
+    try:
+        result = producer()
+        tracker.success(module, source=source)
+        return result
+    except Exception as exc:
+        tracker.failure(module, source=source, error=exc)
+        return None
+
 
 def load_portfolio():
     with open(PORTFOLIO_PATH, encoding="utf-8") as f:
@@ -80,24 +95,13 @@ def weekly_returns(tracker=None):
     monday = today - timedelta(days=today.weekday())
     results = []
     for h in portfolio['holdings']:
-        if tracker:
-            try:
-                df = ak.fund_open_fund_info_em(symbol=h['code'], indicator="单位净值走势")
-                tracker.success("weekly_returns", source="AkShare")
-            except Exception as exc:
-                tracker.failure("weekly_returns", source="AkShare", error=exc)
-                df = None
-        else:
-            df = cached_call(
-                SETTINGS,
-                active_tracker,
-                f"weekly_fund_nav:{h['code']}",
-                "AkShare fund_open_fund_info_em",
-                f"weekly_fund_nav:{h['code']}",
-                lambda code=h['code']: ak.fund_open_fund_info_em(symbol=code, indicator="单位净值走势"),
-                None,
-            )
-        if df is None:
+        df = _call_dataframe(
+            active_tracker,
+            f"weekly_fund_nav:{h['code']}",
+            "AkShare fund_open_fund_info_em",
+            lambda code=h['code']: ak.fund_open_fund_info_em(symbol=code, indicator="单位净值走势"),
+        )
+        if not _is_frame(df):
             continue
         df['净值日期'] = pd.to_datetime(df['净值日期'])
         df = df.drop_duplicates(subset='净值日期').sort_values('净值日期')
@@ -150,20 +154,13 @@ def industry_rotation(tracker=None):
     active_tracker = tracker or TRACKER
     # 主接口
     try:
-        if tracker:
-            df = ak.stock_fund_flow_industry()
-            tracker.success("industry_rotation", source="AkShare")
-        else:
-            df = cached_call(
-                SETTINGS,
-                active_tracker,
-                "weekly_industry_flow",
-                "AkShare stock_fund_flow_industry",
-                "weekly_industry_flow",
-                lambda: ak.stock_fund_flow_industry(),
-                None,
-            )
-        if df is None:
+        df = _call_dataframe(
+            active_tracker,
+            "weekly_industry_flow",
+            "AkShare stock_fund_flow_industry",
+            lambda: ak.stock_fund_flow_industry(),
+        )
+        if not _is_frame(df):
             raise RuntimeError("stock_fund_flow_industry unavailable")
         df = df.sort_values('净额', ascending=True)
         df = df.drop_duplicates(subset='行业', keep='first')
@@ -182,16 +179,13 @@ def industry_rotation(tracker=None):
         results = []
         for ind in KEY_INDUSTRIES:
             try:
-                df = cached_call(
-                    SETTINGS,
+                df = _call_dataframe(
                     active_tracker,
                     f"weekly_sector_flow:{ind}",
                     "AkShare stock_sector_fund_flow_hist",
-                    f"weekly_sector_flow:{ind}",
                     lambda ind=ind: ak.stock_sector_fund_flow_hist(symbol=ind),
-                    None,
                 )
-                if df is not None and len(df) > 0:
+                if _is_frame(df) and len(df) > 0:
                     latest = df.iloc[-1]
                     results.append({
                         '行业': ind,
@@ -305,24 +299,13 @@ def dca_curve(tracker=None):
         records.sort(key=lambda x: x['confirm_date'])
 
         # 获取当前净值
-        if tracker:
-            try:
-                df = ak.fund_open_fund_info_em(symbol=h['code'], indicator="单位净值走势")
-                tracker.success("dca_curve", source="AkShare")
-            except Exception as exc:
-                tracker.failure("dca_curve", source="AkShare", error=exc)
-                df = None
-        else:
-            df = cached_call(
-                SETTINGS,
-                active_tracker,
-                f"dca_fund_nav:{h['code']}",
-                "AkShare fund_open_fund_info_em",
-                f"dca_fund_nav:{h['code']}",
-                lambda code=h['code']: ak.fund_open_fund_info_em(symbol=code, indicator="单位净值走势"),
-                None,
-            )
-        if df is None:
+        df = _call_dataframe(
+            active_tracker,
+            f"dca_fund_nav:{h['code']}",
+            "AkShare fund_open_fund_info_em",
+            lambda code=h['code']: ak.fund_open_fund_info_em(symbol=code, indicator="单位净值走势"),
+        )
+        if not _is_frame(df):
             continue
         df['净值日期'] = pd.to_datetime(df['净值日期'])
         current_nav = float(df.iloc[-1]['单位净值'])

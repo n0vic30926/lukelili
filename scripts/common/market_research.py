@@ -6,9 +6,6 @@ from math import sqrt
 import re
 from statistics import median
 
-from common.data_runtime import cached_call
-
-
 def _safe_float(value):
     try:
         return float(value)
@@ -27,6 +24,20 @@ def _format_ratio(value):
         return "未配置"
     pct = value * 100 if abs(value) <= 1 else value
     return f"{pct:.2f}%"
+
+
+def _is_frame(value):
+    return hasattr(value, "empty") and hasattr(value, "iloc") and not value.empty
+
+
+def _call_dataframe(tracker, module, source, producer):
+    try:
+        result = producer()
+        tracker.success(module, source=source)
+        return result
+    except Exception as exc:
+        tracker.failure(module, source=source, error=exc)
+        return None
 
 
 def _first_value(row, names):
@@ -188,15 +199,9 @@ def _call_first_available(ak, settings, tracker, indicator):
         fn = getattr(ak, fn_name, None)
         if not callable(fn):
             continue
-        return cached_call(
-            settings,
-            tracker,
-            f"macro_indicator:{indicator.get('id', fn_name)}",
-            f"AkShare {fn_name}",
-            f"macro_indicator:{indicator.get('id', fn_name)}:{fn_name}",
-            fn,
-            None,
-        ), fn_name
+        source = f"AkShare {fn_name}"
+        module = f"macro_indicator:{indicator.get('id', fn_name)}"
+        return _call_dataframe(tracker, module, source, fn), fn_name
     tracker.skip(
         f"macro_indicator:{indicator.get('id', 'unknown')}",
         "AkShare",
@@ -346,16 +351,13 @@ def macro_observation(ak, pd, settings, tracker):
     """Return markdown lines for macro conditions using best-effort AkShare data."""
     lines = ["## 🌏 宏观观察", ""]
 
-    us_index = cached_call(
-        settings,
+    us_index = _call_dataframe(
         tracker,
         "macro_us_index",
         "AkShare index_us_stock_sina",
-        "macro_us_index:.IXIC",
         lambda: ak.index_us_stock_sina(symbol=".IXIC"),
-        None,
     )
-    if us_index is not None and len(us_index) >= 2:
+    if _is_frame(us_index) and len(us_index) >= 2:
         us_index = us_index.tail(30).copy()
         latest = us_index.iloc[-1]
         first = us_index.iloc[0]
@@ -366,16 +368,13 @@ def macro_observation(ak, pd, settings, tracker):
     else:
         lines.append("- 纳斯达克: 数据不可用")
 
-    fx_quote = cached_call(
-        settings,
+    fx_quote = _call_dataframe(
         tracker,
         "macro_fx_quote",
         "AkShare fx_spot_quote",
-        "macro_fx_quote",
         lambda: ak.fx_spot_quote(),
-        None,
     )
-    if fx_quote is not None:
+    if _is_frame(fx_quote):
         try:
             usd = fx_quote[fx_quote["货币对"] == "USD/CNY"]
             rate = _safe_float(usd.iloc[0].get("买报价")) if not usd.empty else None
@@ -385,16 +384,13 @@ def macro_observation(ak, pd, settings, tracker):
     else:
         lines.append("- USD/CNY: 数据不可用")
 
-    fx_history = cached_call(
-        settings,
+    fx_history = _call_dataframe(
         tracker,
         "macro_fx_history",
         "AkShare currency_boc_safe",
-        "macro_fx_history",
         lambda: ak.currency_boc_safe(),
-        None,
     )
-    if fx_history is not None and len(fx_history) >= 2:
+    if _is_frame(fx_history) and len(fx_history) >= 2:
         try:
             fx_col = [c for c in fx_history.columns if "美元" in str(c) or "USD" in str(c).upper()]
             fx_col = fx_col[0] if fx_col else fx_history.columns[1]
@@ -427,16 +423,13 @@ def etf_observation(ak, settings, tracker, holdings):
         lines.append("")
         return lines
 
-    quote = cached_call(
-        settings,
+    quote = _call_dataframe(
         tracker,
         "etf_research_quote",
         "AkShare fund_etf_spot_em",
-        "etf_research_quote",
         lambda: ak.fund_etf_spot_em(),
-        None,
     )
-    if quote is None:
+    if not _is_frame(quote):
         lines.append("- ETF行情: 数据不可用")
         lines.append("")
         return lines
