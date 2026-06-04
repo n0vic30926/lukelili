@@ -240,6 +240,12 @@ Inspect archived report history without printing report bodies:
 python3 scripts/report_index.py
 ```
 
+Generate the reader-facing daily insight report:
+
+```bash
+python3 scripts/daily_insight.py
+```
+
 Review report continuity and decision-discipline aggregates without printing
 private holdings:
 

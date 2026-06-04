@@ -41,6 +41,7 @@
 | 文件 | 行数 | 功能 |
 |---|---|---|
 | `daily_finance_brief.py` | 491 | 每日收盘推送（持仓+ETF+指数+估值锚+三因子归因+风控+行业情报+纪律守护） |
+| `daily_insight.py` | - | 读者层日报洞察，把组合、风险、推荐、数据盲区翻译成可执行的中文判断 |
 | `weekly_finance_review.py` | 341 | 周度回顾（收益+行业资金流+QDII因子周变化+产业周期+定投曲线+决策建议） |
 | `industry_cycle.py` | 598 | 15赛道产业周期框架（6量化+9定性+信号整合） |
 | `qdii_three_factor.py` | 210 | QDII三因子归因（纳指+汇率+残差）+ AI基金三因子归因（中证AI+行业轮动+残差） |
@@ -196,6 +197,12 @@ python3 -m pip install -r requirements.txt
 
 ```bash
 python3 scripts/report_index.py
+```
+
+生成面向日常决策的可读日报洞察：
+
+```bash
+python3 scripts/daily_insight.py
 ```
 
 查看报告连续性、重复失败模块和私有决策记录的策略类型摘要：
