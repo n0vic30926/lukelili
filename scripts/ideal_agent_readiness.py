@@ -183,7 +183,7 @@ def build_readiness_matrix():
         {
             "facts": ["execution_allowed=false"],
             "inferences": ["data source status is visible"],
-            "judgments": ["decision support only"],
+            "judgments": ["actionable recommendation required when evidence is sufficient"],
             "confirmations": ["user confirmation required"],
         }
     )
@@ -421,11 +421,11 @@ def build_readiness_matrix():
     entries.append(
         _entry(
             "L5",
-            "decision packet is decision-support only and never executable",
+            "decision packet can carry recommendations without unauthorized execution",
             packet["execution_allowed"] is False
             and packet["requires_user_confirmation"] is True
             and "broker_connection" in packet["prohibited_actions"],
-            "execution_allowed=false prohibited_actions present",
+            "recommendations_allowed=true execution_allowed=false prohibited_actions present",
         )
     )
     entries.append(
@@ -485,6 +485,7 @@ def build_readiness_matrix():
             "docs/SECURITY_AND_BOUNDARIES.md",
             "docs/ROADMAP.md",
             "docs/LOCAL_SETUP.md",
+            "docs/OPEN_SOURCE_AGENT_BENCHMARK.md",
         ]
     )
     entries.append(
@@ -492,7 +493,7 @@ def build_readiness_matrix():
             "Safety",
             "local guardrails and setup documentation are present",
             docs_ok,
-            "AGENTS.md docs/SIGNAL_POLICY.md docs/SECURITY_AND_BOUNDARIES.md docs/ROADMAP.md docs/LOCAL_SETUP.md",
+            "AGENTS.md docs/SIGNAL_POLICY.md docs/SECURITY_AND_BOUNDARIES.md docs/ROADMAP.md docs/LOCAL_SETUP.md docs/OPEN_SOURCE_AGENT_BENCHMARK.md",
         )
     )
 
@@ -503,7 +504,7 @@ def build_readiness_matrix():
     entries.append(
         _entry(
             "Strategy",
-            "competitive benchmark exists and gates future roadmap iterations",
+            "competitive benchmark exists and gates recommendation-first iterations",
             not competitive_failures,
             "competitive_readiness failures=" + str(len(competitive_failures)),
         )
@@ -525,7 +526,7 @@ def format_readiness_matrix(entries):
         "- Summary: "
         f"pass={counts.get('pass', 0)} warn={counts.get('warn', 0)} fail={counts.get('fail', 0)}"
     )
-    lines.append("- Boundary: decision support only; no broker connection or order placement")
+    lines.append("- Boundary: actionable recommendations; no unauthorized broker order placement")
     lines.append("")
     lines.append("| Layer | Status | Requirement | Evidence |")
     lines.append("|---|---|---|---|")

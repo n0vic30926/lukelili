@@ -2,8 +2,9 @@
 
 ## Hard Boundaries
 
-- No automatic trading.
-- No broker execution integration.
+- No real broker order placement without an explicit user-authorized execution
+  mode.
+- No silent broker execution integration.
 - No promised returns.
 - No prediction presented as fact.
 - No tracked real API keys, cookies, account IDs, costs, shares, or transaction records.
@@ -31,23 +32,29 @@ Finance Agent may provide:
 - data-derived observations;
 - model projections and hypothetical scenarios;
 - risk reminders;
-- candidate buy/sell/hold/rebalance style signals;
-- decision-support framing;
+- direct buy/sell/hold/rebalance/reduce-risk recommendations;
+- ranked action plans with priority, confidence, rationale, risk, and next
+  action;
 - user-confirmation checklists.
 
-Finance Agent must not convert those into order placement or final user consent.
+Finance Agent should not hide behind blanket disclaimers. The default output
+should be useful enough to support a real personal investment decision. The
+remaining boundary is execution authority: recommendations are allowed; real
+broker orders require explicit user authorization and an execution module.
 
 Predictions and trading-style signals are allowed only when they are explicitly
-framed as model judgment or decision-support signals. They must not be presented
-as facts, promised returns, or executable orders.
+framed as model judgment or recommendation signals. They must not be presented
+as facts, promised returns, or unauthorized executable orders.
 
 Decision-support outputs and scheduled reports should explicitly separate facts,
-data-derived inferences, model judgment, and user confirmation requirements.
+data-derived inferences, model judgment, recommendations, and user confirmation
+requirements.
 
-Decision-support packets must keep `execution_allowed=false`, describe only
-candidate actions, and require explicit user confirmation before any real-world
-portfolio change. They must not include broker instructions or executable order
-payloads.
+Recommendation packets may describe concrete candidate actions. Until an
+execution module exists, they must keep `execution_allowed=false` and must not
+include broker instructions or executable order payloads. If a future execution
+module is added, it must require an explicit mandate, pre-trade risk checks,
+audit logs, and a kill switch before `execution_allowed` can become true.
 
 Research and decision-support evidence should be ranked by source tier and
 freshness. Local user data outranks community data, and external news/search

@@ -1,26 +1,36 @@
 # Competitive Benchmark
 
-This benchmark is the prerequisite for roadmap iteration. Future work should not
-add capabilities only because they sound useful. Each meaningful roadmap item
-should map to a competitor-proven capability, a local competitive advantage, or
-an explicit guardrail.
+This benchmark is the prerequisite for roadmap iteration. Future work should
+not add capabilities only because they sound useful. Each meaningful roadmap
+item should map to a competitor-proven capability, a local competitive
+advantage, or an explicit product principle. The product principle has changed:
+Finance Agent should give actionable investment recommendations, while real
+broker execution remains mandate-gated.
 
 ## Competitor Capability Matrix
 
 | Segment | Benchmarks | Capabilities to Track | Local Iteration Implication |
 |---|---|---|---|
-| Robo-advisors | Betterment, Wealthfront, Schwab Intelligent Portfolios, Vanguard Digital Advisor | goal/risk profiling, diversified portfolios, automated rebalancing, tax-loss harvesting where applicable, tax-aware portfolio maintenance | Match the discipline loop and risk visibility, but keep this project decision support only with no broker execution. |
+| Robo-advisors | Betterment, Wealthfront, Schwab Intelligent Portfolios, Vanguard Digital Advisor | goal/risk profiling, diversified portfolios, automated rebalancing, tax-loss harvesting where applicable, tax-aware portfolio maintenance | Match the discipline loop and produce explicit recommendations; real execution remains mandate-gated. |
 | Portfolio dashboards | Empower, Morningstar, Portfolio Visualizer, Koyfin | portfolio tracking, portfolio x-ray, allocation and overlap checks, fee/exposure analysis, backtesting, factor analysis, Monte Carlo, efficient frontier, dashboards and reports | Prioritize exposure transparency, scenario review, and explainable historical/risk context before adding broader surface area. |
-| AI research and strategy tools | Magnifi, FinChat, Seeking Alpha, Composer | AI research, company/filing/transcript synthesis, watchlists, ratings/factor grades, backtested strategy libraries, strategy automation | Use AI to accelerate research and verification, not to bypass user judgment or trigger trades. |
+| AI research and strategy tools | Magnifi, FinChat, Seeking Alpha, Composer | AI research, company/filing/transcript synthesis, watchlists, ratings/factor grades, backtested strategy libraries, strategy automation | Use AI to produce recommendations and strategy candidates, with evidence and explicit execution authority. |
+| Open-source finance platforms | OpenBB, Fincept Terminal | broad financial data platform, terminal workflow, AI copilot, market analytics, economic data, extensible providers | Add provider registry and tool catalog so recommendations can pull from normalized data surfaces. |
+| Agentic hedge-fund systems | ai-hedge-fund, AutoHedge, Vibe-Trading | multi-agent votes, portfolio-manager final decision, mandate-gated action layer, paper/live connectors, audit ledger, kill switch | Move from passive decision support to ranked recommendations and later paper execution with mandate controls. |
+| Quant/strategy engines | FinGPT, FinRL, Qlib, Backtrader, Pyfolio, x2strategy | financial sentiment/forecast models, RL/ML strategy loop, alpha pipeline, strategy backtests, tear sheets, paper-to-strategy extraction | Add recommendation schema, investor-style agents, Pyfolio-style analytics, strategy backtesting, and hypothesis registry. |
 
 ## Local Competitive Advantages
 
 - local-first privacy: real holdings, costs, shares, account ids, cookies, and API
   keys stay in ignored local files.
-- explicit user confirmation: every decision-support packet keeps
-  `execution_allowed=false` and requires manual confirmation.
-- decision support only: the system must not connect to broker execution
-  endpoints, place orders, or present buy/sell/hold language as execution.
+- actionable recommendations: outputs should include ranked actions, confidence,
+  horizon, rationale, risk, invalidators, and next action.
+- mandate-gated execution: recommendation is allowed; real broker orders require
+  a future explicit mandate, pre-trade checks, audit ledger, and kill switch.
+- explicit user confirmation: every recommendation must show whether it is
+  informational, recommended, paper-executable, or live-executable; real-world
+  execution requires explicit user confirmation.
+- current execution state: until an execution module exists, recommendation
+  artifacts must keep `execution_allowed=false`.
 - evidence ranking: research output ranks facts by source tier, freshness, and
   reliability instead of flattening all observations into one narrative.
 - stock intersection and holdings matrix: local optional `underlying_holdings`
@@ -48,7 +58,7 @@ conditions:
 
 1. It closes a capability gap visible in the Competitor Capability Matrix.
 2. It strengthens a Local Competitive Advantages item.
-3. It reinforces a guardrail required by AGENTS.md or
+3. It reinforces a product principle required by AGENTS.md or
    docs/SECURITY_AND_BOUNDARIES.md.
 
 If an item cannot satisfy one of these conditions, defer it until the benchmark
@@ -103,3 +113,25 @@ benchmark inputs, not endorsements or investment advice.
   https://help.seekingalpha.com/migration/premium/how-to-track-and-optimize-your-portfolio-using-seeking-alphas-ratings
 - Composer symphony database:
   https://www.composer.trade/trading-strategies
+- OpenBB:
+  https://github.com/OpenBB-finance/OpenBB
+- Fincept Terminal:
+  https://github.com/Fincept-Corporation/FinceptTerminal
+- ai-hedge-fund:
+  https://github.com/virattt/ai-hedge-fund
+- AutoHedge:
+  https://github.com/The-Swarm-Corporation/AutoHedge
+- Vibe-Trading:
+  https://github.com/HKUDS/Vibe-Trading
+- FinGPT:
+  https://github.com/AI4Finance-Foundation/FinGPT
+- FinRL:
+  https://github.com/AI4Finance-Foundation/FinRL
+- Qlib:
+  https://github.com/microsoft/qlib
+- Backtrader:
+  https://github.com/mementum/backtrader
+- Pyfolio:
+  https://github.com/quantopian/pyfolio
+- x2strategy:
+  https://github.com/ALAGENT-HKU/x2strategy

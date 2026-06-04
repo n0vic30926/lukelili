@@ -28,7 +28,7 @@ def run_ideal_agent_readiness_test():
 
     output = format_readiness_matrix(entries)
     _assert_contains(output, "# Ideal Agent Readiness Matrix")
-    _assert_contains(output, "decision support only")
+    _assert_contains(output, "actionable recommendations")
     _assert_contains(output, "execution_allowed=false")
     _assert_contains(output, "manual confirmation state includes blockers and a review queue")
     _assert_contains(output, "cross-role synthesis")

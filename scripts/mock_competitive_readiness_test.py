@@ -22,9 +22,12 @@ def run_competitive_readiness_test():
         "Iteration Gate",
         "Betterment",
         "Portfolio Visualizer",
+        "OpenBB",
+        "Vibe-Trading",
+        "Qlib",
         "local-first privacy",
-        "explicit user confirmation",
-        "decision support only",
+        "actionable recommendations",
+        "mandate-gated execution",
     ]:
         _assert_contains(output, expected)
 

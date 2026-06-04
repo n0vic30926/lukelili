@@ -43,6 +43,7 @@ def check_foundation_files():
         "data/examples/scenario_assumptions.example.json",
         "docs/LOCAL_SETUP.md",
         "docs/COMPETITIVE_BENCHMARK.md",
+        "docs/OPEN_SOURCE_AGENT_BENCHMARK.md",
         "docs/SIGNAL_POLICY.md",
         "docs/SECURITY_AND_BOUNDARIES.md",
         "docs/ROADMAP.md",

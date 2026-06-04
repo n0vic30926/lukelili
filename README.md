@@ -1,29 +1,29 @@
 # Finance Agent
 
-个人投资分析 Agent 的本地基础工程。它来自 OpenClaw 导出版本，当前方向是逐步变成本地可维护、可审计、边界清晰的长期工具。
+个人投资 Agent 的本地基础工程。它来自 OpenClaw 导出版本，当前方向是逐步变成本地可维护、可审计、能给出明确建议和行动计划的长期工具。
 
 ## 系统定位
 
-**纪律守护与决策支持系统，不是自动交易或收益承诺系统。**
+**投资建议与行动计划系统，不是收益承诺系统。**
 
-核心理念：定投系统的真正敌人不是判断错误，而是行为偏差（恐慌割肉、追涨杀跌）。系统可以输出明确标注的模型预测和交易风格信号，但必须增强人工判断与纪律，绝不替代纪律或自动执行。
+核心理念：Agent 应该能综合研究、组合状态、风险、回测和市场证据，给出可执行前的明确建议：买/卖/持有/再平衡/降低风险、优先级、信心、理由、风险、失效条件和下一步。硬边界不是“不能给投资建议”，而是不能承诺收益、不能把预测说成事实、不能在未授权状态下真实下单。
 
 ### 三层架构
 
 | 层级 | 作用 | 完成度 |
 |---|---|---|
-| L1 执行纪律 | 策略隔离、纪律守护、反事实追踪 | ✅ 完成 |
-| L2 世界认知 | 15赛道产业周期框架、行业情报 | ✅ 完成 |
-| L3 投资哲学 | IPS投资者档案、策略声明书 | 🔄 初版完成 |
+| L1 证据与规则 | 策略隔离、事实/推断/判断分层、风险边界 | ✅ 完成 |
+| L2 组合与市场认知 | 组合暴露、回测、再平衡、行业情报、场景压力 | ✅ 持续扩展 |
+| L3 建议与行动 | 推荐排序、行动计划、纸面执行、审计复盘 | 🔄 重新编排 |
 
 ## 6条固化原则
 
-1. **估值锚是风险提示器，不是执行指令器** — 可进入决策辅助信号，但不能替用户下结论
+1. **建议必须明确** — 不再用泛化免责声明替代结论；输出要给方向、理由、风险和下一步
 2. **反事实追踪评估"建议是否符合系统原则"** — 不是"结果赚没赚钱"
-3. **系统增强纪律，绝不替代纪律** — "暂停定投"不能作为未确认的执行结论
-4. **输出设计本身就是策略设计** — 隐性择时语言必须清除
+3. **系统增强纪律，也要形成行动** — "暂停定投"/"降低风险"/"加仓观察"可以成为建议，但真实执行需要授权
+4. **输出设计本身就是策略设计** — 隐性含糊语言必须收敛成推荐、证据和失效条件
 5. **Agent永远不能替用户定义投资哲学/策略类型** — strategy_type必须用户声明
-6. **人格标签化是危险信号** — 应改为时间戳行为记录
+6. **真实下单是独立能力** — 未来需要 mandate、pre-trade checks、audit ledger、kill switch
 
 ## 策略类型系统（First-Class Citizen）
 
@@ -102,6 +102,7 @@
 - `scripts/common/report_decision_context.py`：将 portfolio x-ray 与情景信号并入日报/周报输出契约；
 - `scripts/validate_portfolio.py`：标准库 portfolio 校验；
 - `scripts/smoke_test.py`：离线基础检查。
+- `docs/OPEN_SOURCE_AGENT_BENCHMARK.md`：开源投资 Agent 横向对比与重新排序 TODO。
 
 真实持仓应放在 `data/private/portfolio.local.json`，不要提交到 git。
 
@@ -254,11 +255,11 @@ Delivery配置（所有cron通用）：
 ## 设计亮点
 
 1. **策略类型不可变** — Agent永远不能修改用户声明的策略类型
-2. **择时语言清除** — 所有隐性择时措辞（"建议关注"/"关注回调"）已替换为纯状态描述
+2. **行动语言显性化** — 隐性择时措辞要落到推荐、置信度、风险和失效条件
 3. **QDII三因子归因** — 纳指贡献+汇率贡献+残差，30天解释75.5%
 4. **15赛道产业周期** — 从存储芯片到CPO到AI SaaS的全产业链覆盖
 5. **反事实追踪** — 自动记录每日建议，周度检查是否偏离纪律原则
-6. **估值锚纯风险提示** — 99.6%百分位可进入风险/信号判断，但不能直接变成执行指令
+6. **估值锚进入建议层** — 99.6%百分位可进入风险/信号判断和仓位建议；真实下单另行授权
 
 ## 路线图
 
@@ -302,6 +303,13 @@ Delivery配置（所有cron通用）：
 - [x] L5 半自动决策辅助：确认状态审计与人工复核队列，不允许自动交易
 - [x] L5 人工复核结果记录：脱敏 resolution JSONL 与 history review 汇总，不构成交易授权
 - [x] 端到端验收矩阵：用 tracked 示例数据检查 L1-L5 与安全边界 readiness
+- [x] 竞品重编排：基于 OpenBB / Fincept / ai-hedge-fund / AutoHedge / Vibe-Trading / FinGPT / FinRL / Qlib / Backtrader / Pyfolio / x2strategy 重排 TODO
+- [ ] P1 推荐引擎 MVP：生成 ranked recommendations，包含 action / confidence / horizon / rationale / risk / invalidators / next_action
+- [ ] P1 投资风格 Agent 投票：value / growth / macro / technical / sentiment / risk / portfolio manager
+- [ ] P2 Pyfolio 风格绩效分析：Sharpe / Sortino / Calmar / beta / alpha / benchmark / rolling stats
+- [ ] P2 策略回测：strategy spec / signal series / trade ledger / sizing / fees / OOS split
+- [ ] P3 hypothesis registry 与 x2strategy 风格研究转策略
+- [ ] P5 纸面执行：mandate / order proposal / pre-trade checks / audit ledger / kill switch
 
 ---
 

@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BENCHMARK_PATH = ROOT / "docs/COMPETITIVE_BENCHMARK.md"
+OPEN_SOURCE_BENCHMARK_PATH = ROOT / "docs/OPEN_SOURCE_AGENT_BENCHMARK.md"
 
 
 def _entry(requirement, ok, evidence):
@@ -22,16 +23,24 @@ def _read_benchmark():
     return BENCHMARK_PATH.read_text(encoding="utf-8")
 
 
+def _read_open_source_benchmark():
+    if not OPEN_SOURCE_BENCHMARK_PATH.exists():
+        return ""
+    return OPEN_SOURCE_BENCHMARK_PATH.read_text(encoding="utf-8")
+
+
 def build_competitive_readiness():
     text = _read_benchmark()
-    lower_text = text.lower()
+    open_source_text = _read_open_source_benchmark()
+    combined_text = text + "\n" + open_source_text
+    lower_text = combined_text.lower()
     checks = []
 
     checks.append(
         _entry(
             "competitive benchmark document exists",
-            bool(text),
-            "docs/COMPETITIVE_BENCHMARK.md",
+            bool(text) and bool(open_source_text),
+            "docs/COMPETITIVE_BENCHMARK.md docs/OPEN_SOURCE_AGENT_BENCHMARK.md",
         )
     )
 
@@ -62,8 +71,19 @@ def build_competitive_readiness():
         "FinChat",
         "Seeking Alpha",
         "Composer",
+        "OpenBB",
+        "Fincept",
+        "ai-hedge-fund",
+        "AutoHedge",
+        "Vibe-Trading",
+        "FinGPT",
+        "FinRL",
+        "Qlib",
+        "Backtrader",
+        "Pyfolio",
+        "x2strategy",
     ]
-    missing_competitors = [name for name in competitors if name not in text]
+    missing_competitors = [name for name in competitors if name not in combined_text]
     checks.append(
         _entry(
             "benchmark covers representative competitor set",
@@ -86,6 +106,12 @@ def build_competitive_readiness():
         "local-first privacy",
         "evidence ranking",
         "data freshness",
+        "actionable recommendations",
+        "mandate-gated execution",
+        "paper execution",
+        "hypothesis registry",
+        "strategy backtesting",
+        "tear sheet",
     ]
     missing_capabilities = [
         capability for capability in capabilities if capability.lower() not in lower_text
@@ -100,11 +126,11 @@ def build_competitive_readiness():
 
     checks.append(
         _entry(
-            "benchmark preserves investment-agent boundaries",
-            "decision support only" in lower_text
-            and "no broker execution" in lower_text
+            "benchmark preserves actionable-agent boundaries",
+            "actionable recommendations" in lower_text
+            and "mandate-gated" in lower_text
             and "execution_allowed=false" in lower_text,
-            "decision support only; no broker execution; execution_allowed=false",
+            "actionable recommendations; mandate-gated execution; execution_allowed=false until execution module",
         )
     )
 
@@ -122,14 +148,14 @@ def format_competitive_readiness(entries):
     counts = summarize_competitive_readiness(entries)
     lines = ["# Competitive Readiness", ""]
     lines.append(f"- Summary: pass={counts.get('pass', 0)} fail={counts.get('fail', 0)}")
-    lines.append("- Source: docs/COMPETITIVE_BENCHMARK.md")
+    lines.append("- Source: docs/COMPETITIVE_BENCHMARK.md; docs/OPEN_SOURCE_AGENT_BENCHMARK.md")
     lines.append(
         "- Required Sections: Competitor Capability Matrix; "
         "Local Competitive Advantages; Iteration Gate"
     )
-    lines.append("- Representative Benchmarks: Betterment; Portfolio Visualizer")
+    lines.append("- Representative Benchmarks: Betterment; Portfolio Visualizer; OpenBB; Vibe-Trading; Qlib")
     lines.append(
-        "- Local Boundaries: local-first privacy; explicit user confirmation; decision support only"
+        "- Local Boundaries: local-first privacy; actionable recommendations; mandate-gated execution; no promised returns"
     )
     lines.append("")
     lines.append("| Status | Requirement | Evidence |")

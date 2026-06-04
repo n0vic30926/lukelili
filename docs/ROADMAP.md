@@ -14,19 +14,23 @@ This worktree now has a local L1/L2 foundation:
 - tracked `memory/` and Skill files use sanitized templates instead of real holdings;
 - a tracked-file security scanner guards against common secret and private-portfolio leakage.
 - a competitive benchmark maps high-quality peer capabilities to local
-  privacy-first, evidence-ranked, decision-support-only iteration gates.
-- a signal policy now permits projections and trading-style signals as model
-  judgment, while keeping confirmation and execution boundaries explicit.
+  privacy-first, evidence-ranked, recommendation-first iteration gates.
+- a signal policy now requires actionable recommendations when evidence is
+  sufficient, while keeping execution authority explicit.
+- an open-source agent benchmark maps OpenBB, Fincept, ai-hedge-fund,
+  AutoHedge, Vibe-Trading, FinGPT, FinRL, Qlib, Backtrader, Pyfolio, and
+  x2strategy into capability gaps and a reordered TODO.
 
 ## L1: Document Investment Assistant
 
 Goal: Codex can read investment rules, safety boundaries, and output constraints.
 
-Status: foundation in place. Decision-support, daily, and weekly outputs now
+Status: foundation in place. Recommendation, daily, and weekly outputs now
 include an explicit Facts / Data-Derived Inferences / Model Judgment / User
 Confirmation Required classification. Daily and weekly advice sections now also
-classify their own content at the source, so older free-form advice language is
-framed as decision-support judgment with explicit user confirmation.
+classify their own content at the source. Next iteration should add a dedicated
+Recommendation section so outputs do not hide useful advice inside generic
+"decision support" language.
 
 ## L2: Local Portfolio Analysis Assistant
 
@@ -65,7 +69,7 @@ Goal: split macro, ETF, individual security, industry, risk, and review roles.
 
 Status: a minimal local dispatcher now maps user intent to Macro, Industry,
 Individual Security, ETF, Risk, and Review role contracts with explicit inputs,
-outputs, and decision-support-only boundaries. It can also execute local
+outputs, and recommendation/execution-authority boundaries. It can also execute local
 read-only role runners and merge observations into one research report. Evidence
 is ranked and displayed with source tier, freshness, and reliability score. Role
 reports now also show required data sources and availability status without
@@ -87,7 +91,7 @@ and manual-confirmation blocker summaries. Role data-source states are now also
 interpreted into explicit impact paths and unconfirmed limitations, so execution
 reports no longer stop at raw availability lists. Role reports now also generate
 bounded per-role research questions from data-source states, keeping them as
-manual decision-support prompts rather than trade instructions. Sanitized
+research prompts and recommendation inputs rather than passive caveats. Sanitized
 research branch fixtures now cover ok/skipped/failed role paths, ranked
 evidence, data sources, interpretations, and research questions. Cross-role
 research synthesis now summarizes role status, data-source status, unavailable
@@ -98,29 +102,43 @@ visible before model judgment. Real data depth can continue expanding by role,
 while end-to-end readiness is now checked by the ideal-agent acceptance matrix
 and the competitive benchmark gate.
 
-## L5: Semi-Automated Decision Support
+## L5: Recommendation And Action Engine
 
-Goal: provide buy/sell/hold/watch decision support with explicit user confirmation.
+Goal: provide ranked buy/sell/hold/rebalance/reduce-risk recommendations and
+concrete next actions. Recommendation is allowed; real execution is a separate
+mandate-gated capability.
 
-Status: a local decision-support packet builder now converts portfolio strategy
-types and research observations into candidate actions, rationale, risks, and
-required confirmation checks. It also surfaces missing hard risk rules from the
-local portfolio file, anonymized exposure checks, and a pending manual
-confirmation state with blockers. Scenario decision signals now flow from the
-configured scenario assumptions into the decision packet as ranked model
-judgment with explicit user confirmation blockers. It sets
-`execution_allowed=false` and does not connect to broker endpoints. Cross-role
-research synthesis now feeds
-unavailable role/data-source states into the manual confirmation blockers.
-Manual confirmation now includes a bounded review queue that separates user
-confirmation, data refresh, local-record updates, and risk-rule review. These
-queue action counts and manual review resolutions can be recorded as sanitized
-JSONL and summarized by history review without turning them into execution
-consent. An end-to-end ideal-agent readiness matrix now checks L1-L5 and safety
-capabilities against tracked example data without reading private holdings.
+Status: the current packet builder converts portfolio strategy types and
+research observations into candidate actions, rationale, risks, and required
+confirmation checks. Scenario and rebalance signals flow into manual blockers,
+and cross-role data-source gaps are visible. This is no longer sufficient as the
+product endpoint. Next step is a first-class recommendation packet that ranks
+actions, assigns confidence and horizon, names invalidators, estimates position
+effect, and gives a concrete next action. `execution_allowed=false` remains only
+because no execution module exists yet, not because the system should avoid
+recommendations.
 
-Explicitly out of scope:
+New priority order:
 
-- broker integration;
-- automatic order placement;
-- trade execution without user confirmation.
+1. P0 Product reset: remove blanket defensive phrasing and require actionable
+   recommendation language.
+2. P1 Recommendation schema and portfolio-manager aggregation over current
+   portfolio, scenario, rebalance, backtest, and research signals.
+3. P1 Investor-style voting agents: value, growth, macro, technical, sentiment,
+   risk, and portfolio manager.
+4. P2 Pyfolio-style performance analytics: Sharpe, Sortino, Calmar, beta,
+   alpha, benchmark comparison, rolling stats, drawdown table.
+5. P2 Strategy backtesting: strategy spec, signal series, trade ledger, sizing,
+   slippage/fees, and out-of-sample split.
+6. P3 Hypothesis registry and x2strategy-style strategy extraction from papers,
+   news, and filings.
+7. P4 Provider registry and tool catalog inspired by OpenBB/Fincept.
+8. P5 Paper execution: mandate file, order proposal artifact, pre-trade risk
+   checks, audit ledger, and kill switch.
+9. P6 Live broker integration only after paper execution is reliable.
+
+Still out of scope for the current codebase:
+
+- silent broker integration;
+- live order placement without a user mandate;
+- promised returns or forecasts presented as facts.
