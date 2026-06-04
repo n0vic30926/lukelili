@@ -6,9 +6,7 @@ import math
 import sys
 from pathlib import Path
 
-
-ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_PORTFOLIO = ROOT / "data/examples/portfolio.example.json"
+from common.config_loader import load_portfolio
 
 
 def _number(value, default=0.0):
@@ -194,10 +192,15 @@ def _load_portfolio(path):
         return json.load(f)
 
 
+def _load_active_portfolio():
+    portfolio, _, _, _ = load_portfolio()
+    return portfolio
+
+
 def main(argv=None):
     argv = argv or sys.argv[1:]
-    path = Path(argv[0]) if argv else DEFAULT_PORTFOLIO
-    print(format_portfolio_backtest(build_portfolio_backtest(_load_portfolio(path))))
+    portfolio = _load_portfolio(Path(argv[0])) if argv else _load_active_portfolio()
+    print(format_portfolio_backtest(build_portfolio_backtest(portfolio)))
     return 0
 
 
