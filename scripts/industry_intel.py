@@ -23,6 +23,12 @@ INJECTION_PATTERNS = [
 ]
 
 
+def get_news_status():
+    if not news_enabled():
+        return {"skipped": True, "reason": "enable_news=false or API key missing"}
+    return {"skipped": False, "reason": ""}
+
+
 def sanitize_external_text(text, max_length=300):
     cleaned = str(text or "")
     lowered = cleaned.lower()

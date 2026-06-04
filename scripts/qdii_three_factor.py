@@ -1,28 +1,31 @@
 #!/usr/bin/env python3
 """QDII三因子归因：基金收益 = 纳指贡献 + 汇率贡献 + 残差(跟踪误差)
 AI基金三因子归因：基金收益 = 指数贡献 + 行业轮动贡献 + 残差(alpha)"""
+from datetime import datetime, timedelta
 import os
 import sys
-from datetime import datetime, timedelta
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
-from common.config_loader import get_portfolio_path
+from common.config_loader import get_portfolio_path_with_flag, load_settings
+from common.data_runtime import DataStatusTracker, cached_call, missing_dependencies
 
 try:
     import akshare as ak
 except ImportError:
     ak = None
-
 try:
     import pandas as pd
 except ImportError:
     pd = None
-
 try:
     import numpy as np
 except ImportError:
     np = None
+
+SETTINGS = load_settings()
+TRACKER = DataStatusTracker()
+MISSING_RUNTIME_DEPS = missing_dependencies(["akshare", "pandas", "numpy"])
 
 
 def _missing_dependency(module, tracker=None):
@@ -32,21 +35,9 @@ def _missing_dependency(module, tracker=None):
     return {"error": "missing_dependency: akshare"}
 
 
-def _record_success(module, tracker=None, detail=""):
-    if tracker:
-        tracker.success(module, source="AkShare", detail=detail)
-
-
 def _record_failure(module, tracker=None, error=None):
     if tracker:
-        tracker.failure(module, source="AkShare", error=error)
-
-
-SUPPORTED_FACTOR_TYPES = {"qdii_us_equity", "a_share_ai"}
-
-
-def _holding_label(holding):
-    return str(holding.get("name") or holding.get("code") or "Unnamed Holding")
+        tracker.failure(module, source="AkShare", error=error or RuntimeError("failed"))
 
 
 def build_factor_jobs(portfolio):
@@ -55,25 +46,25 @@ def build_factor_jobs(portfolio):
     for holding in portfolio.get("holdings", []):
         profile = holding.get("factor_profile") or {}
         attribution_type = str(profile.get("type") or "none")
-        if attribution_type not in SUPPORTED_FACTOR_TYPES:
+        if attribution_type not in ("qdii_us_equity", "a_share_ai"):
             continue
         jobs.append(
             {
-                "code": str(holding.get("code") or ""),
-                "label": _holding_label(holding),
+                "code": holding.get("code"),
+                "label": holding.get("name") or holding.get("code"),
                 "attribution_type": attribution_type,
-                "benchmark": str(profile.get("benchmark") or ""),
+                "benchmark": profile.get("benchmark", ""),
             }
         )
     return jobs
 
 
 def run_factor_job(job, days=30, tracker=None):
-    if job["attribution_type"] == "qdii_us_equity":
-        return qdii_attribution(fund_code=job["code"], days=days, tracker=tracker)
-    if job["attribution_type"] == "a_share_ai":
-        return ai_fund_attribution(fund_code=job["code"], days=days, tracker=tracker)
-    return {"error": f"unsupported_factor_profile: {job['attribution_type']}"}
+    if job.get("attribution_type") == "qdii_us_equity":
+        return qdii_attribution(fund_code=job.get("code"), days=days, tracker=tracker)
+    if job.get("attribution_type") == "a_share_ai":
+        return ai_fund_attribution(fund_code=job.get("code"), days=days, tracker=tracker)
+    return {"error": "unsupported_attribution_type"}
 
 
 def run_factor_jobs(portfolio, days=30, tracker=None):
@@ -86,7 +77,6 @@ def format_factor_result(job, result):
     if not result or "error" in result:
         lines.append(f"- 归因计算失败: {result.get('error', 'unknown_error') if result else 'unknown_error'}")
         return "\n".join(lines)
-
     lines.append(f"- 基金收益: {result['fund_ret']:+.2f}%")
     if job.get("attribution_type") == "qdii_us_equity":
         lines.append(f"- 纳指贡献: {result['nasdaq_contrib']:+.2f}%")
@@ -107,9 +97,19 @@ def qdii_attribution(fund_code=None, days=30, tracker=None):
     if not fund_code:
         _record_failure("qdii_attribution", tracker, RuntimeError("missing_fund_code"))
         return {"error": "missing_fund_code"}
-
+    active_tracker = tracker or TRACKER
     # 1. 基金净值序列
-    df_fund = ak.fund_open_fund_info_em(symbol=fund_code, indicator="单位净值走势")
+    df_fund = cached_call(
+        SETTINGS,
+        active_tracker,
+        f"qdii_fund_nav:{fund_code}",
+        "AkShare fund_open_fund_info_em",
+        f"qdii_fund_nav:{fund_code}:{days}",
+        lambda: ak.fund_open_fund_info_em(symbol=fund_code, indicator="单位净值走势"),
+        None,
+    )
+    if df_fund is None:
+        return {"error": "基金净值数据不可用"}
     df_fund['净值日期'] = pd.to_datetime(df_fund['净值日期'])
     df_fund = df_fund.tail(days + 5).drop_duplicates(subset='净值日期').tail(days)
     fund_start = float(df_fund.iloc[0]['单位净值'])
@@ -119,20 +119,39 @@ def qdii_attribution(fund_code=None, days=30, tracker=None):
     date_end = df_fund.iloc[-1]['净值日期']
 
     # 2. 纳斯达克指数
-    df_nasdaq = ak.index_us_stock_sina(symbol=".IXIC")
+    df_nasdaq = cached_call(
+        SETTINGS,
+        active_tracker,
+        "qdii_nasdaq_index",
+        "AkShare index_us_stock_sina",
+        "qdii_nasdaq_index:.IXIC",
+        lambda: ak.index_us_stock_sina(symbol=".IXIC"),
+        None,
+    )
+    if df_nasdaq is None:
+        return {"error": "纳指数据不可用"}
     df_nasdaq['date'] = pd.to_datetime(df_nasdaq['date'])
     df_nasdaq = df_nasdaq.sort_values('date')
     mask = (df_nasdaq['date'] >= date_start - timedelta(days=3)) & (df_nasdaq['date'] <= date_end + timedelta(days=1))
     df_nasdaq_period = df_nasdaq[mask].tail(days + 5).head(days)
     if len(df_nasdaq_period) < 2:
-        _record_failure("qdii_attribution", tracker, RuntimeError("nasdaq_data_insufficient"))
         return {"error": "纳指数据不足"}
     nasdaq_start = float(df_nasdaq_period.iloc[0]['close'])
     nasdaq_end = float(df_nasdaq_period.iloc[-1]['close'])
     nasdaq_ret = (nasdaq_end / nasdaq_start - 1) * 100
 
     # 3. 汇率变化
-    df_fx = ak.currency_boc_safe()
+    df_fx = cached_call(
+        SETTINGS,
+        active_tracker,
+        "qdii_fx_history",
+        "AkShare currency_boc_safe",
+        "qdii_fx_history",
+        lambda: ak.currency_boc_safe(),
+        None,
+    )
+    if df_fx is None:
+        return {"error": "汇率历史数据不可用"}
     df_fx['日期'] = pd.to_datetime(df_fx['日期'])
     df_fx = df_fx.sort_values('日期')
     # USD/CNY列名检查
@@ -154,7 +173,7 @@ def qdii_attribution(fund_code=None, days=30, tracker=None):
     residual = fund_ret - nasdaq_contrib - fx_contrib
     total_explained = nasdaq_contrib + fx_contrib
 
-    result = {
+    return {
         "period": f"{date_start.strftime('%m/%d')}→{date_end.strftime('%m/%d')}",
         "days": days,
         "fund_ret": round(fund_ret, 2),
@@ -167,24 +186,32 @@ def qdii_attribution(fund_code=None, days=30, tracker=None):
         "fx_start": round(fx_start, 4),
         "fx_end": round(fx_end, 4),
     }
-    _record_success("qdii_attribution", tracker, fund_code)
-    return result
 
 
 def portfolio_risk_scan(tracker=None):
     """组合风险扫描：波动率+相关性+因子暴露"""
     if ak is None:
         return _missing_dependency("portfolio_risk_scan", tracker)
-
+    active_tracker = tracker or TRACKER
     import json
-    portfolio_path = str(get_portfolio_path())
-    with open(portfolio_path) as f:
+    portfolio_path, _ = get_portfolio_path_with_flag(SETTINGS)
+    with open(portfolio_path, encoding="utf-8") as f:
         portfolio = json.load(f)
 
     holdings = portfolio['holdings']
     nav_series = {}
     for h in holdings:
-        df = ak.fund_open_fund_info_em(symbol=h['code'], indicator="单位净值走势")
+        df = cached_call(
+            SETTINGS,
+            active_tracker,
+            f"risk_fund_nav:{h['code']}",
+            "AkShare fund_open_fund_info_em",
+            f"risk_fund_nav:{h['code']}",
+            lambda code=h['code']: ak.fund_open_fund_info_em(symbol=code, indicator="单位净值走势"),
+            None,
+        )
+        if df is None:
+            return {"error": f"{h['code']} 净值数据不可用"}
         df['净值日期'] = pd.to_datetime(df['净值日期'])
         df = df.tail(30).drop_duplicates(subset='净值日期')
         nav_series[h['code']] = df.set_index('净值日期')['单位净值'].astype(float)
@@ -196,7 +223,6 @@ def portfolio_risk_scan(tracker=None):
     common_dates = sorted(common_dates)
 
     if len(common_dates) < 5:
-        _record_failure("portfolio_risk_scan", tracker, RuntimeError("overlap_days_insufficient"))
         return {"error": "重叠交易日不足"}
 
     results = {}
@@ -232,7 +258,6 @@ def portfolio_risk_scan(tracker=None):
         "分散效果": "弱（表面A股+美股，底层高度同质）",
     }
 
-    _record_success("portfolio_risk_scan", tracker, f"{len(holdings)} holdings")
     return results
 
 
@@ -247,9 +272,19 @@ def ai_fund_attribution(fund_code=None, days=30, tracker=None):
     if not fund_code:
         _record_failure("ai_fund_attribution", tracker, RuntimeError("missing_fund_code"))
         return {"error": "missing_fund_code"}
-
+    active_tracker = tracker or TRACKER
     # 1. 基金净值序列
-    df_fund = ak.fund_open_fund_info_em(symbol=fund_code, indicator="单位净值走势")
+    df_fund = cached_call(
+        SETTINGS,
+        active_tracker,
+        f"ai_fund_nav:{fund_code}",
+        "AkShare fund_open_fund_info_em",
+        f"ai_fund_nav:{fund_code}:{days}",
+        lambda: ak.fund_open_fund_info_em(symbol=fund_code, indicator="单位净值走势"),
+        None,
+    )
+    if df_fund is None:
+        return {"error": "AI基金净值数据不可用"}
     df_fund['净值日期'] = pd.to_datetime(df_fund['净值日期'])
     df_fund = df_fund.tail(days + 5).drop_duplicates(subset='净值日期').tail(days)
     fund_start = float(df_fund.iloc[0]['单位净值'])
@@ -261,11 +296,20 @@ def ai_fund_attribution(fund_code=None, days=30, tracker=None):
     # 2. 中证AI指数(930713) — 中证指数公司数据源，不受东方财富反爬影响
     start_str = (date_start - timedelta(days=5)).strftime('%Y%m%d')
     end_str = (date_end + timedelta(days=3)).strftime('%Y%m%d')
-    df_index = ak.stock_zh_index_hist_csindex(symbol='930713', start_date=start_str, end_date=end_str)
+    df_index = cached_call(
+        SETTINGS,
+        active_tracker,
+        "ai_index_history",
+        "AkShare stock_zh_index_hist_csindex",
+        f"ai_index_history:930713:{start_str}:{end_str}",
+        lambda: ak.stock_zh_index_hist_csindex(symbol='930713', start_date=start_str, end_date=end_str),
+        None,
+    )
+    if df_index is None:
+        return {"error": "中证AI指数数据不可用"}
     df_index['日期'] = pd.to_datetime(df_index['日期'])
     df_index = df_index.sort_values('日期')
     if len(df_index) < 2:
-        _record_failure("ai_fund_attribution", tracker, RuntimeError("ai_index_data_insufficient"))
         return {"error": "中证AI指数数据不足"}
     idx_start = float(df_index.iloc[0]['收盘'])
     idx_end = float(df_index.iloc[-1]['收盘'])
@@ -277,7 +321,15 @@ def ai_fund_attribution(fund_code=None, days=30, tracker=None):
     sector_results = []
     for ind in ai_industries:
         try:
-            df_s = ak.stock_sector_fund_flow_hist(symbol=ind)
+            df_s = cached_call(
+                SETTINGS,
+                active_tracker,
+                f"ai_sector_flow:{ind}",
+                "AkShare stock_sector_fund_flow_hist",
+                f"ai_sector_flow:{ind}:{date_start.date()}:{date_end.date()}",
+                lambda ind=ind: ak.stock_sector_fund_flow_hist(symbol=ind),
+                None,
+            )
             if df_s is not None and len(df_s) > 0:
                 df_s['日期'] = pd.to_datetime(df_s['日期'])
                 mask = (df_s['日期'] >= date_start) & (df_s['日期'] <= date_end)
@@ -298,7 +350,7 @@ def ai_fund_attribution(fund_code=None, days=30, tracker=None):
     residual = fund_ret - index_contrib - rotation_contrib
     total_explained = index_contrib + rotation_contrib
 
-    result = {
+    return {
         "period": f"{date_start.strftime('%m/%d')}→{date_end.strftime('%m/%d')}",
         "days": days,
         "fund_ret": round(fund_ret, 2),
@@ -311,22 +363,15 @@ def ai_fund_attribution(fund_code=None, days=30, tracker=None):
         "index_start": round(idx_start, 2),
         "index_end": round(idx_end, 2),
     }
-    _record_success("ai_fund_attribution", tracker, fund_code)
-    return result
 
 
 if __name__ == "__main__":
-    import json
+    print("=== QDII三因子归因 ===")
+    attr = qdii_attribution(days=30)
+    for k, v in attr.items():
+        print(f"  {k}: {v}")
 
-    with open(get_portfolio_path(), encoding="utf-8") as f:
-        portfolio = json.load(f)
-
-    print("=== 因子归因 ===")
-    for job, result in run_factor_jobs(portfolio, days=30):
-        print(format_factor_result(job, result))
-        print()
-
-    print("=== 组合风险扫描 ===")
+    print("\n=== 组合风险扫描 ===")
     risk = portfolio_risk_scan()
     for k, v in risk.items():
         print(f"  {k}: {v}")

@@ -26,6 +26,12 @@ def load_report_index(index_path):
     return items
 
 
+def load_index(limit=10):
+    settings = load_settings()
+    index_path = resolve_path(settings.get("report_index_path", "reports/index.jsonl"))
+    return index_path, load_report_index(index_path)[-limit:]
+
+
 def _empty_quality():
     return {
         "fresh": 0,

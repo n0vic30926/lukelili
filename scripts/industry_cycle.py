@@ -11,27 +11,24 @@ from datetime import datetime, timedelta
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
-from common.config_loader import get_tavily_api_key, news_enabled
-from industry_intel import sanitize_external_text
+from common.config_loader import get_tavily_api_key, load_settings
+from common.data_runtime import DataStatusTracker, cached_call, missing_dependencies
 
 try:
     import akshare as ak
-except ImportError:
-    ak = None
-
-try:
     import pandas as pd
-except ImportError:
-    pd = None
-
-try:
     import numpy as np
 except ImportError:
+    ak = None
+    pd = None
     np = None
 
 # ============================================================
 # 块1A: 宏观层 — 利率/流动性 + 北向资金
 # ============================================================
+
+TRACKER = DataStatusTracker()
+MISSING_RUNTIME_DEPS = missing_dependencies(["akshare", "pandas", "numpy"])
 
 def get_macro_liquidity():
     """利率/流动性：纳指走势 + USD/CNY汇率"""
@@ -241,6 +238,13 @@ def get_optical_sector():
 # 块2: 定性赛道（Tavily新闻驱动）
 # ============================================================
 
+SETTINGS = load_settings()
+TAVILY_API_KEY = get_tavily_api_key(SETTINGS)
+
+
+def news_enabled():
+    return bool(SETTINGS.get("enable_news", False)) and bool(get_tavily_api_key(SETTINGS))
+
 # 9个定性赛道的搜索配置
 QUALITATIVE_SECTORS = [
     # 单元A: Layer 0 能源层
@@ -332,31 +336,34 @@ QUALITATIVE_SECTORS = [
 
 def _tavily_search(query, days=7, max_results=3, tracker=None):
     """复用Tavily搜索"""
+    active_tracker = tracker or TRACKER
     if not news_enabled():
         if tracker:
             tracker.skipped("industry_cycle_news", source="Tavily", reason="disabled")
         return []
-    api_key = get_tavily_api_key()
     import requests as req
     url = "https://api.tavily.com/search"
     payload = {
-        "api_key": api_key,
+        "api_key": TAVILY_API_KEY,
         "query": query,
         "search_depth": "basic",
         "max_results": max_results,
         "topic": "news",
         "days": days,
     }
-    try:
+    def producer():
         resp = req.post(url, json=payload, timeout=15)
         resp.raise_for_status()
-        if tracker:
-            tracker.success("industry_cycle_news", source="Tavily", detail=query)
         return resp.json().get("results", [])
-    except Exception as e:
-        if tracker:
-            tracker.failure("industry_cycle_news", source="Tavily", error=e)
-        return []
+    return cached_call(
+        SETTINGS,
+        active_tracker,
+        f"cycle_tavily:{query}",
+        "Tavily News",
+        f"cycle_tavily:{query}:{days}:{max_results}",
+        producer,
+        [],
+    )
 
 
 def _classify_news_signal(title, content):
@@ -390,6 +397,10 @@ def get_qualitative_sector(sector_config, tracker=None):
         "dominant_signal": "⚪",
         "signal_label": "参考",
     }
+    if not news_enabled():
+        if tracker:
+            tracker.skipped("industry_cycle_news", source="Tavily", reason="disabled")
+        return result
 
     signal_counts = {"🔴": 0, "🟡": 0, "🟢": 0, "⚪": 0}
     seen = set()
@@ -397,11 +408,11 @@ def get_qualitative_sector(sector_config, tracker=None):
     for q in sector_config["queries"]:
         articles = _tavily_search(q, days=7, max_results=3, tracker=tracker)
         for a in articles:
-            title = sanitize_external_text(a.get("title", ""), max_length=120)
+            title = a.get("title", "").strip()
             if not title or title in seen:
                 continue
             seen.add(title)
-            content = sanitize_external_text(a.get("content", ""), max_length=200)
+            content = a.get("content", "")[:200]
             sig, label = _classify_news_signal(title, content)
             signal_counts[sig] += 1
             result["headlines"].append({
@@ -427,7 +438,7 @@ def get_qualitative_sector(sector_config, tracker=None):
     return result
 
 
-def generate_block2_report(tracker=None):
+def generate_block2_report():
     """生成定性赛道报告"""
     lines = []
     lines.append("=" * 50)
@@ -441,7 +452,7 @@ def generate_block2_report(tracker=None):
             current_layer = sector["layer"]
             lines.append(f"\n## {current_layer}")
 
-        data = get_qualitative_sector(sector, tracker=tracker)
+        data = get_qualitative_sector(sector)
         lines.append(f"  [{data['name']}] {data['dominant_signal']}{data['signal_label']}")
         for h in data["headlines"][:3]:  # 每个赛道最多显示3条
             lines.append(f"    {h['signal']} {h['title']}")

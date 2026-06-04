@@ -7,54 +7,42 @@
 
 import json, os, sys, traceback
 from datetime import datetime, timedelta
-from pathlib import Path
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
-from common.dependencies import REPORT_DEPENDENCIES, exit_if_missing
-from common.config_loader import get_portfolio_path, load_settings, resolve_path
-from common.data_runtime import DataStatusTracker
-from common.output_contract import format_classified_report_section, with_output_contract
-from common.report_decision_context import build_report_sections_with_decision_context, load_report_scenario_review
+from common.config_loader import get_portfolio_path_with_flag, get_report_dirs, load_settings
+from common.data_runtime import DataStatusTracker, cached_call, missing_dependencies
+from common.market_research import etf_observation, macro_observation
+from common.output_contract import format_classified_report_section
 from common.reporting import write_report
 
 try:
     import akshare as ak
 except ImportError:
     ak = None
-
 try:
     import pandas as pd
 except ImportError:
     pd = None
-
 try:
     import numpy as np
 except ImportError:
     np = None
 
-PORTFOLIO_PATH = str(get_portfolio_path())
-
-
-def build_run_summary(tracker=None):
-    settings = load_settings()
-    portfolio_path = Path(PORTFOLIO_PATH)
-    example_path = resolve_path(settings["example_portfolio_path"])
-    is_example = portfolio_path == example_path
-    summary = {
-        "portfolio_source": "example" if is_example else "private",
-        "is_example_data": is_example,
-        "dependencies": {"akshare": "available", "pandas": "available", "numpy": "available"},
-        "modules": {"success": 1, "failed": 0, "skipped": 0},
-    }
-    if tracker:
-        summary.update(tracker.to_run_summary())
-    return summary
+SETTINGS = load_settings()
+PORTFOLIO_PATH, USING_EXAMPLE_PORTFOLIO = get_portfolio_path_with_flag(SETTINGS)
+REPORT_DIRS = get_report_dirs(SETTINGS)
+TRACKER = DataStatusTracker()
+MISSING_RUNTIME_DEPS = missing_dependencies(["akshare", "pandas", "numpy"])
 
 
 def load_portfolio():
-    with open(PORTFOLIO_PATH) as f:
+    with open(PORTFOLIO_PATH, encoding="utf-8") as f:
         return json.load(f)
+
+
+def build_run_summary(tracker=None):
+    return (tracker or TRACKER).to_run_summary()
 
 
 def format_advice_section(advice):
@@ -63,38 +51,76 @@ def format_advice_section(advice):
         inferences=["short-term and discipline signals require user review"],
         judgments=list(advice or []),
         confirmations=[
-            "user verifies data freshness before any portfolio change",
-            "user confirms strategy still applies",
+            "User must review facts, inferred signals, and model judgment before any action.",
             "user confirms no broker action should be automated",
         ],
     )
     return section.splitlines()
 
 
+def module_status_lines():
+    key_env = SETTINGS.get("tavily_api_key_env", "TAVILY_API_KEY")
+    news_ready = bool(SETTINGS.get("enable_news", False)) and bool(os.environ.get(key_env))
+    return [
+        "portfolio=ok",
+        f"portfolio_mode={'example' if USING_EXAMPLE_PORTFOLIO else 'private'}",
+        f"runtime_deps={'missing:' + ','.join(MISSING_RUNTIME_DEPS) if MISSING_RUNTIME_DEPS else 'ok'}",
+        f"data_status={TRACKER.summary_text()}",
+        f"news={'enabled' if news_ready else 'skipped'}",
+        "risk_scan=best_effort",
+    ]
+
+
+def write_report_file(report):
+    return write_report("daily", report, SETTINGS, TRACKER)
+
+
+def dependency_error_report():
+    now = datetime.now()
+    lines = [
+        f"# 📊 每日持仓简报 | {now.strftime('%Y-%m-%d')}",
+        "",
+        "> Missing required runtime dependencies.",
+        "> 运行失败: 缺少必要 Python 依赖。",
+        f"> 缺失依赖: {', '.join(MISSING_RUNTIME_DEPS)}",
+        "> 请手动执行: python3 -m pip install -r requirements.txt",
+        "",
+        "未生成市场分析，避免产生不完整或误导性报告。",
+    ]
+    return "\n".join(lines)
+
+
 # ── 数据获取函数 ──
 
 def get_fund_nav(code, days=10, tracker=None):
     """场外基金历史净值（AkShare直连）"""
-    try:
+    active_tracker = tracker or TRACKER
+    module = "fund_nav" if tracker else f"fund_nav:{code}"
+
+    def producer():
         df = ak.fund_open_fund_info_em(symbol=code, indicator='单位净值走势')
         df = df.tail(days).copy()
         df['净值日期'] = pd.to_datetime(df['净值日期'])
-        if tracker:
-            tracker.success("fund_nav", source="AkShare", detail=code)
         return df
-    except Exception as e:
-        if tracker:
-            tracker.failure("fund_nav", source="AkShare", error=e)
-        return None
+    if tracker:
+        try:
+            result = producer()
+            tracker.success(module, source="AkShare")
+            return result
+        except Exception as exc:
+            tracker.failure(module, source="AkShare", error=exc)
+            return None
+    return cached_call(SETTINGS, active_tracker, module, "AkShare fund_open_fund_info_em", f"fund_nav:{code}:{days}", producer, None)
 
 
 def get_etf_quote(codes, tracker=None):
     """场内ETF实时行情"""
+    active_tracker = tracker or TRACKER
     if not codes:
-        if tracker:
-            tracker.skipped("etf_quote", source="AkShare", reason="no_codes")
+        active_tracker.skipped("etf_quote", source="AkShare", reason="no_codes")
         return {}
-    try:
+
+    def producer():
         df = ak.fund_etf_spot_em()
         result = {}
         for code in codes:
@@ -108,49 +134,37 @@ def get_etf_quote(codes, tracker=None):
                     'change_pct': float(r.get('涨跌幅', 0)),
                     'volume': float(r.get('成交额', 0)),
                 }
-        if tracker:
-            tracker.success("etf_quote", source="AkShare", detail=f"{len(result)}/{len(codes)}")
         return result
-    except Exception as e:
-        if tracker:
-            tracker.failure("etf_quote", source="AkShare", error=e)
-        return {}
+    return cached_call(SETTINGS, active_tracker, "etf_quote", "AkShare fund_etf_spot_em", f"etf_quote:{','.join(codes)}", producer, {})
 
 
-def get_us_index(tracker=None):
+def get_us_index():
     """美股纳斯达克指数"""
-    try:
+    def producer():
         df = ak.index_us_stock_sina(symbol=".IXIC")
         df = df.tail(5).copy()
-        if tracker:
-            tracker.success("us_index", source="AkShare", detail=".IXIC")
         return df
-    except Exception as e:
-        if tracker:
-            tracker.failure("us_index", source="AkShare", error=e)
-        return None
+    return cached_call(SETTINGS, TRACKER, "us_index", "AkShare index_us_stock_sina", "us_index:.IXIC:5", producer, None)
 
 
-def get_fx_usdcny(tracker=None):
+def get_fx_usdcny():
     """美元兑人民币实时汇率"""
-    try:
+    def producer():
         df = ak.fx_spot_quote()
         usd = df[df['货币对'] == 'USD/CNY']
         if not usd.empty:
-            if tracker:
-                tracker.success("fx_usdcny", source="AkShare", detail="USD/CNY")
             return {
                 'rate': float(usd.iloc[0]['买报价']),
             }
-    except Exception as e:
-        if tracker:
-            tracker.failure("fx_usdcny", source="AkShare", error=e)
-    return None
+        return None
+    return cached_call(SETTINGS, TRACKER, "fx_usdcny", "AkShare fx_spot_quote", "fx_usdcny", producer, None)
 
 
 def get_north_flow(tracker=None):
     """北向资金+大盘指数"""
-    try:
+    active_tracker = tracker or TRACKER
+
+    def producer():
         df = ak.stock_hsgt_fund_flow_summary_em()
         north = df[df['资金方向'] == '北向']
         result = []
@@ -163,35 +177,30 @@ def get_north_flow(tracker=None):
                 'index_name': str(row['相关指数']),
                 'index_chg': float(row['指数涨跌幅']),
             })
-        if tracker:
-            tracker.success("north_flow", source="AkShare", detail=f"{len(result)} rows")
         return result
-    except Exception as e:
-        if tracker:
-            tracker.failure("north_flow", source="AkShare", error=e)
-        return None
+    if tracker:
+        try:
+            result = producer()
+            tracker.success("north_flow", source="AkShare")
+            return result
+        except Exception as exc:
+            tracker.failure("north_flow", source="AkShare", error=exc)
+            return None
+    return cached_call(SETTINGS, active_tracker, "north_flow", "AkShare stock_hsgt_fund_flow_summary_em", "north_flow", producer, None)
 
 
-def get_fund_top_holdings(code, tracker=None):
+def get_fund_top_holdings(code):
     """基金前十大持仓穿透"""
-    try:
+    def producer():
         df = ak.fund_portfolio_hold_em(symbol=code, date='2025')
         top10 = df.head(10)[['股票代码', '股票名称', '占净值比例']].copy()
-        if tracker:
-            tracker.success("fund_top_holdings", source="AkShare", detail=code)
         return top10.to_dict('records')
-    except Exception as e:
-        if tracker:
-            tracker.failure("fund_top_holdings", source="AkShare", error=e)
-        return []
+    return cached_call(SETTINGS, TRACKER, f"fund_top_holdings:{code}", "AkShare fund_portfolio_hold_em", f"fund_top_holdings:{code}:2025", producer, [])
 
 
 # ── 生成简报 ──
 
-def main(tracker=None):
-    from qdii_three_factor import format_factor_result, portfolio_risk_scan, run_factor_jobs
-    tracker = tracker or DataStatusTracker()
-
+def main():
     portfolio = load_portfolio()
     now = datetime.now()
     today = now.strftime("%Y-%m-%d")
@@ -200,6 +209,15 @@ def main(tracker=None):
 
     lines = []
     lines.append(f"# 📊 每日持仓简报 | {today} {weekday}")
+    lines.append("")
+    lines.append(f"> 数据来源: AkShare + local portfolio | 配置: {SETTINGS.get('_settings_path')} | 生成时间: {now.strftime('%Y-%m-%d %H:%M')}")
+    status_line_at = len(lines)
+    lines.append(f"> 模块状态: {', '.join(module_status_lines())}")
+    if USING_EXAMPLE_PORTFOLIO:
+        lines.append("> ⚠️ 当前使用示例持仓数据，仅用于 smoke test，不代表真实资产。")
+    lines.append("")
+    summary_insert_at = len(lines)
+    lines.append("__RUN_SUMMARY_PLACEHOLDER__")
     lines.append("")
 
     if not is_trading:
@@ -215,7 +233,7 @@ def main(tracker=None):
     for h in portfolio['holdings']:
         code = h['code']
         name = h['name']
-        df_nav = get_fund_nav(code, days=5, tracker=tracker)
+        df_nav = get_fund_nav(code, days=5)
 
         if df_nav is None or df_nav.empty:
             lines.append(f"**{name}** ({code}): 数据获取失败")
@@ -252,7 +270,7 @@ def main(tracker=None):
     etf_map = {h.get('proxy_etf', ''): h['name'] for h in portfolio['holdings']}
 
     if etf_codes:
-        etf_data = get_etf_quote(etf_codes, tracker=tracker)
+        etf_data = get_etf_quote(etf_codes)
         for code in etf_codes:
             info = etf_data.get(code, {})
             if info:
@@ -269,7 +287,7 @@ def main(tracker=None):
     lines.append("")
 
     # 美股纳指
-    us_idx = get_us_index(tracker=tracker)
+    us_idx = get_us_index()
     if us_idx is not None and not us_idx.empty:
         latest_us = us_idx.iloc[-1]
         prev_us = us_idx.iloc[-2] if len(us_idx) >= 2 else latest_us
@@ -283,14 +301,14 @@ def main(tracker=None):
         lines.append("- 纳斯达克: 数据获取失败")
 
     # ── 4. 汇率 ──
-    fx = get_fx_usdcny(tracker=tracker)
+    fx = get_fx_usdcny()
     if fx:
         lines.append(f"- 💱 **美元/人民币**: {fx['rate']:.4f}")
     else:
         lines.append("- 汇率: 数据获取失败")
 
     # ── 5. 北向资金 ──
-    north = get_north_flow(tracker=tracker)
+    north = get_north_flow()
     if north:
         for n in north:
             emoji = "🔴" if n['index_chg'] < 0 else "🟢"
@@ -301,13 +319,16 @@ def main(tracker=None):
 
     lines.append("")
 
+    lines.extend(macro_observation(ak, pd, SETTINGS, TRACKER))
+    lines.extend(etf_observation(ak, SETTINGS, TRACKER, portfolio["holdings"]))
+
     # ── 6. 持仓穿透（月度更新，每周一显示） ──
     if now.weekday() == 0:  # 周一
         lines.append("## 🔍 持仓穿透（周一更新）")
         lines.append("")
 
         for h in portfolio['holdings']:
-            top = get_fund_top_holdings(h['code'], tracker=tracker)
+            top = get_fund_top_holdings(h['code'])
             if top:
                 lines.append(f"**{h['name']}** 前十大重仓:")
                 for s in top:
@@ -322,10 +343,10 @@ def main(tracker=None):
         from valuation_anchor import nasdaq_valuation, ai_index_valuation
         lines.append("## \u2693 \u4f30\u503c\u951a\uff08\u98ce\u9669\u63d0\u793a\uff0c\u975e\u4ea4\u6613\u4fe1\u53f7\uff09")
         lines.append("")
-        nsdq = nasdaq_valuation(tracker=tracker)
+        nsdq = nasdaq_valuation()
         if 'error' not in nsdq:
             lines.append(f"- \u7eb3\u6307{nsdq['level']}\uff1a\u70b9\u4f4d{nsdq['latest']}\uff0c1\u5e74\u767e\u5206\u4f4d{nsdq['pct_1y']}%")
-        ai_v = ai_index_valuation(tracker=tracker)
+        ai_v = ai_index_valuation()
         if 'error' not in ai_v:
             lines.append(f"- AI\u6307\u6570{ai_v['level']}\uff1aPE {ai_v['latest_pe']}\uff0c\u767e\u5206\u4f4d{ai_v['pe_pct']}%")
         lines.append("")
@@ -363,7 +384,7 @@ def main(tracker=None):
     for h in portfolio['holdings']:
         cost = h.get('cost_basis')
         shares = h.get('shares')
-        df_nav = get_fund_nav(h['code'], days=3, tracker=tracker)
+        df_nav = get_fund_nav(h['code'], days=3)
         if cost and shares and df_nav is not None and not df_nav.empty:
             latest_nav = float(df_nav.iloc[-1]['单位净值'])
             market_val = shares * latest_nav
@@ -387,27 +408,54 @@ def main(tracker=None):
         lines.append(f"- {emoji} **组合合计**: 成本{total_cost:.0f} → 市值{total_market:.0f} | {total_pnl_pct:+.1f}% ({total_pnl:+.0f}元)")
     lines.append("")
 
-    # ── 9. 因子归因 ──
-    lines.append("## 🔬 因子归因（近30日）")
+    # ── 9. QDII三因子归因 ──
+    lines.append("## 🔬 QDII三因子归因（近30日）")
     lines.append("")
-    factor_results = []
     try:
-        factor_results = run_factor_jobs(portfolio, days=30, tracker=tracker)
-        if factor_results:
-            for job, result in factor_results:
-                lines.append(format_factor_result(job, result))
-                lines.append("")
+        from qdii_three_factor import qdii_attribution, ai_fund_attribution
+        attr = qdii_attribution(days=30)
+        if 'error' not in attr:
+            lines.append(f"- 基金收益: {attr['fund_ret']:+.2f}%")
+            lines.append(f"- 纳指贡献: {attr['nasdaq_contrib']:+.2f}%")
+            lines.append(f"- 汇率贡献: {attr['fx_contrib']:+.2f}%")
+            lines.append(f"- 残差(超额/跟踪误差): {attr['residual']:+.2f}%")
+            lines.append(f"- 解释度: {attr['explained_pct']:.1f}%")
+            attr_data = attr  # 供决策模块用
         else:
-            lines.append("- 未配置可用 factor_profile，跳过归因")
+            lines.append(f"- 归因计算失败: {attr['error']}")
+            attr_data = None
     except Exception as e:
         lines.append(f"- 归因计算异常: {e}")
+        attr_data = None
+    lines.append("")
+
+    # ── 9b. AI基金三因子归因 ──
+    lines.append("## 🔬 AI基金三因子归因（近30日）")
+    lines.append("")
+    try:
+        from qdii_three_factor import ai_fund_attribution
+        ai_attr = ai_fund_attribution(days=30)
+        if 'error' not in ai_attr:
+            lines.append(f"- 基金收益: {ai_attr['fund_ret']:+.2f}%")
+            lines.append(f"- 中证AI指数贡献: {ai_attr['index_contrib']:+.2f}%")
+            lines.append(f"- 行业轮动贡献: {ai_attr['rotation_contrib']:+.2f}%")
+            lines.append(f"- 残差(alpha/跟踪误差): {ai_attr['residual']:+.2f}%")
+            lines.append(f"- 解释度: {ai_attr['explained_pct']:.1f}%")
+            ai_attr_data = ai_attr
+        else:
+            lines.append(f"- 归因计算失败: {ai_attr['error']}")
+            ai_attr_data = None
+    except Exception as e:
+        lines.append(f"- 归因计算异常: {e}")
+        ai_attr_data = None
     lines.append("")
 
     # ── 10. 组合风险扫描 ──
     lines.append("## 🛡️ 组合风险扫描")
     lines.append("")
     try:
-        risk_scan = portfolio_risk_scan(tracker=tracker)
+        from qdii_three_factor import portfolio_risk_scan
+        risk_scan = portfolio_risk_scan()
         if 'error' not in risk_scan:
             for h in portfolio['holdings']:
                 code = h['code']
@@ -438,7 +486,7 @@ def main(tracker=None):
         stype = h.get('strategy_type', 'dca')
         cost = h.get('cost_basis')
         shares = h.get('shares')
-        df_nav_h = get_fund_nav(h['code'], days=3, tracker=tracker)
+        df_nav_h = get_fund_nav(h['code'], days=3)
         if not (cost and shares and df_nav_h is not None and not df_nav_h.empty):
             continue
         nav_now = float(df_nav_h.iloc[-1]['单位净值'])
@@ -462,21 +510,19 @@ def main(tracker=None):
             advice.append(f"\u2705 **{h['name']}** 浮盈亏{pnl_pct:+.1f}%")
 
     # 纯状态提示（不带操作暗示）
-    for job, result in factor_results:
-        if not result or 'error' in result:
-            continue
-        if result.get('explained_pct', 0) > 90:
-            advice.append(f"\U0001f4ca {job['label']}因子集中度：解释度{result['explained_pct']:.0f}%")
-        if abs(result.get('fx_contrib', 0)) > 0.5:
-            direction = "走弱" if result['fx_contrib'] < 0 else "走强"
-            advice.append(f"\U0001f4b1 {job['label']}汇率{direction}{result['fx_contrib']:+.2f}%")
+    if attr_data and attr_data.get('explained_pct', 0) > 90:
+        advice.append(f"\U0001f4ca QDII因子集中度：纳指解释{attr_data['explained_pct']:.0f}%")
+    if attr_data and abs(attr_data.get('fx_contrib', 0)) > 0.5:
+        direction = "走弱" if attr_data['fx_contrib'] < 0 else "走强"
+        advice.append(f"\U0001f4b1 汇率{direction}{attr_data['fx_contrib']:+.2f}%")
     if risk_data and risk_data.get('correlation', 0) > 0.5:
         advice.append(f"\U0001f517 组合相关性{risk_data['correlation']:.2f}")
 
     # 纪律守护（不择时，只锚定纪律）
     try:
-        from industry_intel import fetch_industry_intel
-        intel = fetch_industry_intel(tracker=tracker)
+        from industry_intel import fetch_industry_intel, get_news_status
+        news_status = get_news_status()
+        intel = fetch_industry_intel()
         has_red = any(a["signal"] == "\U0001f534" for a in intel)
         has_yellow = any(a["signal"] == "\U0001f7e1" for a in intel)
 
@@ -490,10 +536,12 @@ def main(tracker=None):
             lines.append("   历史上，恐慌期继续定投往往是长期收益最好的阶段")
         elif has_yellow:
             lines.append("\U0001f4e1 市场有趋势变化信号，持续观察中，不影响定投节奏")
+        if news_status.get("skipped"):
+            lines.append(f"\U0001f4f0 新闻模块跳过: {news_status['reason']}")
 
         # 极端时刻纪律提醒
         for h in portfolio['holdings']:
-            df_3d = get_fund_nav(h['code'], days=3, tracker=tracker)
+            df_3d = get_fund_nav(h['code'], days=3)
             if df_3d is not None and len(df_3d) >= 2:
                 chg = float(df_3d.iloc[-1].get('日增长率', 0))
                 if abs(chg) >= 2:
@@ -503,7 +551,8 @@ def main(tracker=None):
     except Exception:
         pass  # 情报采集失败不影响核心建议
 
-    lines.extend(format_advice_section(advice))
+    for a in advice:
+        lines.append(f"- {a}")
     lines.append("")
 
     lines.append("---")
@@ -513,17 +562,27 @@ def main(tracker=None):
     lines.append("## \U0001f4e1 行业情报速递")
     lines.append("")
     try:
-        from industry_intel import fetch_industry_intel
-        intel = fetch_industry_intel(tracker=tracker)
+        from industry_intel import fetch_industry_intel, get_news_status
+        news_status = get_news_status()
+        if news_status.get("skipped"):
+            lines.append(f"- 新闻模块跳过: {news_status['reason']}")
+            lines.append("")
+            lines[status_line_at] = f"> 模块状态: {', '.join(module_status_lines())}"
+            lines[summary_insert_at:summary_insert_at + 1] = TRACKER.markdown_lines() + TRACKER.quality_markdown_lines(
+                max_age_hours=SETTINGS.get("freshness_max_age_hours", 24),
+                thresholds=SETTINGS.get("freshness_thresholds", {}),
+            )
+            return '\n'.join(lines)
+        intel = fetch_industry_intel()
         signals = [a for a in intel if a["signal"] in ("\U0001f534", "\U0001f7e1")]
         greens = [a for a in intel if a["signal"] == "\U0001f7e2"][:2]
         if signals:
             for a in signals[:5]:
-                funds = a.get("impact_label") or a.get("impact", "组合")
+                funds = "QDII" if a["impact"] == "016452" else "AI"
                 lines.append(f"- {a['signal']} [{funds}] {a['title'][:60]}")
         if greens:
             for a in greens:
-                funds = a.get("impact_label") or a.get("impact", "组合")
+                funds = "QDII" if a["impact"] == "016452" else "AI"
                 lines.append(f"- \U0001f7e2 [{funds}] {a['title'][:60]}")
         if not signals and not greens:
             lines.append("- 今日无重大行业信号")
@@ -531,34 +590,27 @@ def main(tracker=None):
         lines.append(f"- 行业情报采集异常: {e}")
     lines.append("")
 
+    lines[status_line_at] = f"> 模块状态: {', '.join(module_status_lines())}"
+    lines[summary_insert_at:summary_insert_at + 1] = TRACKER.markdown_lines() + TRACKER.quality_markdown_lines(
+        max_age_hours=SETTINGS.get("freshness_max_age_hours", 24),
+        thresholds=SETTINGS.get("freshness_thresholds", {}),
+    )
     return '\n'.join(lines)
 
 
 if __name__ == "__main__":
-    if exit_if_missing("daily_finance_brief.py", REPORT_DEPENDENCIES):
-        raise SystemExit(1)
-
+    if MISSING_RUNTIME_DEPS:
+        print(dependency_error_report())
+        raise SystemExit(2)
     # 生成简报
-    tracker = DataStatusTracker()
-    report = main(tracker=tracker)
-    run_summary = build_run_summary(tracker)
-    portfolio = load_portfolio()
-    scenario_review = load_report_scenario_review(portfolio)
-    report = with_output_contract(
-        report,
-        build_report_sections_with_decision_context(
-            "daily",
-            portfolio,
-            run_summary,
-            scenario_review=scenario_review,
-        ),
-    )
-    archived = write_report("daily", report, run_summary=run_summary)
-    print(archived["content"])
+    report = main()
+    print(report)
+    report_path = write_report_file(report)
+    print(f"\n[report saved] {report_path}")
 
     # 反事实追踪：记录今日决策状态
     try:
         from decision_tracker import save_daily_decisions
-        save_daily_decisions(PORTFOLIO_PATH)
+        save_daily_decisions(str(PORTFOLIO_PATH))
     except Exception:
         pass  # 追踪失败不影响简报输出

@@ -105,6 +105,12 @@ def with_run_summary(content, run_summary):
     return f"{format_run_summary(run_summary)}---\n\n{content}"
 
 
+def _normalize_run_summary(run_summary):
+    if hasattr(run_summary, "to_run_summary"):
+        return run_summary.to_run_summary()
+    return run_summary or {}
+
+
 def write_report(report_type, content, settings=None, run_summary=None, created_at=None):
     settings = settings or load_settings()
     created_at = created_at or _now_iso()
@@ -112,7 +118,8 @@ def write_report(report_type, content, settings=None, run_summary=None, created_
     report_dir = _report_dir(settings, report_type)
     report_dir.mkdir(parents=True, exist_ok=True)
     report_path = report_dir / f"{report_type}-{report_date}.md"
-    archived_content = with_run_summary(content, run_summary or {})
+    run_summary = _normalize_run_summary(run_summary)
+    archived_content = with_run_summary(content, run_summary)
     report_path.write_text(archived_content, encoding="utf-8")
 
     item = {

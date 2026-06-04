@@ -5,20 +5,30 @@
 - 中证AI指数：PE滚动市盈率百分位（2024至今）
 - 定投仓位：只输出"贵不贵"，不输出"该不该买"
 """
+import os
+import sys
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, SCRIPT_DIR)
+from common.config_loader import load_settings
+from common.data_runtime import DataStatusTracker, cached_call, missing_dependencies
+
 try:
     import akshare as ak
 except ImportError:
     ak = None
-
 try:
     import pandas as pd
 except ImportError:
     pd = None
-
 try:
     import numpy as np
 except ImportError:
     np = None
+
+SETTINGS = load_settings()
+TRACKER = DataStatusTracker()
+MISSING_RUNTIME_DEPS = missing_dependencies(["akshare", "pandas", "numpy"])
 
 
 def _missing_dependency(module, tracker=None):
@@ -32,9 +42,19 @@ def nasdaq_valuation(tracker=None):
     """纳指100估值锚：点位历史百分位"""
     if ak is None:
         return _missing_dependency("nasdaq_valuation", tracker)
-
+    active_tracker = tracker or TRACKER
     try:
-        df = ak.index_us_stock_sina(symbol=".IXIC")
+        df = cached_call(
+            SETTINGS,
+            active_tracker,
+            "valuation_nasdaq",
+            "AkShare index_us_stock_sina",
+            "valuation_nasdaq:.IXIC",
+            lambda: ak.index_us_stock_sina(symbol=".IXIC"),
+            None,
+        )
+        if df is None:
+            return {"error": "纳指数据不可用"}
         df['close'] = pd.to_numeric(df['close'], errors='coerce')
 
         latest = float(df.iloc[-1]['close'])
@@ -63,7 +83,7 @@ def nasdaq_valuation(tracker=None):
         else:
             level = "偏低"
 
-        result = {
+        return {
             'index': '纳斯达克综合',
             'latest': round(latest, 1),
             'pct_1y': pct_1y,
@@ -72,12 +92,7 @@ def nasdaq_valuation(tracker=None):
             'level': level,
             'metric': '点位百分位',
         }
-        if tracker:
-            tracker.success("nasdaq_valuation", source="AkShare", detail=".IXIC")
-        return result
     except Exception as e:
-        if tracker:
-            tracker.failure("nasdaq_valuation", source="AkShare", error=e)
         return {'error': str(e)}
 
 
@@ -85,9 +100,19 @@ def ai_index_valuation(tracker=None):
     """中证AI指数估值锚：PE滚动市盈率百分位"""
     if ak is None:
         return _missing_dependency("ai_index_valuation", tracker)
-
+    active_tracker = tracker or TRACKER
     try:
-        df = ak.stock_zh_index_hist_csindex(symbol='930713', start_date='20240101', end_date='20991231')
+        df = cached_call(
+            SETTINGS,
+            active_tracker,
+            "valuation_ai_index",
+            "AkShare stock_zh_index_hist_csindex",
+            "valuation_ai_index:930713:20240101",
+            lambda: ak.stock_zh_index_hist_csindex(symbol='930713', start_date='20240101', end_date='20991231'),
+            None,
+        )
+        if df is None:
+            return {"error": "中证AI指数估值数据不可用"}
         pe_col = '滚动市盈率'
         df[pe_col] = pd.to_numeric(df[pe_col], errors='coerce')
         df = df.dropna(subset=[pe_col])
@@ -109,7 +134,7 @@ def ai_index_valuation(tracker=None):
         else:
             level = "偏低"
 
-        result = {
+        return {
             'index': '中证AI',
             'latest_pe': latest_pe,
             'pe_pct': pe_pct,
@@ -117,12 +142,7 @@ def ai_index_valuation(tracker=None):
             'level': level,
             'metric': 'PE百分位(2024至今)',
         }
-        if tracker:
-            tracker.success("ai_index_valuation", source="AkShare", detail="930713")
-        return result
     except Exception as e:
-        if tracker:
-            tracker.failure("ai_index_valuation", source="AkShare", error=e)
         return {'error': str(e)}
 
 
