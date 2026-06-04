@@ -41,6 +41,7 @@ def build_gap_review(portfolio):
     holdings = [item for item in portfolio.get("holdings", []) if isinstance(item, dict)]
     cash = portfolio.get("cash") if isinstance(portfolio.get("cash"), dict) else {}
     risk_rules = portfolio.get("risk_rules") if isinstance(portfolio.get("risk_rules"), dict) else {}
+    data_status = portfolio.get("data_status") if isinstance(portfolio.get("data_status"), dict) else {}
     invested = sum(_number(item.get("cost_basis")) for item in holdings)
     cash_amount = _number(cash.get("amount"))
     total = invested + max(cash_amount, 0.0)
@@ -165,6 +166,8 @@ def build_gap_review(portfolio):
         "holding_count": len(holdings),
         "known_invested_amount": round(invested, 2),
         "known_cash_amount": round(cash_amount, 2),
+        "overlay_applied": bool(data_status.get("overlay_applied")),
+        "overlay_mode": data_status.get("overlay_mode"),
         "gap_count": len(gaps),
         "gaps": gaps,
     }
@@ -214,6 +217,9 @@ def format_gap_review(review):
     lines.append(f"- holding_count={review['holding_count']}")
     lines.append(f"- known_invested_amount={review['known_invested_amount']}")
     lines.append(f"- known_cash_amount={review['known_cash_amount']}")
+    lines.append(f"- overlay_applied={review.get('overlay_applied', False)}")
+    if review.get("overlay_mode"):
+        lines.append(f"- overlay_mode={review['overlay_mode']}")
     lines.append(f"- gap_count={review['gap_count']}")
     lines.append("")
     lines.append("## Gaps")
@@ -233,10 +239,12 @@ def main(argv=None):
     parser.add_argument("--template", action="store_true", help="Print overlay template JSON.")
     parser.add_argument("--write-template", action="store_true", help="Write overlay template to the private overlay path if absent.")
     parser.add_argument("--force", action="store_true", help="Overwrite an existing private overlay template.")
+    parser.add_argument("--base", action="store_true", help="Review the raw portfolio before applying the private overlay.")
     args = parser.parse_args(argv)
 
     settings = load_settings()
-    portfolio, _, _, _ = load_portfolio(settings, apply_overlay=False)
+    use_base = args.base or args.template or args.write_template
+    portfolio, _, _, _ = load_portfolio(settings, apply_overlay=not use_base)
     if args.template:
         print(json.dumps(build_overlay_template(portfolio), ensure_ascii=False, indent=2))
         return 0

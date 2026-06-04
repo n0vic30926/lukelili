@@ -42,11 +42,11 @@ def run_portfolio_overlay_test():
     }
     overlay = {
         "enabled": True,
-        "cash": {"amount": None, "target_weight_pct": 20},
+        "cash": {"amount": 0, "status": "assumed_zero_for_test", "target_weight_pct": 20},
         "risk_rules": {"status": "user_confirmed", "max_single_position_pct": 60},
         "holdings_by_code": {
             "FUND_A": {"strategy_type": "trial", "target_weight_pct": 20},
-            "FUND_B": {"strategy_type": "dca", "target_weight_pct": 60},
+            "FUND_B": {"strategy_type": "dca", "target_weight_pct": 60, "pending_buy_notes": []},
         },
         "append_buy_records_by_code": {
             "FUND_B": [{"date": "2026-02-01", "amount": 1500, "status": "pending"}]
@@ -68,6 +68,11 @@ def run_portfolio_overlay_test():
         raise AssertionError(f"Strategies not applied: {merged['holdings']}")
     if len(merged["holdings"][1]["buy_records"]) != 2:
         raise AssertionError(f"Buy record append failed: {merged['holdings'][1]['buy_records']}")
+
+    merged_review = build_gap_review(merged)
+    active_blockers = [item for item in merged_review["gaps"] if item["severity"] in {"critical", "high"}]
+    if active_blockers:
+        raise AssertionError(f"Enabled overlay should clear critical/high gaps: {active_blockers}")
 
     review = build_gap_review(portfolio)
     fields = "\n".join(item["field"] for item in review["gaps"])

@@ -40,9 +40,14 @@ Review missing portfolio inputs:
 
 ```bash
 python3 scripts/portfolio_gap_review.py
+python3 scripts/portfolio_gap_review.py --base
 python3 scripts/portfolio_gap_review.py --template
 python3 scripts/portfolio_gap_review.py --write-template
 ```
+
+By default the gap review applies an enabled private overlay, matching the
+portfolio seen by daily/weekly reports and decision support. Use `--base` to
+review the raw portfolio before local overrides.
 
 Optional local scenario assumptions can be placed in:
 
