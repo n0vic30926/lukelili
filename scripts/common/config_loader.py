@@ -2,6 +2,7 @@
 
 import json
 import os
+import copy
 from pathlib import Path
 
 
@@ -51,6 +52,80 @@ def get_portfolio_path_with_flag(settings=None):
     if private_path and private_path.exists():
         return private_path, False
     return resolve_path(settings["example_portfolio_path"]), True
+
+
+def get_portfolio_overlay_path(settings=None):
+    settings = settings or load_settings()
+    return resolve_path(settings.get("portfolio_overlay_path"))
+
+
+def _read_json(path):
+    with path.open(encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _merge_dict(base, updates):
+    merged = dict(base or {})
+    for key, value in (updates or {}).items():
+        if value is None:
+            continue
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = _merge_dict(merged[key], value)
+        else:
+            merged[key] = copy.deepcopy(value)
+    return merged
+
+
+def apply_portfolio_overlay(portfolio, overlay):
+    """Apply a local private overlay without mutating the original portfolio."""
+    result = copy.deepcopy(portfolio)
+    if not isinstance(overlay, dict):
+        return result
+    if overlay.get("enabled") is not True:
+        result.setdefault("data_status", {})["overlay_applied"] = False
+        return result
+
+    for key in ["user_profile", "cash", "risk_rules", "data_status"]:
+        if isinstance(overlay.get(key), dict):
+            result[key] = _merge_dict(result.get(key), overlay[key])
+
+    holdings_by_code = overlay.get("holdings_by_code") or {}
+    if holdings_by_code:
+        for holding in result.get("holdings", []) or []:
+            code = str(holding.get("code") or "")
+            updates = holdings_by_code.get(code)
+            if isinstance(updates, dict):
+                holding.update(_merge_dict(holding, updates))
+
+    appends = overlay.get("append_buy_records_by_code") or {}
+    if appends:
+        for holding in result.get("holdings", []) or []:
+            code = str(holding.get("code") or "")
+            records = appends.get(code)
+            if isinstance(records, list):
+                holding.setdefault("buy_records", [])
+                holding["buy_records"].extend(copy.deepcopy(records))
+
+    metadata = result.setdefault("data_status", {})
+    metadata["overlay_applied"] = True
+    return result
+
+
+def load_portfolio(settings=None, prefer_example=False, apply_overlay=True):
+    settings = settings or load_settings()
+    path, using_example = (
+        (resolve_path(settings["example_portfolio_path"]), True)
+        if prefer_example
+        else get_portfolio_path_with_flag(settings)
+    )
+    portfolio = _read_json(path)
+    overlay_path = get_portfolio_overlay_path(settings)
+    overlay_applied = False
+    if apply_overlay and not using_example and overlay_path and overlay_path.exists():
+        portfolio = apply_portfolio_overlay(portfolio, _read_json(overlay_path))
+        overlay_applied = True
+        portfolio.setdefault("data_status", {})["overlay_path"] = str(overlay_path)
+    return portfolio, path, using_example, overlay_applied
 
 
 def get_report_dirs(settings=None):

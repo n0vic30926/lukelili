@@ -104,7 +104,7 @@
 - `scripts/smoke_test.py`：离线基础检查。
 - `docs/OPEN_SOURCE_AGENT_BENCHMARK.md`：开源投资 Agent 横向对比与重新排序 TODO。
 
-真实持仓应放在 `data/private/portfolio.local.json`，不要提交到 git。
+真实持仓应放在 `data/private/portfolio.local.json`，不要提交到 git。用户确认后的策略类型、目标权重、现金和补充交易可放在 ignored 的 `data/private/portfolio.overlay.json`，并在确认后设置 `enabled=true`。
 
 ## 本地检查
 
@@ -114,6 +114,7 @@ python3 scripts/competitive_readiness.py
 python3 scripts/ideal_agent_readiness.py
 python3 scripts/portfolio_backtest.py
 python3 scripts/portfolio_intersection.py
+python3 scripts/portfolio_gap_review.py
 python3 scripts/portfolio_xray.py
 python3 scripts/portfolio_scenarios.py
 python3 scripts/rebalance_review.py
@@ -133,6 +134,7 @@ python3 scripts/mock_output_contract_test.py
 python3 scripts/mock_portfolio_backtest_test.py
 python3 scripts/mock_portfolio_exposure_test.py
 python3 scripts/mock_portfolio_intersection_test.py
+python3 scripts/mock_portfolio_overlay_test.py
 python3 scripts/mock_portfolio_scenarios_test.py
 python3 scripts/mock_portfolio_validation_test.py
 python3 scripts/mock_portfolio_xray_test.py

@@ -8,7 +8,7 @@ broker endpoints, places orders, or treats model judgment as user consent.
 import json
 import sys
 
-from common.config_loader import get_portfolio_path, get_scenario_assumptions_path
+from common.config_loader import get_scenario_assumptions_path, load_portfolio
 from common.decision_confirmation import build_confirmation_state, format_confirmation_state
 from common.evidence import rank_evidence
 from common.output_contract import format_output_sections
@@ -440,8 +440,8 @@ def format_decision_packet(packet):
 
 
 def _load_portfolio():
-    with open(get_portfolio_path(), encoding="utf-8") as f:
-        return json.load(f)
+    portfolio, _, _, _ = load_portfolio()
+    return portfolio
 
 
 def load_scenario_review(portfolio, settings=None):

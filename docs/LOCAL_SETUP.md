@@ -24,6 +24,26 @@ Place real holdings in:
 data/private/portfolio.local.json
 ```
 
+Optional private portfolio overrides can be placed in:
+
+```text
+data/private/portfolio.overlay.json
+```
+
+Use the overlay for user-confirmed strategy types, target weights, cash balance,
+risk-rule confirmations, and dated follow-up buy records. It is ignored by git
+and is applied by daily/weekly reports, decision support, research dispatch,
+industry intelligence, and portfolio risk scan only after `enabled` is set to
+`true`.
+
+Review missing portfolio inputs:
+
+```bash
+python3 scripts/portfolio_gap_review.py
+python3 scripts/portfolio_gap_review.py --template
+python3 scripts/portfolio_gap_review.py --write-template
+```
+
 Optional local scenario assumptions can be placed in:
 
 ```text
@@ -33,6 +53,11 @@ data/private/scenario_assumptions.local.json
 Use `data/examples/portfolio.example.json` only as a structural reference. Do not copy real costs, shares, account data, API keys, or transaction records into tracked files.
 Use `data/examples/scenario_assumptions.example.json` only as a scenario
 structure reference. Scenario assumptions are model inputs, not facts.
+
+`enable_ai_sector_flow` defaults to `false` because AkShare
+`stock_sector_fund_flow_hist` can hang or fail behind proxies. Daily AI factor
+attribution still uses fund NAV and the CSI AI index; sector-flow rotation is
+set to zero unless this optional source is explicitly enabled.
 
 Validate a portfolio file:
 

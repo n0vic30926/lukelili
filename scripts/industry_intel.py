@@ -4,14 +4,12 @@
 从Tavily搜索行业资讯，结合持仓做信号标注和行动建议
 """
 
-import json, os, sys, requests, traceback
+import os, sys, requests, traceback
 from datetime import datetime, timedelta
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
-from common.config_loader import get_portfolio_path, get_tavily_api_key, news_enabled
-
-PORTFOLIO_PATH = str(get_portfolio_path())
+from common.config_loader import get_tavily_api_key, load_portfolio, news_enabled
 
 INJECTION_PATTERNS = [
     "ignore previous instructions",
@@ -42,8 +40,8 @@ def sanitize_external_text(text, max_length=300):
     return cleaned.strip()[:max_length]
 
 def _load_portfolio():
-    with open(PORTFOLIO_PATH, encoding="utf-8") as f:
-        return json.load(f)
+    portfolio, _, _, _ = load_portfolio()
+    return portfolio
 
 
 def _compact_terms(*values):

@@ -5,10 +5,9 @@ This module creates a small, explicit contract between user intent and research
 roles. It does not call broker APIs, place trades, or produce final decisions.
 """
 
-import json
 import sys
 
-from common.config_loader import get_portfolio_path
+from common.config_loader import load_portfolio
 from common.data_sources import role_data_requirements, summarize_role_data_requirements
 from common.evidence import rank_evidence
 from common.research_coverage import build_research_coverage_matrix, format_research_coverage
@@ -510,8 +509,8 @@ def format_research_report(result):
 
 
 def _load_portfolio():
-    with open(get_portfolio_path(), encoding="utf-8") as f:
-        return json.load(f)
+    portfolio, _, _, _ = load_portfolio()
+    return portfolio
 
 
 def main(argv=None):

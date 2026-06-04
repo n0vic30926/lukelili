@@ -1,5 +1,6 @@
 {
   "portfolio_path": "data/private/portfolio.local.json",
+  "portfolio_overlay_path": "data/private/portfolio.overlay.json",
   "example_portfolio_path": "data/examples/portfolio.example.json",
   "scenario_assumptions_path": "data/private/scenario_assumptions.local.json",
   "example_scenario_assumptions_path": "data/examples/scenario_assumptions.example.json",
@@ -12,6 +13,7 @@
   "cache_ttl_hours": 1,
   "log_dir": "logs",
   "enable_news": false,
+  "enable_ai_sector_flow": false,
   "tavily_api_key_env": "TAVILY_API_KEY",
   "timezone": "Asia/Shanghai"
 }

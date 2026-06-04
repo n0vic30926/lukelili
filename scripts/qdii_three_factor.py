@@ -7,7 +7,7 @@ import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
-from common.config_loader import get_portfolio_path_with_flag, load_settings
+from common.config_loader import load_portfolio, load_settings
 from common.data_runtime import DataStatusTracker, missing_dependencies
 
 try:
@@ -200,10 +200,7 @@ def portfolio_risk_scan(tracker=None):
     if ak is None:
         return _missing_dependency("portfolio_risk_scan", tracker)
     active_tracker = tracker or TRACKER
-    import json
-    portfolio_path, _ = get_portfolio_path_with_flag(SETTINGS)
-    with open(portfolio_path, encoding="utf-8") as f:
-        portfolio = json.load(f)
+    portfolio, _, _, _ = load_portfolio(SETTINGS)
 
     holdings = portfolio['holdings']
     nav_series = {}
@@ -315,25 +312,32 @@ def ai_fund_attribution(fund_code=None, days=30, tracker=None):
 
     # 3. 行业轮动因子 — AI基金重仓行业(半导体/软件开发/消费电子)的资金流 vs 整体市场
     # 用 sector_fund_flow_hist 查AI相关行业主力净流入，算加权平均净占比
-    ai_industries = ['半导体', '软件开发', '消费电子', '通信设备', '计算机设备', '光学光电子']
     sector_results = []
-    for ind in ai_industries:
-        try:
-            df_s = _call_dataframe(
-                active_tracker,
-                f"ai_sector_flow:{ind}",
-                "AkShare stock_sector_fund_flow_hist",
-                lambda ind=ind: ak.stock_sector_fund_flow_hist(symbol=ind),
-            )
-            if _is_frame(df_s) and len(df_s) > 0:
-                df_s['日期'] = pd.to_datetime(df_s['日期'])
-                mask = (df_s['日期'] >= date_start) & (df_s['日期'] <= date_end)
-                df_s = df_s[mask]
-                if len(df_s) > 0:
-                    avg_net_pct = df_s['主力净流入-净占比'].mean()
-                    sector_results.append(avg_net_pct)
-        except Exception:
-            continue
+    if SETTINGS.get("enable_ai_sector_flow", False):
+        ai_industries = ['半导体', '软件开发', '消费电子', '通信设备', '计算机设备', '光学光电子']
+        for ind in ai_industries:
+            try:
+                df_s = _call_dataframe(
+                    active_tracker,
+                    f"ai_sector_flow:{ind}",
+                    "AkShare stock_sector_fund_flow_hist",
+                    lambda ind=ind: ak.stock_sector_fund_flow_hist(symbol=ind),
+                )
+                if _is_frame(df_s) and len(df_s) > 0:
+                    df_s['日期'] = pd.to_datetime(df_s['日期'])
+                    mask = (df_s['日期'] >= date_start) & (df_s['日期'] <= date_end)
+                    df_s = df_s[mask]
+                    if len(df_s) > 0:
+                        avg_net_pct = df_s['主力净流入-净占比'].mean()
+                        sector_results.append(avg_net_pct)
+            except Exception:
+                continue
+    else:
+        active_tracker.skipped(
+            "ai_sector_flow",
+            source="AkShare stock_sector_fund_flow_hist",
+            reason="enable_ai_sector_flow=false",
+        )
 
     if sector_results:
         rotation_contrib = round(np.mean(sector_results), 2)

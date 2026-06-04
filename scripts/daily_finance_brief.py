@@ -5,12 +5,17 @@
 覆盖：场外基金净值、场内ETF、指数基准、持仓穿透、北向资金、汇率、风控
 """
 
-import json, os, sys, traceback
+import os, sys, traceback
 from datetime import datetime, timedelta
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
-from common.config_loader import get_portfolio_path_with_flag, get_report_dirs, load_settings
+from common.config_loader import (
+    get_portfolio_path_with_flag,
+    get_report_dirs,
+    load_portfolio as load_config_portfolio,
+    load_settings,
+)
 from common.data_runtime import DataStatusTracker, cached_call, missing_dependencies
 from common.market_research import etf_observation, macro_observation
 from common.output_contract import format_classified_report_section
@@ -37,8 +42,8 @@ MISSING_RUNTIME_DEPS = missing_dependencies(["akshare", "pandas", "numpy"])
 
 
 def load_portfolio():
-    with open(PORTFOLIO_PATH, encoding="utf-8") as f:
-        return json.load(f)
+    portfolio, _, _, _ = load_config_portfolio(SETTINGS)
+    return portfolio
 
 
 def build_run_summary(tracker=None):

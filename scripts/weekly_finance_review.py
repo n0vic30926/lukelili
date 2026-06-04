@@ -2,12 +2,17 @@
 """周度复盘报告 — 每周六运行，推送至微信
 模块1: 周度收益汇总
 """
-import json, os, sys
+import os, sys
 from datetime import datetime, timedelta
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
-from common.config_loader import get_portfolio_path_with_flag, get_report_dirs, load_settings
+from common.config_loader import (
+    get_portfolio_path_with_flag,
+    get_report_dirs,
+    load_portfolio as load_config_portfolio,
+    load_settings,
+)
 from common.data_runtime import DataStatusTracker, missing_dependencies
 from common.output_contract import format_classified_report_section
 from common.reporting import write_report
@@ -47,8 +52,8 @@ def _call_dataframe(tracker, module, source, producer):
 
 
 def load_portfolio():
-    with open(PORTFOLIO_PATH, encoding="utf-8") as f:
-        return json.load(f)
+    portfolio, _, _, _ = load_config_portfolio(SETTINGS)
+    return portfolio
 
 
 def build_run_summary(tracker=None):
