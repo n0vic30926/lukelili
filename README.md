@@ -218,13 +218,17 @@ python3 scripts/research_dispatch.py --execute "宏观 利率 个股 财报 ETF 
 
 `research_dispatch.py` 只输出研究任务契约或聚合研究报告，不连接券商、不下单、不替用户确认交易。
 
-生成 L5 决策辅助包：
+生成 L5 ranked recommendation 决策包：
 
 ```bash
 python3 scripts/decision_support.py "组合风险 复盘 决策辅助"
 ```
 
-`decision_support.py` 只输出候选动作、依据、风险和用户确认清单；`execution_allowed` 永远为 `false`。
+`decision_support.py` 会先输出 3-7 条 ranked recommendations，每条包含
+action、instrument_ref、direction、confidence、horizon、status、rationale、
+risks、invalidators、position_effect 和 next_action；随后保留候选动作、
+证据、风险规则、场景信号、再平衡信号和人工确认清单作为审计层。
+`execution_allowed` 仍为 `false`，直到未来 mandate-gated execution 模块存在。
 
 ## 原 Cron 任务配置
 

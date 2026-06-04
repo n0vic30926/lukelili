@@ -28,9 +28,8 @@ Goal: Codex can read investment rules, safety boundaries, and output constraints
 Status: foundation in place. Recommendation, daily, and weekly outputs now
 include an explicit Facts / Data-Derived Inferences / Model Judgment / User
 Confirmation Required classification. Daily and weekly advice sections now also
-classify their own content at the source. Next iteration should add a dedicated
-Recommendation section so outputs do not hide useful advice inside generic
-"decision support" language.
+classify their own content at the source. Decision support now also includes a
+dedicated ranked Recommendation section before the lower-level audit details.
 
 ## L2: Local Portfolio Analysis Assistant
 
@@ -108,22 +107,22 @@ Goal: provide ranked buy/sell/hold/rebalance/reduce-risk recommendations and
 concrete next actions. Recommendation is allowed; real execution is a separate
 mandate-gated capability.
 
-Status: the current packet builder converts portfolio strategy types and
-research observations into candidate actions, rationale, risks, and required
-confirmation checks. Scenario and rebalance signals flow into manual blockers,
-and cross-role data-source gaps are visible. This is no longer sufficient as the
-product endpoint. Next step is a first-class recommendation packet that ranks
-actions, assigns confidence and horizon, names invalidators, estimates position
-effect, and gives a concrete next action. `execution_allowed=false` remains only
-because no execution module exists yet, not because the system should avoid
-recommendations.
+Status: the current packet builder now emits a first-class ranked
+recommendation section before the lower-level audit trail. It aggregates
+portfolio strategy types, scenario signals, rebalance drift, local backtest
+context, research-source gaps, and risk observations into recommendations with
+action, instrument ref, direction, horizon, confidence, status, rationale,
+risks, invalidators, position effect, and concrete next action. Candidate
+actions and manual confirmation checks remain visible below the ranked layer for
+auditability. `execution_allowed=false` remains only because no execution module
+exists yet, not because the system should avoid recommendations.
 
 New priority order:
 
 1. P0 Product reset: remove blanket defensive phrasing and require actionable
    recommendation language.
-2. P1 Recommendation schema and portfolio-manager aggregation over current
-   portfolio, scenario, rebalance, backtest, and research signals.
+2. P1 Harden recommendation scoring and add portfolio-manager aggregation over
+   current portfolio, scenario, rebalance, backtest, and research signals.
 3. P1 Investor-style voting agents: value, growth, macro, technical, sentiment,
    risk, and portfolio manager.
 4. P2 Pyfolio-style performance analytics: Sharpe, Sortino, Calmar, beta,

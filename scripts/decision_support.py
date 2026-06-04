@@ -13,9 +13,11 @@ from common.decision_confirmation import build_confirmation_state, format_confir
 from common.evidence import rank_evidence
 from common.output_contract import format_output_sections
 from common.portfolio_exposure import summarize_portfolio_exposure
+from common.recommendations import build_recommendations, format_recommendations
 from common.research_synthesis import synthesize_research_result
 from common.signal_ranking import rank_scenario_signals
 from research_dispatch import build_research_plan, execute_research_plan
+from portfolio_backtest import build_portfolio_backtest
 from portfolio_scenarios import build_scenario_review
 from rebalance_review import build_rebalance_review
 from validate_scenarios import validate_scenarios
@@ -159,6 +161,14 @@ def build_decision_packet(portfolio, research_result=None, scenario_review=None)
     ranked_scenario_signals = rank_scenario_signals(scenario_signals)
     rebalance_review = build_rebalance_review(portfolio)
     rebalance_signals = rebalance_review.get("decision_signals") or []
+    backtest = build_portfolio_backtest(portfolio)
+    recommendations = build_recommendations(
+        portfolio,
+        research_result=research_result,
+        scenario_review=scenario_review,
+        rebalance_review=rebalance_review,
+        backtest=backtest,
+    )
     for candidate in candidates:
         for confirmation in (
             _scenario_confirmation_texts(scenario_signals)
@@ -175,6 +185,8 @@ def build_decision_packet(portfolio, research_result=None, scenario_review=None)
         "ranked_scenario_signals": ranked_scenario_signals,
         "rebalance_review": rebalance_review,
         "rebalance_signals": rebalance_signals,
+        "backtest": backtest,
+        "recommendations": recommendations,
         "strategy_counts": _strategy_counts(portfolio),
         "research_observations": research_notes,
         "research_synthesis": research_synthesis,
@@ -231,9 +243,13 @@ def _output_sections(packet):
     )
 
     judgments = [
+        f"rank={item['rank']} action={item['action']} direction={item['direction']} confidence={item['confidence']}"
+        for item in packet.get("recommendations") or []
+    ]
+    judgments.extend(
         f"{candidate['holding_ref']} candidate_action={candidate['candidate_action']}"
         for candidate in packet["candidates"]
-    ]
+    )
     judgments.extend(
         f"scenario={item['scenario']} decision_signal={item['signal']} priority={item['priority']}"
         for item in packet.get("ranked_scenario_signals") or []
@@ -267,6 +283,8 @@ def format_decision_packet(packet):
         lines.append(f"- Strategy counts: {counts}")
     lines.append("")
     lines.append(format_output_sections(_output_sections(packet)))
+    lines.append("")
+    lines.append(format_recommendations(packet.get("recommendations") or []))
     lines.append("")
 
     if packet["research_observations"]:

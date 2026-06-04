@@ -111,6 +111,12 @@ def run_decision_support_test():
 
     output = format_decision_packet(packet)
     _assert_contains(output, "# Decision Support Packet")
+    _assert_contains(output, "## Ranked Recommendations")
+    _assert_contains(output, "rank=1")
+    _assert_contains(output, "status=recommended")
+    _assert_contains(output, "action=reduce_risk")
+    _assert_contains(output, "next_action=")
+    _assert_contains(output, "invalidators=")
     _assert_contains(output, "- Execution allowed: no")
     _assert_contains(output, "- Requires user confirmation: yes")
     _assert_contains(output, "## Facts")

@@ -421,11 +421,25 @@ def build_readiness_matrix():
     entries.append(
         _entry(
             "L5",
-            "decision packet can carry recommendations without unauthorized execution",
+            "decision packet carries ranked recommendations without unauthorized execution",
             packet["execution_allowed"] is False
             and packet["requires_user_confirmation"] is True
+            and bool(packet.get("recommendations"))
+            and all(
+                field in packet["recommendations"][0]
+                for field in (
+                    "action",
+                    "confidence",
+                    "horizon",
+                    "invalidators",
+                    "next_action",
+                    "position_effect",
+                )
+            )
             and "broker_connection" in packet["prohibited_actions"],
-            "recommendations_allowed=true execution_allowed=false prohibited_actions present",
+            "ranked_recommendations="
+            + str(len(packet.get("recommendations") or []))
+            + " execution_allowed=false prohibited_actions present",
         )
     )
     entries.append(
