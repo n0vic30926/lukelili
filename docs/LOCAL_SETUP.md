@@ -257,6 +257,18 @@ theme narratives by evidence level, maps themes to observable tickers or ETFs,
 and checks whether a theme adds diversification or simply thickens existing
 portfolio exposure.
 
+Review external narrative evidence and optionally save a thesis-ledger summary:
+
+```bash
+python3 scripts/narrative_evidence.py data/examples/market_evidence.example.json
+python3 scripts/narrative_evidence.py data/examples/market_evidence.example.json --save
+```
+
+Evidence files can contain pasted article summaries, links, filings, earnings
+notes, or social posts. The script classifies source reliability, maps evidence
+to market radar themes, and saves only sanitized aggregate records when `--save`
+is used.
+
 Review report continuity and decision-discipline aggregates without printing
 private holdings:
 

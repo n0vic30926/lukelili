@@ -19,6 +19,7 @@ from portfolio_intersection import build_stock_intersection
 from portfolio_xray import build_portfolio_xray
 from report_index import load_report_index
 from market_radar import build_market_radar
+from narrative_evidence import load_thesis_ledger
 
 
 def _number(value, default=0.0):
@@ -220,6 +221,7 @@ def build_daily_insight_context(portfolio=None, report_items=None):
         scenario_review = None
     decision_packet = build_decision_packet(portfolio, scenario_review=scenario_review)
     market_radar = build_market_radar(portfolio)
+    thesis_ledger = load_thesis_ledger(limit=3)
 
     return {
         "portfolio": portfolio,
@@ -233,6 +235,7 @@ def build_daily_insight_context(portfolio=None, report_items=None):
         "intersection": intersection,
         "decision_packet": decision_packet,
         "market_radar": market_radar,
+        "thesis_ledger": thesis_ledger,
         "latest_daily": latest_daily,
         "report_metrics": report_metrics,
         "data_status": _data_status_from_report(latest_daily),
@@ -394,6 +397,7 @@ def _market_radar_lines(ctx):
 def _cognition_iteration_lines(ctx):
     radar = ctx.get("market_radar") or {}
     themes = radar.get("themes") or []
+    ledger = ctx.get("thesis_ledger") or []
     growth = [item["name"] for item in themes if item.get("relation") == "增厚原有风险"]
     diversifiers = [item["name"] for item in themes if item.get("relation") == "分散候选"]
     lines = [
@@ -411,6 +415,16 @@ def _cognition_iteration_lines(ctx):
             "维持不变的地方：分散候选仍优先看 "
             + "、".join(diversifiers[:3])
             + "，因为它们更可能降低对单一科技主线的依赖。"
+        )
+    if ledger:
+        latest = ledger[-1]
+        counts = latest.get("verification_counts") or {}
+        count_text = "、".join(f"{key}:{counts[key]}" for key in sorted(counts)) or "无"
+        lines.append(
+            "最近一次证据摄取："
+            f"{latest.get('created_at', 'unknown')}，"
+            f"覆盖主题 {len(latest.get('matched_theme_ids') or [])} 个，"
+            f"证据分布 {count_text}。"
         )
     lines.append("仍不确定：没有外部新闻证据时，雷达只给观察和核验优先级，不把传闻当事实。")
     return lines
@@ -579,6 +593,7 @@ def format_daily_insight(ctx):
     data = ctx["data_status"]
     latest = ctx.get("latest_daily") or {}
     radar = ctx.get("market_radar") or {}
+    ledger = ctx.get("thesis_ledger") or []
     lines.append(f"- gap_count={gap.get('gap_count', 0)} overlay_mode={gap.get('overlay_mode')}")
     lines.append(
         "- allocation "
@@ -602,6 +617,7 @@ def format_daily_insight(ctx):
         f"theme_count={radar.get('theme_count', 0)} "
         "news_boundary=radar_matrix_only_unless_external_evidence_is_supplied"
     )
+    lines.append(f"- thesis_ledger records_loaded={len(ledger)}")
     if latest.get("report_path"):
         lines.append(f"- source_report={latest.get('report_path')}")
     return "\n".join(lines)

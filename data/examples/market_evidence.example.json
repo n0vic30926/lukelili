@@ -1,0 +1,18 @@
+{
+  "items": [
+    {
+      "title": "Example official earnings note says HBM demand remains strong",
+      "content": "Company management said AI server demand is supporting high-bandwidth memory orders.",
+      "url": "https://investors.example.com/news/example-hbm-earnings",
+      "source_type": "earnings",
+      "published_at": "2026-06-05"
+    },
+    {
+      "title": "Unverified social post claims a private space company will IPO next month",
+      "content": "A social media account claims a large commercial space company will list soon, without filing evidence.",
+      "url": "https://social.example.com/post/space-ipo-rumor",
+      "source_type": "rumor",
+      "published_at": "2026-06-05"
+    }
+  ]
+}

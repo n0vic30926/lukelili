@@ -43,6 +43,7 @@
 | `daily_finance_brief.py` | 491 | 每日收盘推送（持仓+ETF+指数+估值锚+三因子归因+风控+行业情报+纪律守护） |
 | `daily_insight.py` | - | 读者层日报洞察，把组合、风险、推荐、数据盲区翻译成可执行的中文判断 |
 | `market_radar.py` | - | 市场叙事雷达：主题矩阵、事实核验状态、可观察代码、组合重叠度和执行口径 |
+| `narrative_evidence.py` | - | 外部证据摄取：新闻/链接/研报摘要分级、映射主题、写入 thesis ledger |
 | `weekly_finance_review.py` | 341 | 周度回顾（收益+行业资金流+QDII因子周变化+产业周期+定投曲线+决策建议） |
 | `industry_cycle.py` | 598 | 15赛道产业周期框架（6量化+9定性+信号整合） |
 | `qdii_three_factor.py` | 210 | QDII三因子归因（纳指+汇率+残差）+ AI基金三因子归因（中证AI+行业轮动+残差） |
@@ -237,6 +238,17 @@ python3 scripts/market_radar.py
 `market_radar.py` 会把 AI 算力、HBM/存储、半导体设备、AI 电力/核电、
 物理 AI/机器人、商业航天、防守轮动和 A 股映射链映射到可观察代码，
 并标记叙事证据等级、是否与当前组合增厚风险、是否更接近分散候选。
+
+摄取外部叙事证据并可写入私有 thesis ledger：
+
+```bash
+python3 scripts/narrative_evidence.py data/examples/market_evidence.example.json
+python3 scripts/narrative_evidence.py data/examples/market_evidence.example.json --save
+```
+
+`narrative_evidence.py` 会把官方公告、财报、主流媒体、社交媒体、博主转述
+和传闻分级，并把证据映射到市场雷达主题。`--save` 只写入脱敏摘要到
+`data/private/decision_track/thesis_ledger.jsonl`。
 
 生成 L5 ranked recommendation 决策包：
 

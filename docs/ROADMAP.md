@@ -67,7 +67,11 @@ maintains a stable theme matrix for AI compute, memory/HBM, semiconductor
 equipment, AI power/nuclear, physical AI/robotics, commercial space, defensive
 rotation, and A-share mapping. Each theme carries verification status, observable
 tickers/ETFs, portfolio-overlap classification, and an execution stance before
-external news is allowed to affect recommendations.
+external news is allowed to affect recommendations. A narrative-evidence
+ingestion script now classifies user-provided articles, filings, earnings notes,
+social posts, or rumors by source reliability, maps them into radar themes, and
+can append sanitized thesis-ledger summaries under the private decision-track
+directory.
 
 ## L4: Multi-Agent Research
 
@@ -128,9 +132,9 @@ New priority order:
 
 1. P0 Product reset: remove blanket defensive phrasing and require actionable
    recommendation language.
-2. P1 Market cognition layer: external evidence ingestion, fact/rumor
-   verification, narrative-to-instrument mapping, portfolio-fit scoring, and
-   visible thesis-change records.
+2. P1 Market cognition layer: connect live/manual evidence ingestion to daily
+   radar confidence, improve fact/rumor verification, and persist visible
+   thesis-change records.
 3. P1 Harden recommendation scoring and add portfolio-manager aggregation over
    current portfolio, scenario, rebalance, backtest, and research signals.
 4. P1 Investor-style voting agents: value, growth, macro, technical, sentiment,

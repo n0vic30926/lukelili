@@ -128,8 +128,10 @@ def _theme_evidence(theme):
             }
         )
     best = max(scored, key=lambda item: item["score"])
-    if best["score"] >= 85:
-        status = "已证实"
+    if best["score"] >= 90:
+        status = "高可信事实"
+    elif best["score"] >= 80:
+        status = "公司披露或财报证据"
     elif best["score"] >= 65:
         status = "有媒体或产业数据支持"
     elif best["score"] >= 35:
