@@ -18,6 +18,7 @@ from portfolio_gap_review import build_gap_review
 from portfolio_intersection import build_stock_intersection
 from portfolio_xray import build_portfolio_xray
 from report_index import load_report_index
+from market_radar import build_market_radar
 
 
 def _number(value, default=0.0):
@@ -218,6 +219,7 @@ def build_daily_insight_context(portfolio=None, report_items=None):
     except Exception:
         scenario_review = None
     decision_packet = build_decision_packet(portfolio, scenario_review=scenario_review)
+    market_radar = build_market_radar(portfolio)
 
     return {
         "portfolio": portfolio,
@@ -230,6 +232,7 @@ def build_daily_insight_context(portfolio=None, report_items=None):
         "backtest": backtest,
         "intersection": intersection,
         "decision_packet": decision_packet,
+        "market_radar": market_radar,
         "latest_daily": latest_daily,
         "report_metrics": report_metrics,
         "data_status": _data_status_from_report(latest_daily),
@@ -257,6 +260,7 @@ def _important_items(ctx):
     allocation = ctx["xray"]["allocation"]
     pending = ctx["pending_buys"]
     data = ctx["data_status"]
+    radar = ctx.get("market_radar") or {}
     items = []
     items.append(
         "组合结构比单日涨跌更重要：两只基金虽然分属 A 股 AI 和美股纳指，"
@@ -280,7 +284,13 @@ def _important_items(ctx):
         )
     if allocation.get("cash_pct", 0) <= 1:
         items.append("没有现金缓冲，意味着任何新增买入都会继续放大科技成长暴露。")
-    return items[:4]
+    if radar.get("themes"):
+        top = radar["themes"][0]
+        items.append(
+            f"市场雷达当前把“{top['name']}”排在前列，但证据状态是“{top['verification_status']}”，"
+            "不能把主题热度直接等同于买入理由。"
+        )
+    return items[:5]
 
 
 def _portfolio_portrait(ctx):
@@ -353,6 +363,56 @@ def _risk_diagnosis(ctx):
         f"{_fmt_pct(fee.get('weighted_expense_ratio_pct') or 0)}/年，"
         "它不会决定短期涨跌，但会长期消耗复利。"
     )
+    return lines
+
+
+def _instrument_line(instruments, limit=3):
+    rendered = []
+    for item in instruments[:limit]:
+        code = str(item.get("code") or "")
+        name = str(item.get("name") or "")
+        access = str(item.get("access") or "")
+        rendered.append(f"{code}（{name}，{access}）")
+    return "；".join(rendered) if rendered else "暂无可执行代码"
+
+
+def _market_radar_lines(ctx):
+    radar = ctx.get("market_radar") or {}
+    themes = radar.get("themes") or []
+    lines = []
+    if not themes:
+        return ["市场雷达未生成，今天不把外部叙事纳入提案。"]
+    for theme in themes[:5]:
+        lines.append(
+            f"{theme['name']}：{theme['verification_status']}，与组合关系是“{theme['relation']}”。"
+            f"可观察代码：{_instrument_line(theme.get('instruments') or [])}。"
+            f"执行口径：{theme['suggested_action']}"
+        )
+    return lines
+
+
+def _cognition_iteration_lines(ctx):
+    radar = ctx.get("market_radar") or {}
+    themes = radar.get("themes") or []
+    growth = [item["name"] for item in themes if item.get("relation") == "增厚原有风险"]
+    diversifiers = [item["name"] for item in themes if item.get("relation") == "分散候选"]
+    lines = [
+        "昨日/历史判断：当前组合已经偏科技成长，首要任务是风险复核和仓位纪律。",
+        "今日新增结构：日报不再只看持仓体检，新增市场雷达、叙事核验和组合适配检查。",
+    ]
+    if growth:
+        lines.append(
+            "需要修正的地方：AI 主线拆成更细的 "
+            + "、".join(growth[:4])
+            + "，但这些方向主要是在增厚现有风险。"
+        )
+    if diversifiers:
+        lines.append(
+            "维持不变的地方：分散候选仍优先看 "
+            + "、".join(diversifiers[:3])
+            + "，因为它们更可能降低对单一科技主线的依赖。"
+        )
+    lines.append("仍不确定：没有外部新闻证据时，雷达只给观察和核验优先级，不把传闻当事实。")
     return lines
 
 
@@ -482,6 +542,16 @@ def format_daily_insight(ctx):
         lines.append(f"- {item}")
     lines.append("")
 
+    lines.append("## 市场雷达与叙事核验")
+    for item in _market_radar_lines(ctx):
+        lines.append(f"- {item}")
+    lines.append("")
+
+    lines.append("## 认知迭代记录")
+    for item in _cognition_iteration_lines(ctx):
+        lines.append(f"- {item}")
+    lines.append("")
+
     lines.append("## 行动建议")
     for item in _action_recommendations(ctx):
         lines.append(f"- {item}")
@@ -508,6 +578,7 @@ def format_daily_insight(ctx):
     backtest = ctx["backtest"]
     data = ctx["data_status"]
     latest = ctx.get("latest_daily") or {}
+    radar = ctx.get("market_radar") or {}
     lines.append(f"- gap_count={gap.get('gap_count', 0)} overlay_mode={gap.get('overlay_mode')}")
     lines.append(
         "- allocation "
@@ -525,6 +596,11 @@ def format_daily_insight(ctx):
         "- daily_modules "
         f"success={data['success']} failed={data['failed']} skipped={data['skipped']} "
         f"cache_hit={data['cache_hit']} freshness_unknown={data['unknown']}"
+    )
+    lines.append(
+        "- market_radar "
+        f"theme_count={radar.get('theme_count', 0)} "
+        "news_boundary=radar_matrix_only_unless_external_evidence_is_supplied"
     )
     if latest.get("report_path"):
         lines.append(f"- source_report={latest.get('report_path')}")

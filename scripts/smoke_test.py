@@ -40,6 +40,7 @@ def check_foundation_files():
         "schemas/portfolio.schema.json",
         "schemas/scenario_assumptions.schema.json",
         "data/examples/portfolio.example.json",
+        "data/examples/market_radar.example.json",
         "data/examples/scenario_assumptions.example.json",
         "docs/LOCAL_SETUP.md",
         "docs/COMPETITIVE_BENCHMARK.md",
@@ -54,6 +55,7 @@ def check_foundation_files():
         "scripts/etf_research.py",
         "scripts/industry_research.py",
         "scripts/macro_research.py",
+        "scripts/market_radar.py",
         "scripts/portfolio_backtest.py",
         "scripts/portfolio_intersection.py",
         "scripts/portfolio_gap_review.py",
@@ -99,6 +101,7 @@ def check_foundation_files():
         "scripts/mock_evidence_ranking_test.py",
         "scripts/mock_etf_research_test.py",
         "scripts/mock_macro_research_test.py",
+        "scripts/mock_market_radar_test.py",
         "scripts/mock_daily_status_test.py",
         "scripts/mock_daily_insight_test.py",
         "scripts/mock_factor_routing_test.py",
@@ -158,6 +161,7 @@ def check_json_files():
         "schemas/portfolio.schema.json",
         "schemas/scenario_assumptions.schema.json",
         "data/examples/portfolio.example.json",
+        "data/examples/market_radar.example.json",
         "data/examples/scenario_assumptions.example.json",
     ]:
         try:

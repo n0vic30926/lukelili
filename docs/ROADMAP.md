@@ -62,6 +62,13 @@ Goal: stable daily and weekly reports with visible dependency/data status.
 
 Status: original report scripts exist and now read local config for portfolio/news paths. Daily and weekly entrypoints check required runtime dependencies, avoid generating reports when `akshare` is missing, archive successful reports with structured index/log records, and have shared helpers for data status tracking plus best-effort cache. Daily and weekly report AkShare fetch helpers, QDII factor functions, portfolio risk scan, valuation anchors, and Tavily news helpers now record module success/failure/skipped states plus source-tier and freshness labels. A report index command summarizes recent reports, failed modules, and data quality trends. A history review command summarizes report continuity, repeated failed modules, and decision-discipline strategy counts without printing private holdings. Industry intelligence now builds search queries and impact labels from the configured portfolio instead of fixed exported holdings. Factor attribution now uses each holding's `factor_profile` to route supported QDII and A-share AI attribution jobs. Sanitized report branch fixtures now cover daily/weekly success, failed, skipped, and cache-hit output paths through the output contract and run-summary renderer. Run summaries now include per-source interpretation lines that map data-module status to report completeness and freshness impact without exposing raw upstream errors. Daily and weekly report contracts now also carry local portfolio x-ray facts, scenario model-projection labels, ranked scenario decision signals, and explicit confirmation requirements.
 
+Reader-facing daily insight now includes a market narrative radar. The radar
+maintains a stable theme matrix for AI compute, memory/HBM, semiconductor
+equipment, AI power/nuclear, physical AI/robotics, commercial space, defensive
+rotation, and A-share mapping. Each theme carries verification status, observable
+tickers/ETFs, portfolio-overlap classification, and an execution stance before
+external news is allowed to affect recommendations.
+
 ## L4: Multi-Agent Research
 
 Goal: split macro, ETF, individual security, industry, risk, and review roles.
@@ -121,20 +128,23 @@ New priority order:
 
 1. P0 Product reset: remove blanket defensive phrasing and require actionable
    recommendation language.
-2. P1 Harden recommendation scoring and add portfolio-manager aggregation over
+2. P1 Market cognition layer: external evidence ingestion, fact/rumor
+   verification, narrative-to-instrument mapping, portfolio-fit scoring, and
+   visible thesis-change records.
+3. P1 Harden recommendation scoring and add portfolio-manager aggregation over
    current portfolio, scenario, rebalance, backtest, and research signals.
-3. P1 Investor-style voting agents: value, growth, macro, technical, sentiment,
+4. P1 Investor-style voting agents: value, growth, macro, technical, sentiment,
    risk, and portfolio manager.
-4. P2 Pyfolio-style performance analytics: Sharpe, Sortino, Calmar, beta,
+5. P2 Pyfolio-style performance analytics: Sharpe, Sortino, Calmar, beta,
    alpha, benchmark comparison, rolling stats, drawdown table.
-5. P2 Strategy backtesting: strategy spec, signal series, trade ledger, sizing,
+6. P2 Strategy backtesting: strategy spec, signal series, trade ledger, sizing,
    slippage/fees, and out-of-sample split.
-6. P3 Hypothesis registry and x2strategy-style strategy extraction from papers,
+7. P3 Hypothesis registry and x2strategy-style strategy extraction from papers,
    news, and filings.
-7. P4 Provider registry and tool catalog inspired by OpenBB/Fincept.
-8. P5 Paper execution: mandate file, order proposal artifact, pre-trade risk
+8. P4 Provider registry and tool catalog inspired by OpenBB/Fincept.
+9. P5 Paper execution: mandate file, order proposal artifact, pre-trade risk
    checks, audit ledger, and kill switch.
-9. P6 Live broker integration only after paper execution is reliable.
+10. P6 Live broker integration only after paper execution is reliable.
 
 Still out of scope for the current codebase:
 

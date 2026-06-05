@@ -246,6 +246,17 @@ Generate the reader-facing daily insight report:
 python3 scripts/daily_insight.py
 ```
 
+Generate the market narrative radar:
+
+```bash
+python3 scripts/market_radar.py
+```
+
+The radar starts from `data/examples/market_radar.example.json`. It classifies
+theme narratives by evidence level, maps themes to observable tickers or ETFs,
+and checks whether a theme adds diversification or simply thickens existing
+portfolio exposure.
+
 Review report continuity and decision-discipline aggregates without printing
 private holdings:
 

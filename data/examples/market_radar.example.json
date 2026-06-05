@@ -1,0 +1,154 @@
+{
+  "themes": [
+    {
+      "theme_id": "ai_compute",
+      "name": "AI 算力",
+      "thesis": "AI 训练和推理资本开支仍是科技成长主线，但容易与纳指和 AI 主题基金高度重叠。",
+      "exposure_tags": ["ai", "semiconductor", "us_tech", "growth"],
+      "narratives": [
+        {
+          "claim": "AI 算力需求继续支撑龙头芯片和网络互联公司",
+          "evidence_level": "radar_only",
+          "source_note": "雷达观察主题，需用财报、订单或主流媒体核验"
+        }
+      ],
+      "instruments": [
+        {"code": "NVDA", "name": "英伟达", "market": "US", "access": "美股 ticker"},
+        {"code": "AVGO", "name": "博通", "market": "US", "access": "美股 ticker"},
+        {"code": "AMD", "name": "AMD", "market": "US", "access": "美股 ticker"}
+      ],
+      "execution_note": "更适合观察或等回撤/财报确认；对当前组合主要是增厚原有科技风险。"
+    },
+    {
+      "theme_id": "memory_hbm",
+      "name": "存储 / HBM",
+      "thesis": "如果 AI 瓶颈从 GPU 扩散到高带宽内存，存储链可能成为补涨方向。",
+      "exposure_tags": ["ai", "semiconductor", "memory", "hbm", "growth"],
+      "narratives": [
+        {
+          "claim": "HBM 和高端存储可能受益于 AI 服务器需求",
+          "evidence_level": "radar_only",
+          "source_note": "需用公司指引、价格周期和库存数据核验"
+        }
+      ],
+      "instruments": [
+        {"code": "MU", "name": "美光科技", "market": "US", "access": "美股 ticker"},
+        {"code": "WDC", "name": "西部数据", "market": "US", "access": "美股 ticker"},
+        {"code": "STX", "name": "希捷科技", "market": "US", "access": "美股 ticker"}
+      ],
+      "execution_note": "可作为趋势候选，但仍属于半导体周期风险，不能当作防守分散。"
+    },
+    {
+      "theme_id": "semiconductor_equipment",
+      "name": "半导体设备 / 检测",
+      "thesis": "先进制程、先进封装和检测设备受益于 AI 芯片复杂度提升。",
+      "exposure_tags": ["semiconductor", "equipment", "advanced_packaging", "growth"],
+      "narratives": [
+        {
+          "claim": "设备和检测环节可能比芯片龙头更分散地暴露 AI capex",
+          "evidence_level": "radar_only",
+          "source_note": "需用订单、book-to-bill、财报指引核验"
+        }
+      ],
+      "instruments": [
+        {"code": "KLAC", "name": "科磊", "market": "US", "access": "美股 ticker"},
+        {"code": "AMAT", "name": "应用材料", "market": "US", "access": "美股 ticker"},
+        {"code": "ASML", "name": "阿斯麦", "market": "US/NL", "access": "ADR 或海外股票"}
+      ],
+      "execution_note": "相对 GPU 龙头稍分散，但仍是科技成长链，不宜与现有纳指仓位重复放大。"
+    },
+    {
+      "theme_id": "ai_power_nuclear",
+      "name": "AI 电力 / 核电",
+      "thesis": "数据中心用电需求提高，电力、核电、铀链条可能成为 AI 基础设施的第二层映射。",
+      "exposure_tags": ["ai", "power", "nuclear", "infrastructure"],
+      "narratives": [
+        {
+          "claim": "AI 数据中心用电需求可能提升电力和核电资产关注度",
+          "evidence_level": "radar_only",
+          "source_note": "需用电力合同、监管文件和资本开支计划核验"
+        }
+      ],
+      "instruments": [
+        {"code": "CCJ", "name": "Cameco", "market": "US/CA", "access": "美股 ticker"},
+        {"code": "CEG", "name": "Constellation Energy", "market": "US", "access": "美股 ticker"},
+        {"code": "LEU", "name": "Centrus Energy", "market": "US", "access": "美股 ticker"}
+      ],
+      "execution_note": "相对直接芯片暴露更偏基础设施，但仍需要核验政策和估值拥挤。"
+    },
+    {
+      "theme_id": "physical_ai_robotics",
+      "name": "物理 AI / 机器人",
+      "thesis": "AI 从软件和云端走向工业执行层时，减速器、传感器、自动化和测试环节可能受益。",
+      "exposure_tags": ["ai", "robotics", "industrial", "automation"],
+      "narratives": [
+        {
+          "claim": "机器人产业链可能承接物理 AI 叙事",
+          "evidence_level": "radar_only",
+          "source_note": "需用订单、出货量、利润率和真实应用场景核验"
+        }
+      ],
+      "instruments": [
+        {"code": "BOTZ", "name": "Global X Robotics & AI ETF", "market": "US", "access": "美股 ETF ticker"},
+        {"code": "ROBO", "name": "ROBO Global Robotics ETF", "market": "US", "access": "美股 ETF ticker"}
+      ],
+      "execution_note": "更适合先用 ETF 或观察清单承接，个股需另做基本面核验。"
+    },
+    {
+      "theme_id": "commercial_space",
+      "name": "商业航天",
+      "thesis": "商业发射、卫星通信和航天供应链热度上升，但传闻和营销叙事比例高。",
+      "exposure_tags": ["space", "satellite", "speculative_growth"],
+      "narratives": [
+        {
+          "claim": "商业航天主题可能受到融资、上市或发射进展刺激",
+          "evidence_level": "radar_only",
+          "source_note": "上市传闻必须以官方公告、招股书或交易所文件核验"
+        }
+      ],
+      "instruments": [
+        {"code": "RKLB", "name": "Rocket Lab", "market": "US", "access": "美股 ticker"},
+        {"code": "ASTS", "name": "AST SpaceMobile", "market": "US", "access": "美股 ticker"},
+        {"code": "ARKX", "name": "ARK Space Exploration ETF", "market": "US", "access": "美股 ETF ticker"}
+      ],
+      "execution_note": "高波动、高叙事密度；未核验传闻只允许观察，不应直接买入。"
+    },
+    {
+      "theme_id": "defensive_rotation",
+      "name": "防守轮动",
+      "thesis": "当科技成长拥挤或风险偏好回落时，金融、医疗、消费和复合型控股可作为组合稳定器候选。",
+      "exposure_tags": ["defensive", "financials", "healthcare", "quality"],
+      "narratives": [
+        {
+          "claim": "防守和质量资产可降低组合对单一科技主线的依赖",
+          "evidence_level": "radar_only",
+          "source_note": "需用估值、盈利稳定性和相对强弱核验"
+        }
+      ],
+      "instruments": [
+        {"code": "BRK.B", "name": "伯克希尔 B", "market": "US", "access": "美股 ticker"},
+        {"code": "JPM", "name": "摩根大通", "market": "US", "access": "美股 ticker"},
+        {"code": "JNJ", "name": "强生", "market": "US", "access": "美股 ticker"},
+        {"code": "PG", "name": "宝洁", "market": "US", "access": "美股 ticker"}
+      ],
+      "execution_note": "更接近分散候选；买入前仍需确认估值、汇率和账户可交易性。"
+    },
+    {
+      "theme_id": "a_share_mapping",
+      "name": "A 股映射链",
+      "thesis": "海外 AI、存储、机器人和商业航天叙事可能映射到 A 股半导体、封装、机器人、小金属和航天概念。",
+      "exposure_tags": ["a_share", "ai", "semiconductor", "robotics", "space"],
+      "narratives": [
+        {
+          "claim": "海外产业叙事可能在 A 股形成右侧交易映射",
+          "evidence_level": "radar_only",
+          "source_note": "需用成交额、产业订单和公司业务占比核验，避免纯概念炒作"
+        }
+      ],
+      "instruments": [
+        {"code": "A_SHARE_BASKET", "name": "A 股相关主题篮子", "market": "CN", "access": "需进一步映射到基金或股票"}
+      ],
+      "execution_note": "当前 011840 已提供 A 股 AI 暴露，新增 A 股映射应先检查重复持仓和主题拥挤。"
+    }
+  ]
+}
